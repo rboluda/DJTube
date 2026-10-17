@@ -1,0 +1,57 @@
+<UserControl x:Class="DJTube.App.Views.MixerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:DJTube.App.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:MixerViewModel}"
+             d:DesignWidth="220" d:DesignHeight="320">
+    <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="16">
+        <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Text="MEZCLADOR" Style="{StaticResource CaptionText}"
+                       HorizontalAlignment="Center" Margin="0,0,0,8" />
+
+            <!-- Crossfader y curva -->
+            <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                <Grid>
+                    <TextBlock Text="A" Foreground="{StaticResource DeckABrush}" FontWeight="Bold"
+                               HorizontalAlignment="Left" VerticalAlignment="Center" />
+                    <TextBlock Text="B" Foreground="{StaticResource DeckBBrush}" FontWeight="Bold"
+                               HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    <Slider Style="{StaticResource FaderSlider}" Margin="14,0" Height="40"
+                            Minimum="-1" Maximum="1" TickPlacement="Both"
+                            Value="{Binding Crossfader}"
+                            MouseDoubleClick="OnCrossfaderDoubleClick"
+                            ToolTip="Crossfader (doble clic: centrar)" />
+                </Grid>
+                <TextBlock Text="CURVA" Style="{StaticResource CaptionText}" Margin="0,8,0,2" />
+                <ComboBox ItemsSource="{Binding Curves}" SelectedItem="{Binding SelectedCurve}" Focusable="False" />
+            </StackPanel>
+
+            <!-- Faders de canal -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <DockPanel Grid.Column="0">
+                    <TextBlock DockPanel.Dock="Bottom" Text="A" Foreground="{StaticResource DeckABrush}"
+                               FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                    <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="120"
+                            Minimum="0" Maximum="1" Value="{Binding VolumeA}"
+                            Tag="{StaticResource DeckABrush}" HorizontalAlignment="Center"
+                            ToolTip="Volumen del plato A" />
+                </DockPanel>
+                <DockPanel Grid.Column="1">
+                    <TextBlock DockPanel.Dock="Bottom" Text="B" Foreground="{StaticResource DeckBBrush}"
+                               FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                    <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="120"
+                            Minimum="0" Maximum="1" Value="{Binding VolumeB}"
+                            Tag="{StaticResource DeckBBrush}" HorizontalAlignment="Center"
+                            ToolTip="Volumen del plato B" />
+                </DockPanel>
+            </Grid>
+        </DockPanel>
+    </Border>
+</UserControl>

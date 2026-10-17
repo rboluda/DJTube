@@ -49,6 +49,19 @@ public partial class DeckViewModel : ObservableObject
     [ObservableProperty]
     private string? _error;
 
+    /// <summary>Pitch en %; positivo = más rápido.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PitchText), nameof(KeyText))]
+    private double _pitchPercent;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWideRange), nameof(RangeText))]
+    private double _pitchRange = PitchMath.DefaultRange;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(KeyText))]
+    private bool _keyLock;
+
     public DeckViewModel(string name, IDeck deck, ITrackSource localSource, IFileDialogService dialogs)
     {
         Name = name;
@@ -59,6 +72,43 @@ public partial class DeckViewModel : ObservableObject
     }
 
     public string Name { get; }
+
+    public string PitchText => PitchMath.Format(PitchPercent);
+
+    public string RangeText => $"±{PitchRange:0}%";
+
+    /// <summary>Cambio de tono que provoca el pitch (sin key lock, como en un vinilo).</summary>
+    public string KeyText => KeyLock || Math.Abs(PitchPercent) < 0.005
+        ? "tono original"
+        : $"tono {PitchMath.Semitones(PitchPercent):+0.0;-0.0} st";
+
+    /// <summary>Rango ±16 % (si no, ±8 %).</summary>
+    public bool IsWideRange
+    {
+        get => PitchRange == PitchMath.WideRange;
+        set => PitchRange = value ? PitchMath.WideRange : PitchMath.DefaultRange;
+    }
+
+    partial void OnPitchPercentChanged(double value)
+    {
+        double clamped = PitchMath.Clamp(value, PitchRange);
+        if (clamped != value)
+        {
+            PitchPercent = clamped;
+            return;
+        }
+        _deck.PitchPercent = value;
+    }
+
+    partial void OnPitchRangeChanged(double value) => PitchPercent = PitchMath.Clamp(PitchPercent, value);
+
+    partial void OnKeyLockChanged(bool value) => _deck.KeyLock = value;
+
+    [RelayCommand]
+    private void ResetPitch() => PitchPercent = 0;
+
+    /// <summary>Ajuste fino del pitch (rueda del ratón).</summary>
+    public void NudgePitch(double delta) => PitchPercent = PitchMath.Clamp(PitchPercent + delta, PitchRange);
 
     /// <summary>Lee el estado del plato. Se llama en cada fotograma.</summary>
     public void Refresh()

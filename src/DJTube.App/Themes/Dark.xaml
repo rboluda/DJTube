@@ -9,9 +9,11 @@
     <Color x:Key="TextColor">#FFE6E8EC</Color>
     <Color x:Key="TextDimColor">#FF8A909C</Color>
     <Color x:Key="DeckAColor">#FF3BA3FF</Color>
+    <Color x:Key="DeckBColor">#FFFF5C9D</Color>
     <Color x:Key="CueColor">#FFFF9F1A</Color>
     <Color x:Key="PlayColor">#FF3DDC84</Color>
     <Color x:Key="ErrorColor">#FFFF5C5C</Color>
+    <Color x:Key="FaderCapColor">#FFD8DBE2</Color>
 
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
     <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}" />
@@ -20,9 +22,11 @@
     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}" />
     <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}" />
     <SolidColorBrush x:Key="DeckABrush" Color="{StaticResource DeckAColor}" />
+    <SolidColorBrush x:Key="DeckBBrush" Color="{StaticResource DeckBColor}" />
     <SolidColorBrush x:Key="CueBrush" Color="{StaticResource CueColor}" />
     <SolidColorBrush x:Key="PlayBrush" Color="{StaticResource PlayColor}" />
     <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
+    <SolidColorBrush x:Key="FaderCapBrush" Color="{StaticResource FaderCapColor}" />
 
     <!-- Botón plano -->
     <Style TargetType="Button">
@@ -56,6 +60,154 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- Interruptor: el borde y el texto toman el color de Tag cuando está activo -->
+    <Style TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+        <Setter Property="Background" Value="{StaticResource ControlBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Tag" Value="{StaticResource TextBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="BorderBrush" Value="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                            <Setter Property="Foreground" Value="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root" Property="Opacity" Value="0.88" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Root" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Faders: solo se mueven arrastrando el cursor (un clic en la guía no salta) -->
+    <Style x:Key="FaderTrackButton" TargetType="RepeatButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Background="Transparent" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="VerticalFaderThumb" TargetType="Thumb">
+        <Setter Property="Cursor" Value="SizeNS" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border Width="34" Height="16" CornerRadius="3" Background="{StaticResource FaderCapBrush}"
+                            BorderBrush="#FF0E1014" BorderThickness="1">
+                        <Rectangle Height="2" Fill="{Binding Tag, RelativeSource={RelativeSource AncestorType=Slider}}"
+                                   Margin="3,0" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="HorizontalFaderThumb" TargetType="Thumb">
+        <Setter Property="Cursor" Value="SizeWE" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border Width="16" Height="34" CornerRadius="3" Background="{StaticResource FaderCapBrush}"
+                            BorderBrush="#FF0E1014" BorderThickness="1">
+                        <Rectangle Width="2" Fill="#FF15171C" Margin="0,3" HorizontalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <ControlTemplate x:Key="VerticalFaderTemplate" TargetType="Slider">
+        <Grid Background="Transparent">
+            <Border Width="4" CornerRadius="2" Background="{StaticResource ControlBrush}" Margin="0,8" />
+            <!-- Marca central (útil en el pitch) -->
+            <Rectangle x:Name="CenterMark" Width="22" Height="1" Fill="{StaticResource TextDimBrush}"
+                       VerticalAlignment="Center" Visibility="Collapsed" />
+            <Track x:Name="PART_Track" Orientation="Vertical"
+                   IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+                <Track.DecreaseRepeatButton>
+                    <RepeatButton Style="{StaticResource FaderTrackButton}" />
+                </Track.DecreaseRepeatButton>
+                <Track.IncreaseRepeatButton>
+                    <RepeatButton Style="{StaticResource FaderTrackButton}" />
+                </Track.IncreaseRepeatButton>
+                <Track.Thumb>
+                    <Thumb Style="{StaticResource VerticalFaderThumb}" />
+                </Track.Thumb>
+            </Track>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="TickPlacement" Value="Both">
+                <Setter TargetName="CenterMark" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="HorizontalFaderTemplate" TargetType="Slider">
+        <Grid Background="Transparent">
+            <Border Height="4" CornerRadius="2" Background="{StaticResource ControlBrush}" Margin="8,0" />
+            <Rectangle x:Name="CenterMark" Width="1" Height="22" Fill="{StaticResource TextDimBrush}"
+                       HorizontalAlignment="Center" Visibility="Collapsed" />
+            <Track x:Name="PART_Track" Orientation="Horizontal"
+                   IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+                <Track.DecreaseRepeatButton>
+                    <RepeatButton Style="{StaticResource FaderTrackButton}" />
+                </Track.DecreaseRepeatButton>
+                <Track.IncreaseRepeatButton>
+                    <RepeatButton Style="{StaticResource FaderTrackButton}" />
+                </Track.IncreaseRepeatButton>
+                <Track.Thumb>
+                    <Thumb Style="{StaticResource HorizontalFaderThumb}" />
+                </Track.Thumb>
+            </Track>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="TickPlacement" Value="Both">
+                <Setter TargetName="CenterMark" Property="Visibility" Value="Visible" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!-- TickPlacement="Both" muestra la marca central; Tag es el color de la línea del cursor vertical -->
+    <Style x:Key="FaderSlider" TargetType="Slider">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Tag" Value="#FF15171C" />
+        <Setter Property="Template" Value="{StaticResource HorizontalFaderTemplate}" />
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="Template" Value="{StaticResource VerticalFaderTemplate}" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="CaptionText" TargetType="TextBlock">

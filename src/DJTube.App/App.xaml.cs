@@ -16,7 +16,7 @@ public partial class App : Application
 
         try
         {
-            _engine = new BassAudioEngine(deckCount: 1);
+            _engine = new BassAudioEngine(deckCount: 2);
         }
         catch (Exception ex)
         {

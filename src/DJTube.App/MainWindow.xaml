@@ -7,7 +7,7 @@
         xmlns:views="clr-namespace:DJTube.App.Views"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-        Title="DJTube" Height="420" Width="760" MinWidth="520" MinHeight="360"
+        Title="DJTube" Height="470" Width="1280" MinWidth="1000" MinHeight="420"
         Background="{StaticResource BackgroundBrush}"
         Foreground="{StaticResource TextBrush}"
         FontFamily="Segoe UI"
@@ -35,8 +35,17 @@
         </DockPanel>
 
         <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource CaptionText}" Margin="0,10,0,0"
-                   Text="Atajos: Espacio = play/pausa · C = cue · arrastra un archivo al plato para cargarlo" />
+                   Text="Atajos — A: Espacio = play/pausa, C = cue · B: Intro = play/pausa, M = cue · arrastra un archivo a un plato para cargarlo" />
 
-        <views:DeckView DataContext="{Binding DeckA}" VerticalAlignment="Top" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="230" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <views:DeckView Grid.Column="0" DataContext="{Binding DeckA}" Accent="{StaticResource DeckABrush}" />
+            <views:MixerView Grid.Column="1" DataContext="{Binding Mixer}" Margin="12,0" />
+            <views:DeckView Grid.Column="2" DataContext="{Binding DeckB}" Accent="{StaticResource DeckBBrush}" />
+        </Grid>
     </DockPanel>
 </Window>

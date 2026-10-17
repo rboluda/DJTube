@@ -23,13 +23,22 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel(IAudioEngine engine, ITrackSource localSource, IFileDialogService dialogs)
     {
+        if (engine.Decks.Count < 2)
+            throw new ArgumentException("El motor debe tener dos platos.", nameof(engine));
+
         _engine = engine;
         DeckA = new DeckViewModel("A", engine.Decks[0], localSource, dialogs);
+        DeckB = new DeckViewModel("B", engine.Decks[1], localSource, dialogs);
+        Mixer = new MixerViewModel(engine.Decks[0], engine.Decks[1]);
         Libraries = string.Join(Environment.NewLine,
             BassLibraryInfo.GetVersions().Select(l => $"{l.Library} {l.Version}"));
     }
 
     public DeckViewModel DeckA { get; }
+
+    public DeckViewModel DeckB { get; }
+
+    public MixerViewModel Mixer { get; }
 
     public ObservableCollection<AudioDevice> Devices { get; } = [];
 
@@ -55,7 +64,11 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <summary>Se llama en cada fotograma.</summary>
-    public void Refresh() => DeckA.Refresh();
+    public void Refresh()
+    {
+        DeckA.Refresh();
+        DeckB.Refresh();
+    }
 
     partial void OnSelectedDeviceChanged(AudioDevice? value)
     {

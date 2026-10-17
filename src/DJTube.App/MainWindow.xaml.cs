@@ -19,30 +19,33 @@ public partial class MainWindow : Window
 
     private void OnRendering(object? sender, EventArgs e) => ViewModel?.Refresh();
 
+    private (DeckViewModel Deck, bool IsCue)? MapKey(Key key) => ViewModel is not { } vm ? null : key switch
+    {
+        Key.Space => (vm.DeckA, false),
+        Key.C => (vm.DeckA, true),
+        Key.Enter => (vm.DeckB, false),
+        Key.M => (vm.DeckB, true),
+        _ => null,
+    };
+
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (ViewModel?.DeckA is not { } deck || e.IsRepeat)
-        {
-            e.Handled = e.Key is Key.Space or Key.C;
+        if (MapKey(e.Key) is not var (deck, isCue))
             return;
-        }
 
-        switch (e.Key)
-        {
-            case Key.Space:
-                deck.PlayPauseCommand.Execute(null);
-                e.Handled = true;
-                break;
-            case Key.C:
-                deck.CueDownCommand.Execute(null);
-                e.Handled = true;
-                break;
-        }
+        e.Handled = true;
+        if (e.IsRepeat)
+            return;
+
+        if (isCue)
+            deck.CueDownCommand.Execute(null);
+        else
+            deck.PlayPauseCommand.Execute(null);
     }
 
     private void OnPreviewKeyUp(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.C && ViewModel?.DeckA is { } deck)
+        if (MapKey(e.Key) is (var deck, true))
         {
             deck.CueUpCommand.Execute(null);
             e.Handled = true;
