@@ -1,3 +1,4 @@
+using DJTube.App.Localization;
 using DJTube.Sources.Local;
 using Microsoft.Win32;
 
@@ -18,8 +19,8 @@ public sealed class FileDialogService : IFileDialogService
         string patterns = string.Join(";", LocalFileTrackSource.SupportedExtensions.Select(e => "*" + e));
         var dialog = new OpenFileDialog
         {
-            Title = "Cargar pista",
-            Filter = $"Audio ({patterns})|{patterns}|Todos los archivos (*.*)|*.*",
+            Title = Loc.T("Dialog_LoadTrack"),
+            Filter = $"{Loc.F("Dialog_Audio", patterns)}|{patterns}|{Loc.T("Dialog_AllFiles")}|*.*",
             InitialDirectory = _lastFolder ?? Environment.GetFolderPath(Environment.SpecialFolder.MyMusic),
         };
 

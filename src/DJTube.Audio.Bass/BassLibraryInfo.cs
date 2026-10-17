@@ -1,3 +1,4 @@
+using DJTube.Core.Localization;
 using ManagedBass;
 using ManagedBass.Asio;
 using ManagedBass.Fx;
@@ -30,7 +31,7 @@ public static class BassLibraryInfo
         }
         catch (DllNotFoundException)
         {
-            list.Add((name, "NO ENCONTRADA"));
+            list.Add((name, Messages.LibraryNotFound));
         }
     }
 }

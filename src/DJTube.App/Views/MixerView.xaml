@@ -4,12 +4,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:DJTube.App.ViewModels"
+             xmlns:loc="clr-namespace:DJTube.App.Localization"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:MixerViewModel}"
              d:DesignWidth="220" d:DesignHeight="320">
     <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="16">
         <DockPanel>
-            <TextBlock DockPanel.Dock="Top" Text="MEZCLADOR" Style="{StaticResource CaptionText}"
+            <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Mixer}" Style="{StaticResource CaptionText}"
                        HorizontalAlignment="Center" Margin="0,0,0,8" />
 
             <!-- Crossfader y curva -->
@@ -23,10 +24,16 @@
                             Minimum="-1" Maximum="1" TickPlacement="Both"
                             Value="{Binding Crossfader}"
                             MouseDoubleClick="OnCrossfaderDoubleClick"
-                            ToolTip="Crossfader (doble clic: centrar)" />
+                            ToolTip="{loc:Tr CrossfaderTip}" />
                 </Grid>
-                <TextBlock Text="CURVA" Style="{StaticResource CaptionText}" Margin="0,8,0,2" />
-                <ComboBox ItemsSource="{Binding Curves}" SelectedItem="{Binding SelectedCurve}" Focusable="False" />
+                <TextBlock Text="{loc:Tr Curve}" Style="{StaticResource CaptionText}" Margin="0,8,0,2" />
+                <ComboBox ItemsSource="{Binding Curves}" SelectedItem="{Binding SelectedCurve}" Focusable="False">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
             </StackPanel>
 
             <!-- Faders de canal -->
@@ -41,7 +48,7 @@
                     <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="120"
                             Minimum="0" Maximum="1" Value="{Binding VolumeA}"
                             Tag="{StaticResource DeckABrush}" HorizontalAlignment="Center"
-                            ToolTip="Volumen del plato A" />
+                            ToolTip="{loc:Tr VolumeATip}" />
                 </DockPanel>
                 <DockPanel Grid.Column="1">
                     <TextBlock DockPanel.Dock="Bottom" Text="B" Foreground="{StaticResource DeckBBrush}"
@@ -49,7 +56,7 @@
                     <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="120"
                             Minimum="0" Maximum="1" Value="{Binding VolumeB}"
                             Tag="{StaticResource DeckBBrush}" HorizontalAlignment="Center"
-                            ToolTip="Volumen del plato B" />
+                            ToolTip="{loc:Tr VolumeBTip}" />
                 </DockPanel>
             </Grid>
         </DockPanel>

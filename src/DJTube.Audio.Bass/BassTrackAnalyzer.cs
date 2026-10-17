@@ -1,4 +1,5 @@
 using DJTube.Core.Abstractions;
+using DJTube.Core.Localization;
 using DJTube.Core.Logic;
 using DJTube.Core.Models;
 using ManagedBass;
@@ -37,7 +38,7 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
     {
         int stream = Bass.CreateStream(path, 0, 0, BassFlags.Decode | BassFlags.Float | BassFlags.Prescan);
         if (stream == 0)
-            throw new BassException($"No se pudo analizar «{Path.GetFileName(path)}»");
+            throw new BassException(Messages.AnalyzeFailed(Path.GetFileName(path)));
 
         try
         {

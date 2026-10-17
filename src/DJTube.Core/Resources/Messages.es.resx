@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="TrackSourceMismatch" xml:space="preserve"><value>La pista no pertenece a la fuente «{0}».</value></data>
+  <data name="UnsupportedFormat" xml:space="preserve"><value>Formato no admitido: {0}</value></data>
+  <data name="FileNotFound" xml:space="preserve"><value>No se encuentra el archivo.</value></data>
+  <data name="StreamMustSeek" xml:space="preserve"><value>El stream debe admitir lectura y búsqueda.</value></data>
+  <data name="InvalidVideoId" xml:space="preserve"><value>ID de vídeo no válido: {0}</value></data>
+  <data name="YtDlpNotFound" xml:space="preserve"><value>No se encuentra yt-dlp. Instálalo con: winget install yt-dlp.yt-dlp</value></data>
+  <data name="YtDlpRunFailed" xml:space="preserve"><value>No se pudo ejecutar yt-dlp.</value></data>
+  <data name="YtDlpExitCode" xml:space="preserve"><value>yt-dlp terminó con código {0}</value></data>
+  <data name="DownloadFailed" xml:space="preserve"><value>No se pudo descargar: {0}</value></data>
+  <data name="DownloadFailedExitCode" xml:space="preserve"><value>No se pudo descargar el audio (yt-dlp terminó con código {0}).</value></data>
+  <data name="BassInitFailed" xml:space="preserve"><value>No se pudo inicializar BASS</value></data>
+  <data name="OpenFailed" xml:space="preserve"><value>No se pudo abrir «{0}»</value></data>
+  <data name="TempoFailed" xml:space="preserve"><value>No se pudo crear el canal de tempo</value></data>
+  <data name="MixerAddFailed" xml:space="preserve"><value>No se pudo añadir la pista al mezclador</value></data>
+  <data name="MixerCreateFailed" xml:space="preserve"><value>No se pudo crear el mezclador</value></data>
+  <data name="NoDefaultOutput" xml:space="preserve"><value>No hay dispositivo de salida predeterminado</value></data>
+  <data name="InvalidOutputDevice" xml:space="preserve"><value>Dispositivo de salida {0} no válido</value></data>
+  <data name="OutputOpenFailed" xml:space="preserve"><value>No se pudo abrir el dispositivo de salida</value></data>
+  <data name="OutputStartFailed" xml:space="preserve"><value>No se pudo iniciar la salida</value></data>
+  <data name="AnalyzeFailed" xml:space="preserve"><value>No se pudo analizar «{0}»</value></data>
+  <data name="OnlyFilesSupported" xml:space="preserve"><value>De momento solo se pueden cargar archivos.</value></data>
+  <data name="LibraryNotFound" xml:space="preserve"><value>NO ENCONTRADA</value></data>
+  <data name="DefaultDevice" xml:space="preserve"><value>{0} (predeterminado)</value></data>
+</root>

@@ -1,3 +1,5 @@
+using DJTube.Core.Localization;
+
 namespace DJTube.Core.Models;
 
 /// <summary>
@@ -33,7 +35,7 @@ public sealed class TrackMedia : IDisposable
         ArgumentNullException.ThrowIfNull(track);
         ArgumentNullException.ThrowIfNull(stream);
         if (!stream.CanRead || !stream.CanSeek)
-            throw new ArgumentException("El stream debe admitir lectura y búsqueda.", nameof(stream));
+            throw new ArgumentException(Messages.StreamMustSeek, nameof(stream));
         return new TrackMedia(track, null, stream);
     }
 

@@ -1,3 +1,4 @@
+using DJTube.Core.Localization;
 using ManagedBass;
 using ManagedBass.Fx;
 
@@ -34,7 +35,7 @@ internal static class BassRuntime
 
             // Dispositivo 0 = "sin sonido": suficiente para decodificar y mezclar.
             if (!Bass.Init(0, 48000, DeviceInitFlags.Default) && Bass.LastError != Errors.Already)
-                throw new BassException("No se pudo inicializar BASS");
+                throw new BassException(Messages.BassInitFailed);
 
             FlacPlugin = Bass.PluginLoad(Path.Combine(AppContext.BaseDirectory, "bassflac.dll"));
 

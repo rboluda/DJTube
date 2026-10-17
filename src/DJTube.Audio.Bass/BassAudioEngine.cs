@@ -1,5 +1,6 @@
 using DJTube.Audio.Bass.Output;
 using DJTube.Core.Abstractions;
+using DJTube.Core.Localization;
 using DJTube.Core.Models;
 using ManagedBass;
 using ManagedBass.Mix;
@@ -104,7 +105,7 @@ public sealed class BassAudioEngine : IAudioEngine
         _mixer = BassMix.CreateMixerStream(
             rate, channels, BassFlags.Decode | BassFlags.Float | BassFlags.MixerNonStop | BassFlags.MixerPositionEx);
         if (_mixer == 0)
-            throw new BassException("No se pudo crear el mezclador");
+            throw new BassException(Messages.MixerCreateFailed);
         _mixerRate = rate;
         _mixerChannels = channels;
 
@@ -125,6 +126,6 @@ public sealed class BassAudioEngine : IAudioEngine
             if (info.IsDefault && !info.IsInput && !info.IsLoopback && info.IsEnabled)
                 return i;
         }
-        throw new BassException("No hay dispositivo de salida predeterminado", Errors.Device);
+        throw new BassException(Messages.NoDefaultOutput, Errors.Device);
     }
 }

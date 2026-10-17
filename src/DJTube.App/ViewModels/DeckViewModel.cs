@@ -4,6 +4,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DJTube.App.Localization;
 using DJTube.App.Services;
 using DJTube.Core.Abstractions;
 using DJTube.Core.Logic;
@@ -15,7 +16,6 @@ namespace DJTube.App.ViewModels;
 
 public partial class DeckViewModel : ObservableObject
 {
-    private const string EmptyTitle = "Sin pista";
     private static readonly Stopwatch Clock = Stopwatch.StartNew();
 
     private readonly IDeck _deck;
@@ -31,7 +31,7 @@ public partial class DeckViewModel : ObservableObject
     private int _artworkGeneration;
 
     [ObservableProperty]
-    private string _title = EmptyTitle;
+    private string _title = Loc.T("NoTrack");
 
     [ObservableProperty]
     private string _elapsed = TimeFormat.Format(0);
@@ -127,6 +127,18 @@ public partial class DeckViewModel : ObservableObject
         _outputDelaySeconds = outputDelaySeconds;
         _dialogs = dialogs;
         _cue = new CueController(deck);
+        Loc.Instance.LanguageChanged += (_, _) => OnLanguageChanged();
+    }
+
+    /// <summary>Recalcula los textos que dependen del idioma.</summary>
+    private void OnLanguageChanged()
+    {
+        if (!IsLoading)
+            Title = FormatTitle(_deck.Track);
+        OnPropertyChanged(nameof(LoadStatus));
+        OnPropertyChanged(nameof(OriginalBpmText));
+        OnPropertyChanged(nameof(AnalysisStatus));
+        OnPropertyChanged(nameof(KeyText));
     }
 
     public string Name { get; }
@@ -134,7 +146,7 @@ public partial class DeckViewModel : ObservableObject
     /// <summary>Plato con el que se sincroniza este al pulsar SYNC.</summary>
     public DeckViewModel? SyncTarget { get; set; }
 
-    public string LoadStatus => LoadProgress is { } p ? $"Descargando… {p * 100:0} %" : "Preparando…";
+    public string LoadStatus => LoadProgress is { } p ? Loc.F("Downloading", p * 100) : Loc.T("Preparing");
 
     public bool IsLoadProgressKnown => LoadProgress is not null;
 
@@ -152,15 +164,15 @@ public partial class DeckViewModel : ObservableObject
         : IsAnalyzing ? "···" : "—";
 
     public string OriginalBpmText => Grid is { } g
-        ? $"original {g.Bpm.ToString("0.00", CultureInfo.InvariantCulture)}"
+        ? Loc.F("OriginalBpm", g.Bpm.ToString("0.00", CultureInfo.InvariantCulture))
         : "";
 
-    public string AnalysisStatus => IsAnalyzing ? $"Analizando… {AnalysisProgress * 100:0} %" : "";
+    public string AnalysisStatus => IsAnalyzing ? Loc.F("Analyzing", AnalysisProgress * 100) : "";
 
     /// <summary>Cambio de tono que provoca el pitch (sin key lock, como en un vinilo).</summary>
     public string KeyText => KeyLock || Math.Abs(PitchPercent) < 0.005
-        ? "tono original"
-        : $"tono {PitchMath.Semitones(PitchPercent):+0.0;-0.0} st";
+        ? Loc.T("OriginalKey")
+        : Loc.F("KeyShift", PitchMath.Semitones(PitchPercent));
 
     /// <summary>Rango ±16 % (si no, ±8 %).</summary>
     public bool IsWideRange
@@ -259,12 +271,12 @@ public partial class DeckViewModel : ObservableObject
     {
         if (SyncTarget is not { } master || !_deck.IsLoaded || !master.IsLoaded)
         {
-            Error = "SYNC necesita una pista cargada en cada plato.";
+            Error = Loc.T("Err_SyncNeedsTracks");
             return;
         }
         if (Grid is not { } grid || master.Grid is not { } masterGrid)
         {
-            Error = "SYNC necesita el BPM de las dos pistas.";
+            Error = Loc.T("Err_SyncNeedsBpm");
             return;
         }
 
@@ -281,7 +293,7 @@ public partial class DeckViewModel : ObservableObject
         }
         if (plan is null)
         {
-            Error = $"El tempo del plato {master.Name} queda fuera del rango de pitch.";
+            Error = Loc.F("Err_SyncOutOfRange", master.Name);
             return;
         }
 
@@ -319,7 +331,7 @@ public partial class DeckViewModel : ObservableObject
     {
         if (!LocalFileTrackSource.IsSupported(path))
         {
-            Error = $"Formato no admitido: {System.IO.Path.GetExtension(path)}";
+            Error = Loc.F("Err_UnsupportedFormat", System.IO.Path.GetExtension(path));
             return;
         }
         await LoadTrackAsync(_localSource, LocalFileTrackSource.CreateTrackInfo(path));
@@ -334,7 +346,7 @@ public partial class DeckViewModel : ObservableObject
             return;
         if (!YouTubeUrl.TryGetVideoId(text, out _))
         {
-            Error = "No es un enlace a un vídeo de YouTube.";
+            Error = Loc.T("Err_NotYouTubeLink");
             return;
         }
         LinkText = "";
@@ -350,7 +362,7 @@ public partial class DeckViewModel : ObservableObject
         else if (System.IO.File.Exists(text))
             await LoadFileAsync(text);
         else
-            Error = "No es un enlace de YouTube ni un archivo de audio.";
+            Error = Loc.T("Err_NotLinkOrFile");
     }
 
     [RelayCommand]
@@ -450,7 +462,7 @@ public partial class DeckViewModel : ObservableObject
         catch (Exception ex)
         {
             if (_analysisCts == cts)
-                Error = $"No se pudo analizar la pista: {ex.Message}";
+                Error = Loc.F("Err_Analysis", ex.Message);
         }
         finally
         {
@@ -501,7 +513,7 @@ public partial class DeckViewModel : ObservableObject
 
     private static string FormatTitle(TrackInfo? track) => track switch
     {
-        null => EmptyTitle,
+        null => Loc.T("NoTrack"),
         { Artist: { Length: > 0 } artist } => $"{artist} — {track.Title}",
         _ => track.Title,
     };

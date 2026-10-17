@@ -1,4 +1,5 @@
 using DJTube.Audio.Bass.Native;
+using DJTube.Core.Localization;
 using DJTube.Core.Models;
 using ManagedBass.Wasapi;
 
@@ -37,7 +38,7 @@ internal sealed class WasapiOutput : IDisposable
     public static (int SampleRate, int Channels, string Name) GetMixFormat(int device)
     {
         if (!BassWasapi.GetDeviceInfo(device, out WasapiDeviceInfo info))
-            throw new BassException($"Dispositivo de salida {device} no válido");
+            throw new BassException(Messages.InvalidOutputDevice(device));
         return (info.MixFrequency, info.MixChannels, info.Name);
     }
 
@@ -54,7 +55,7 @@ internal sealed class WasapiOutput : IDisposable
                 device, sampleRate, channels, WasapiInitFlags.Shared, buffer, mixer);
         }
         if (!ok)
-            throw new BassException("No se pudo abrir el dispositivo de salida");
+            throw new BassException(Messages.OutputOpenFailed);
 
         BassWasapi.CurrentDevice = device;
         WasapiInfo info = BassWasapi.Info;
@@ -64,7 +65,7 @@ internal sealed class WasapiOutput : IDisposable
         {
             var error = ManagedBass.Bass.LastError;
             BassWasapi.Free();
-            throw new BassException("No se pudo iniciar la salida", error);
+            throw new BassException(Messages.OutputStartFailed, error);
         }
         return output;
     }

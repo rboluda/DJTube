@@ -1,0 +1,39 @@
+<Window x:Class="DJTube.App.Views.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:DJTube.App.ViewModels"
+        xmlns:loc="clr-namespace:DJTube.App.Localization"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:AboutViewModel}"
+        Style="{StaticResource DialogWindow}"
+        Title="{loc:Tr About_Title}">
+    <StackPanel Margin="24" Width="440">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="DJ" FontSize="30" FontWeight="Bold" Foreground="{StaticResource DeckABrush}" />
+            <TextBlock Text="Tube" FontSize="30" FontWeight="Bold" Foreground="{StaticResource DeckBBrush}" />
+        </StackPanel>
+        <TextBlock Text="{loc:Tr About_Tagline}" Foreground="{StaticResource TextDimBrush}" Margin="0,2,0,14" />
+
+        <TextBlock Text="{Binding VersionText}" FontSize="15" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding BuildText}" Style="{StaticResource CaptionText}" Margin="0,2,0,0" />
+        <TextBlock Text="{Binding RuntimeText}" Style="{StaticResource CaptionText}" />
+        <TextBlock Text="{Binding YtDlpStatus}" Style="{StaticResource CaptionText}" />
+
+        <TextBlock Text="{loc:Tr About_Libraries}" Style="{StaticResource CaptionText}" Margin="0,12,0,2" />
+        <TextBlock Text="{Binding Libraries}" FontFamily="Consolas" FontSize="11" />
+
+        <TextBlock Text="{loc:Tr About_Audio}" TextWrapping="Wrap" Margin="0,14,0,0" />
+        <TextBlock Text="{loc:Tr About_YouTube}" TextWrapping="Wrap" Margin="0,8,0,0"
+                   Foreground="{StaticResource TextDimBrush}" />
+
+        <DockPanel Margin="0,20,0,0">
+            <Button DockPanel.Dock="Right" Content="{loc:Tr Close}" IsCancel="True" IsDefault="True" MinWidth="96" />
+            <StackPanel VerticalAlignment="Center">
+                <Button Style="{StaticResource LinkButton}" Content="{loc:Tr About_Project}"
+                        Command="{Binding OpenProjectCommand}" ToolTip="{Binding ProjectUrl}" HorizontalAlignment="Left" />
+            </StackPanel>
+        </DockPanel>
+    </StackPanel>
+</Window>

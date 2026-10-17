@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using DJTube.Core.Abstractions;
+using DJTube.Core.Localization;
 using DJTube.Core.Logic;
 using DJTube.Core.Models;
 
@@ -79,7 +80,7 @@ public sealed class YouTubeTrackSource : ITrackSource
     public TrackInfo CreateTrackInfo(string videoId)
     {
         if (!YouTubeUrl.IsValidVideoId(videoId))
-            throw new ArgumentException($"ID de vídeo no válido: {videoId}", nameof(videoId));
+            throw new ArgumentException(Messages.InvalidVideoId(videoId), nameof(videoId));
         return TryReadCached(videoId, out var info) ? ToTrackInfo(info) : new TrackInfo(SourceName, videoId, $"YouTube {videoId}");
     }
 
@@ -108,9 +109,9 @@ public sealed class YouTubeTrackSource : ITrackSource
     {
         ArgumentNullException.ThrowIfNull(track);
         if (track.SourceName != SourceName)
-            throw new ArgumentException($"La pista no pertenece a la fuente '{SourceName}'.", nameof(track));
+            throw new ArgumentException(Messages.TrackSourceMismatch(SourceName), nameof(track));
         if (!YouTubeUrl.IsValidVideoId(track.Id))
-            throw new ArgumentException($"ID de vídeo no válido: {track.Id}", nameof(track));
+            throw new ArgumentException(Messages.InvalidVideoId(track.Id), nameof(track));
 
         string id = track.Id;
         // Si las dos pletinas piden el mismo vídeo, la segunda espera y lo toma de la caché.
@@ -133,7 +134,7 @@ public sealed class YouTubeTrackSource : ITrackSource
     private async Task<YouTubeDownloadInfo> DownloadAsync(string id, IProgress<double>? progress, CancellationToken ct)
     {
         string exe = _findExecutable()
-            ?? throw new YouTubeSourceException("No se encuentra yt-dlp. Instálalo con: winget install yt-dlp.yt-dlp");
+            ?? throw new YouTubeSourceException(Messages.YtDlpNotFound);
 
         Directory.CreateDirectory(CacheFolder);
         string outputTemplate = Path.Combine(CacheFolder, "%(id)s.%(ext)s");
@@ -167,8 +168,8 @@ public sealed class YouTubeTrackSource : ITrackSource
         {
             DeletePartialFiles(id);
             throw new YouTubeSourceException(lastError is not null
-                ? $"No se pudo descargar: {lastError}"
-                : $"No se pudo descargar el audio (yt-dlp terminó con código {result.ExitCode}).");
+                ? Messages.DownloadFailed(lastError)
+                : Messages.DownloadFailedExitCode(result.ExitCode));
         }
 
         // El .json marca la descarga como completa: se escribe de forma atómica y al final.

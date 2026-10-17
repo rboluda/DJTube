@@ -1,9 +1,11 @@
+using DJTube.Core.Localization;
+
 namespace DJTube.Core.Models;
 
 /// <summary>Dispositivo de salida de audio. <paramref name="Id"/> es opaco y depende del motor.</summary>
 public sealed record AudioDevice(int Id, string Name, bool IsDefault)
 {
-    public override string ToString() => IsDefault ? $"{Name} (predeterminado)" : Name;
+    public override string ToString() => IsDefault ? Messages.DefaultDevice(Name) : Name;
 }
 
 /// <param name="DeviceId">Dispositivo de salida; null = el predeterminado de Windows.</param>

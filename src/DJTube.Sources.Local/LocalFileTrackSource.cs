@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using DJTube.Core.Abstractions;
+using DJTube.Core.Localization;
 using DJTube.Core.Models;
 
 namespace DJTube.Sources.Local;
@@ -54,11 +55,11 @@ public sealed class LocalFileTrackSource : ITrackSource
     {
         ArgumentNullException.ThrowIfNull(track);
         if (track.SourceName != SourceName)
-            throw new ArgumentException($"La pista no pertenece a la fuente '{SourceName}'.", nameof(track));
+            throw new ArgumentException(Messages.TrackSourceMismatch(SourceName), nameof(track));
         if (!IsSupported(track.Id))
-            throw new NotSupportedException($"Formato no admitido: {Path.GetExtension(track.Id)}");
+            throw new NotSupportedException(Messages.UnsupportedFormat(Path.GetExtension(track.Id)));
         if (!File.Exists(track.Id))
-            throw new FileNotFoundException("No se encuentra el archivo.", track.Id);
+            throw new FileNotFoundException(Messages.FileNotFound, track.Id);
 
         return Task.FromResult(TrackMedia.FromFile(track, track.Id));
     }

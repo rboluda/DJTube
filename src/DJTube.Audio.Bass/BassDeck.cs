@@ -1,4 +1,5 @@
 using DJTube.Core.Abstractions;
+using DJTube.Core.Localization;
 using DJTube.Core.Logic;
 using DJTube.Core.Models;
 using ManagedBass;
@@ -161,7 +162,7 @@ internal sealed class BassDeck : IDeck, IDisposable
                 ResetTrackNoLock();
                 FreeInBackground(loaded.Stream);
                 FreeInBackground(old);
-                throw new BassException("No se pudo añadir la pista al mezclador", error);
+                throw new BassException(Messages.MixerAddFailed, error);
             }
         }
         FreeInBackground(old);
@@ -235,7 +236,7 @@ internal sealed class BassDeck : IDeck, IDisposable
             {
                 var flags = _playing ? BassFlags.Default : BassFlags.MixerChanPause;
                 if (!BassMix.MixerAddChannel(mixer, _stream, flags))
-                    throw new BassException("No se pudo añadir la pista al mezclador");
+                    throw new BassException(Messages.MixerAddFailed);
             }
         }
     }
@@ -257,12 +258,12 @@ internal sealed class BassDeck : IDeck, IDisposable
     private static LoadedStream CreateStream(TrackMedia media)
     {
         if (media.FilePath is not { } path)
-            throw new NotSupportedException("De momento solo se pueden cargar archivos.");
+            throw new NotSupportedException(Messages.OnlyFilesSupported);
 
         int decoder = Bass.CreateStream(
             path, 0, 0, BassFlags.Decode | BassFlags.Float | BassFlags.Prescan | BassFlags.AsyncFile);
         if (decoder == 0)
-            throw new BassException($"No se pudo abrir «{Path.GetFileName(path)}»");
+            throw new BassException(Messages.OpenFailed(Path.GetFileName(path)));
 
         double duration = Bass.ChannelBytes2Seconds(decoder, Bass.ChannelGetLength(decoder, PositionFlags.Bytes));
         int sourceRate = Bass.ChannelGetInfo(decoder).Frequency;
@@ -272,7 +273,7 @@ internal sealed class BassDeck : IDeck, IDisposable
         {
             var error = Bass.LastError;
             Bass.StreamFree(decoder);
-            throw new BassException("No se pudo crear el canal de tempo", error);
+            throw new BassException(Messages.TempoFailed, error);
         }
         return new LoadedStream(tempo, decoder, sourceRate, duration);
     }

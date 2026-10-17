@@ -6,94 +6,136 @@
         xmlns:vm="clr-namespace:DJTube.App.ViewModels"
         xmlns:views="clr-namespace:DJTube.App.Views"
         xmlns:controls="clr-namespace:DJTube.App.Controls"
+        xmlns:loc="clr-namespace:DJTube.App.Localization"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-        Title="DJTube" Height="800" Width="1280" MinWidth="1000" MinHeight="680"
+        Title="{Binding WindowTitle}" Height="820" Width="1280" MinWidth="1000" MinHeight="700"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BackgroundBrush}"
         Foreground="{StaticResource TextBrush}"
         FontFamily="Segoe UI"
         PreviewKeyDown="OnPreviewKeyDown" PreviewKeyUp="OnPreviewKeyUp">
-    <DockPanel Margin="16">
-        <!-- Salida de audio -->
-        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-            <TextBlock DockPanel.Dock="Left" Text="Salida" VerticalAlignment="Center" Margin="0,0,10,0"
-                       Foreground="{StaticResource TextDimBrush}" />
-            <ComboBox DockPanel.Dock="Left" Width="280" Focusable="False"
-                      ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}" />
-            <TextBlock Text="{Binding OutputStatus}" VerticalAlignment="Center" Margin="12,0,0,0"
-                       TextTrimming="CharacterEllipsis" ToolTip="{Binding Libraries}">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding HasOutputError}" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
+    <DockPanel>
+        <!-- Menú -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="{loc:Tr Menu_File}">
+                <MenuItem Header="{loc:Tr Menu_LoadFileA}" InputGestureText="Ctrl+1"
+                          Command="{Binding DeckA.LoadFileCommand}" />
+                <MenuItem Header="{loc:Tr Menu_LoadFileB}" InputGestureText="Ctrl+2"
+                          Command="{Binding DeckB.LoadFileCommand}" />
+                <Separator />
+                <MenuItem Header="{loc:Tr Menu_OpenCache}" Command="{Binding OpenCacheCommand}" />
+                <Separator />
+                <MenuItem Header="{loc:Tr Menu_Exit}" InputGestureText="Alt+F4" Click="OnExitClick" />
+            </MenuItem>
+            <MenuItem Header="{loc:Tr Menu_Settings}">
+                <MenuItem Header="{loc:Tr Menu_Preferences}" InputGestureText="Ctrl+," Click="OnPreferencesClick" />
+                <MenuItem Header="{loc:Tr Menu_Language}">
+                    <MenuItem Header="Español" IsChecked="{Binding IsSpanish, Mode=OneWay}"
+                              Command="{Binding SetLanguageCommand}" CommandParameter="es" />
+                    <MenuItem Header="English" IsChecked="{Binding IsEnglish, Mode=OneWay}"
+                              Command="{Binding SetLanguageCommand}" CommandParameter="en" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="{loc:Tr Menu_UpdateYtDlp}" Command="{Binding UpdateYtDlpCommand}" />
+            </MenuItem>
+            <MenuItem Header="{loc:Tr Menu_View}">
+                <MenuItem Header="{loc:Tr Menu_ZoomIn}" InputGestureText="Ctrl++" Command="{Binding ZoomInCommand}" />
+                <MenuItem Header="{loc:Tr Menu_ZoomOut}" InputGestureText="Ctrl+-" Command="{Binding ZoomOutCommand}" />
+            </MenuItem>
+            <MenuItem Header="{loc:Tr Menu_Help}">
+                <MenuItem Header="{loc:Tr Menu_Shortcuts}" InputGestureText="F1" Click="OnShortcutsClick" />
+                <Separator />
+                <MenuItem Header="{loc:Tr Menu_About}" Click="OnAboutClick" />
+            </MenuItem>
+        </Menu>
+
+        <DockPanel Margin="16,12,16,16">
+            <!-- Salida de audio -->
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                <TextBlock DockPanel.Dock="Left" Text="{loc:Tr Output}" VerticalAlignment="Center" Margin="0,0,10,0"
+                           Foreground="{StaticResource TextDimBrush}" />
+                <ComboBox DockPanel.Dock="Left" Width="280" Focusable="False"
+                          ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Text="{Binding OutputStatus}" VerticalAlignment="Center" Margin="12,0,0,0"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding Libraries}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasOutputError}" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </DockPanel>
+
+            <!-- Barra inferior: atajos y estado de yt-dlp -->
+            <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+                <Button DockPanel.Dock="Right" Content="{loc:Tr OpenCache}" Padding="8,3" FontSize="11" Margin="6,0,0,0"
+                        Command="{Binding OpenCacheCommand}" ToolTip="{Binding CacheFolder}" />
+                <Button DockPanel.Dock="Right" Content="{loc:Tr UpdateYtDlp}" Padding="8,3" FontSize="11" Margin="6,0,0,0"
+                        Command="{Binding UpdateYtDlpCommand}" ToolTip="{loc:Tr UpdateYtDlpTip}" />
+                <TextBlock DockPanel.Dock="Right" Text="{Binding YtDlpStatus}" VerticalAlignment="Center" FontSize="11"
+                           Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="460">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasYtDlpError}" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Style="{StaticResource CaptionText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                           Text="{loc:Tr ShortcutsHint}" />
+            </DockPanel>
+
+            <!-- Vista ampliada de los dos platos (estilo AtomixMP3): cabezal fijo en el centro -->
+            <Border DockPanel.Dock="Top" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="8"
+                    Margin="0,0,0,12">
+                <StackPanel>
+                    <controls:ZoomWaveform Height="78" Label="A" ToolTip="{loc:Tr ZoomTip}"
+                                           Waveform="{Binding DeckA.Waveform}"
+                                           Position="{Binding DeckA.PositionSeconds}"
+                                           Rate="{Binding DeckA.PlaybackRate}"
+                                           Grid="{Binding DeckA.Grid}"
+                                           CuePoint="{Binding DeckA.CuePoint}"
+                                           Accent="{StaticResource DeckAColor}"
+                                           SecondsVisible="{Binding ZoomSeconds}"
+                                           SeekCommand="{Binding DeckA.SeekSecondsCommand}" />
+                    <controls:ZoomWaveform Height="78" Label="B" Margin="0,6,0,0" ToolTip="{loc:Tr ZoomTip}"
+                                           Waveform="{Binding DeckB.Waveform}"
+                                           Position="{Binding DeckB.PositionSeconds}"
+                                           Rate="{Binding DeckB.PlaybackRate}"
+                                           Grid="{Binding DeckB.Grid}"
+                                           CuePoint="{Binding DeckB.CuePoint}"
+                                           Accent="{StaticResource DeckBColor}"
+                                           SecondsVisible="{Binding ZoomSeconds}"
+                                           SeekCommand="{Binding DeckB.SeekSecondsCommand}" />
+                </StackPanel>
+            </Border>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="230" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <views:DeckView Grid.Column="0" DataContext="{Binding DeckA}" AccentColor="{StaticResource DeckAColor}" />
+                <views:MixerView Grid.Column="1" DataContext="{Binding Mixer}" Margin="12,0" />
+                <views:DeckView Grid.Column="2" DataContext="{Binding DeckB}" AccentColor="{StaticResource DeckBColor}" />
+            </Grid>
         </DockPanel>
-
-        <!-- Barra inferior: atajos y estado de yt-dlp -->
-        <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
-            <Button DockPanel.Dock="Right" Content="Abrir caché" Padding="8,3" FontSize="11" Margin="6,0,0,0"
-                    Command="{Binding OpenCacheCommand}" ToolTip="{Binding CacheFolder}" />
-            <Button DockPanel.Dock="Right" Content="Actualizar yt-dlp" Padding="8,3" FontSize="11" Margin="6,0,0,0"
-                    Command="{Binding UpdateYtDlpCommand}"
-                    ToolTip="YouTube cambia a menudo: si fallan las descargas, actualiza yt-dlp" />
-            <TextBlock DockPanel.Dock="Right" Text="{Binding YtDlpStatus}" VerticalAlignment="Center" FontSize="11"
-                       Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="460">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding HasYtDlpError}" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
-            <TextBlock Style="{StaticResource CaptionText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                       Text="Atajos — A: Espacio = play/pausa, C = cue · B: Intro = play/pausa, M = cue · Esc = salir del campo de enlace · arrastra enlaces o archivos a un plato" />
-        </DockPanel>
-
-        <!-- Vista ampliada de los dos platos (estilo AtomixMP3): cabezal fijo en el centro -->
-        <Border DockPanel.Dock="Top" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="8"
-                Margin="0,0,0,12">
-            <StackPanel>
-                <controls:ZoomWaveform Height="78" Label="A"
-                                       Waveform="{Binding DeckA.Waveform}"
-                                       Position="{Binding DeckA.PositionSeconds}"
-                                       Rate="{Binding DeckA.PlaybackRate}"
-                                       Grid="{Binding DeckA.Grid}"
-                                       CuePoint="{Binding DeckA.CuePoint}"
-                                       Accent="{StaticResource DeckAColor}"
-                                       SecondsVisible="{Binding ZoomSeconds}"
-                                       SeekCommand="{Binding DeckA.SeekSecondsCommand}" />
-                <controls:ZoomWaveform Height="78" Label="B" Margin="0,6,0,0"
-                                       Waveform="{Binding DeckB.Waveform}"
-                                       Position="{Binding DeckB.PositionSeconds}"
-                                       Rate="{Binding DeckB.PlaybackRate}"
-                                       Grid="{Binding DeckB.Grid}"
-                                       CuePoint="{Binding DeckB.CuePoint}"
-                                       Accent="{StaticResource DeckBColor}"
-                                       SecondsVisible="{Binding ZoomSeconds}"
-                                       SeekCommand="{Binding DeckB.SeekSecondsCommand}" />
-            </StackPanel>
-        </Border>
-
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="230" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <views:DeckView Grid.Column="0" DataContext="{Binding DeckA}" AccentColor="{StaticResource DeckAColor}" />
-            <views:MixerView Grid.Column="1" DataContext="{Binding Mixer}" Margin="12,0" />
-            <views:DeckView Grid.Column="2" DataContext="{Binding DeckB}" AccentColor="{StaticResource DeckBColor}" />
-        </Grid>
     </DockPanel>
 </Window>

@@ -44,7 +44,6 @@ public sealed class ZoomWaveform : SKElement
     public ZoomWaveform()
     {
         Cursor = Cursors.SizeWE;
-        ToolTip = "Rueda: zoom · arrastrar: mover la pista";
     }
 
     public WaveformData? Waveform { get => (WaveformData?)GetValue(WaveformProperty); set => SetValue(WaveformProperty, value); }

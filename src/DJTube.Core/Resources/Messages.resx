@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="TrackSourceMismatch" xml:space="preserve"><value>The track does not belong to the source &quot;{0}&quot;.</value></data>
+  <data name="UnsupportedFormat" xml:space="preserve"><value>Unsupported format: {0}</value></data>
+  <data name="FileNotFound" xml:space="preserve"><value>File not found.</value></data>
+  <data name="StreamMustSeek" xml:space="preserve"><value>The stream must support reading and seeking.</value></data>
+  <data name="InvalidVideoId" xml:space="preserve"><value>Invalid video ID: {0}</value></data>
+  <data name="YtDlpNotFound" xml:space="preserve"><value>yt-dlp not found. Install it with: winget install yt-dlp.yt-dlp</value></data>
+  <data name="YtDlpRunFailed" xml:space="preserve"><value>Could not run yt-dlp.</value></data>
+  <data name="YtDlpExitCode" xml:space="preserve"><value>yt-dlp exited with code {0}</value></data>
+  <data name="DownloadFailed" xml:space="preserve"><value>Download failed: {0}</value></data>
+  <data name="DownloadFailedExitCode" xml:space="preserve"><value>Could not download the audio (yt-dlp exited with code {0}).</value></data>
+  <data name="BassInitFailed" xml:space="preserve"><value>Could not initialise BASS</value></data>
+  <data name="OpenFailed" xml:space="preserve"><value>Could not open &quot;{0}&quot;</value></data>
+  <data name="TempoFailed" xml:space="preserve"><value>Could not create the tempo channel</value></data>
+  <data name="MixerAddFailed" xml:space="preserve"><value>Could not add the track to the mixer</value></data>
+  <data name="MixerCreateFailed" xml:space="preserve"><value>Could not create the mixer</value></data>
+  <data name="NoDefaultOutput" xml:space="preserve"><value>There is no default output device</value></data>
+  <data name="InvalidOutputDevice" xml:space="preserve"><value>Invalid output device {0}</value></data>
+  <data name="OutputOpenFailed" xml:space="preserve"><value>Could not open the output device</value></data>
+  <data name="OutputStartFailed" xml:space="preserve"><value>Could not start the output</value></data>
+  <data name="AnalyzeFailed" xml:space="preserve"><value>Could not analyse &quot;{0}&quot;</value></data>
+  <data name="OnlyFilesSupported" xml:space="preserve"><value>Only files can be loaded for now.</value></data>
+  <data name="LibraryNotFound" xml:space="preserve"><value>NOT FOUND</value></data>
+  <data name="DefaultDevice" xml:space="preserve"><value>{0} (default)</value></data>
+</root>

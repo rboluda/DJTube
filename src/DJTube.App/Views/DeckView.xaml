@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:DJTube.App.ViewModels"
              xmlns:controls="clr-namespace:DJTube.App.Controls"
+             xmlns:loc="clr-namespace:DJTube.App.Localization"
              mc:Ignorable="d"
              x:Name="Root"
              d:DataContext="{d:DesignInstance Type=vm:DeckViewModel}"
@@ -62,11 +63,11 @@
                                    HorizontalAlignment="Right" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,6,0,0">
                             <Button Content="½" Padding="8,3" FontSize="11" Command="{Binding HalveBpmCommand}"
-                                    ToolTip="El BPM detectado es el doble del real" />
+                                    ToolTip="{loc:Tr HalveTip}" />
                             <Button Content="×2" Padding="8,3" FontSize="11" Margin="4,0,0,0"
-                                    Command="{Binding DoubleBpmCommand}" ToolTip="El BPM detectado es la mitad del real" />
+                                    Command="{Binding DoubleBpmCommand}" ToolTip="{loc:Tr DoubleTip}" />
                             <Button Content="SYNC" Padding="12,3" Margin="8,0,0,0" Command="{Binding SyncCommand}"
-                                    ToolTip="Igualar tempo con el otro plato y, si los dos suenan, alinear los golpes" />
+                                    ToolTip="{loc:Tr SyncTip}" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -84,19 +85,19 @@
 
                 <!-- Carga: enlace de YouTube o archivo -->
                 <DockPanel Grid.Row="2" Margin="0,10,0,0">
-                    <Button DockPanel.Dock="Right" Content="ARCHIVO…" Margin="8,0,0,0"
-                            Command="{Binding LoadFileCommand}" ToolTip="Cargar un archivo de audio del disco" />
-                    <Button DockPanel.Dock="Right" Content="CARGAR" Margin="8,0,0,0"
-                            Click="OnLoadLinkClick" ToolTip="Descargar y cargar el enlace" />
+                    <Button DockPanel.Dock="Right" Content="{loc:Tr FileButton}" Margin="8,0,0,0"
+                            Command="{Binding LoadFileCommand}" ToolTip="{loc:Tr FileTip}" />
+                    <Button DockPanel.Dock="Right" Content="{loc:Tr Load}" Margin="8,0,0,0"
+                            Click="OnLoadLinkClick" ToolTip="{loc:Tr LoadTip}" />
                     <TextBox x:Name="LinkBox" Text="{Binding LinkText, UpdateSourceTrigger=PropertyChanged}"
-                             Tag="Pega un enlace de YouTube y pulsa Intro" KeyDown="OnLinkKeyDown" />
+                             Tag="{loc:Tr LinkHint}" KeyDown="OnLinkKeyDown" />
                 </DockPanel>
 
                 <!-- Progreso de carga/descarga -->
                 <DockPanel Grid.Row="3" Margin="0,8,0,0"
                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
                     <Button DockPanel.Dock="Right" Content="✕" Padding="8,2" Margin="8,0,0,0" FontSize="11"
-                            Command="{Binding CancelLoadCommand}" ToolTip="Cancelar la descarga" />
+                            Command="{Binding CancelLoadCommand}" ToolTip="{loc:Tr CancelDownloadTip}" />
                     <TextBlock DockPanel.Dock="Right" Text="{Binding LoadStatus}" Style="{StaticResource CaptionText}"
                                VerticalAlignment="Center" Margin="8,0,0,0" MinWidth="110" />
                     <ProgressBar VerticalAlignment="Center" Minimum="0" Maximum="1"
@@ -118,11 +119,11 @@
                 <!-- Tiempos -->
                 <Grid Grid.Row="4" Margin="0,10,0,6">
                     <StackPanel HorizontalAlignment="Left">
-                        <TextBlock Text="TRANSCURRIDO" Style="{StaticResource CaptionText}" />
+                        <TextBlock Text="{loc:Tr Elapsed}" Style="{StaticResource CaptionText}" />
                         <TextBlock Text="{Binding Elapsed}" FontFamily="Consolas" FontSize="26" />
                     </StackPanel>
                     <StackPanel HorizontalAlignment="Right">
-                        <TextBlock Text="RESTANTE" Style="{StaticResource CaptionText}" HorizontalAlignment="Right" />
+                        <TextBlock Text="{loc:Tr Remaining}" Style="{StaticResource CaptionText}" HorizontalAlignment="Right" />
                         <TextBlock Text="{Binding Remaining}" FontFamily="Consolas" FontSize="26"
                                    Foreground="{StaticResource TextDimBrush}" />
                     </StackPanel>
@@ -192,7 +193,7 @@
 
             <!-- Pitch: arriba = más lento, abajo = más rápido (como en un plato Technics) -->
             <DockPanel Grid.Column="1" Width="78" Margin="16,0,0,0">
-                <TextBlock DockPanel.Dock="Top" Text="PITCH" Style="{StaticResource CaptionText}"
+                <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Pitch}" Style="{StaticResource CaptionText}"
                            HorizontalAlignment="Center" />
                 <TextBlock DockPanel.Dock="Top" Text="{Binding PitchText}" FontFamily="Consolas" FontSize="13"
                            HorizontalAlignment="Center" Margin="0,2,0,0" />
@@ -202,12 +203,12 @@
                 <StackPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
                     <ToggleButton Content="{Binding RangeText}" IsChecked="{Binding IsWideRange}"
                                   Tag="{Binding Accent, ElementName=Root}"
-                                  ToolTip="Rango del pitch: ±8 % / ±16 %" />
-                    <ToggleButton Content="KEY LOCK" IsChecked="{Binding KeyLock}" Margin="0,4,0,0"
+                                  ToolTip="{loc:Tr RangeTip}" />
+                    <ToggleButton Content="{loc:Tr KeyLock}" IsChecked="{Binding KeyLock}" Margin="0,4,0,0"
                                   Tag="{Binding Accent, ElementName=Root}"
-                                  ToolTip="Cambiar el tempo sin cambiar el tono" />
+                                  ToolTip="{loc:Tr KeyLockTip}" />
                     <Button Content="0 %" Command="{Binding ResetPitchCommand}" Margin="0,4,0,0"
-                            Padding="8,4" FontSize="11" ToolTip="Volver a velocidad original (o doble clic en el fader)" />
+                            Padding="8,4" FontSize="11" ToolTip="{loc:Tr ResetPitchTip}" />
                 </StackPanel>
 
                 <Slider x:Name="PitchFader" Orientation="Vertical" Style="{StaticResource FaderSlider}"
@@ -218,7 +219,7 @@
                         Tag="{Binding Accent, ElementName=Root}"
                         HorizontalAlignment="Center"
                         MouseDoubleClick="OnPitchDoubleClick" PreviewMouseWheel="OnPitchWheel"
-                        ToolTip="Rueda del ratón: ajuste fino (0,02 %)" />
+                        ToolTip="{loc:Tr PitchWheelTip}" />
             </DockPanel>
         </Grid>
     </Border>

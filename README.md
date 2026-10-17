@@ -3,6 +3,9 @@
 Aplicación de DJ de escritorio para Windows, sencilla y ligera, con dos platos,
 crossfader, pitch con key lock, SYNC, forma de onda y pre-escucha por auriculares.
 
+Interfaz en español e inglés (Configuración → Idioma). Cambios por versión en
+[CHANGELOG.md](CHANGELOG.md).
+
 ## Requisitos
 
 - Windows 10 2004 o superior (x64).
@@ -41,6 +44,18 @@ bajo tu responsabilidad y solo con contenido que tengas derecho a utilizar.
 | `src/DJTube.Sources.YouTube` | Fuente de pistas: enlaces de YouTube (yt-dlp + caché) |
 | `src/DJTube.App` | Interfaz WPF (MVVM) |
 | `tests/DJTube.Core.Tests` | Tests unitarios (xUnit) |
+
+## Traducciones
+
+Los textos están en archivos `.resx` (inglés como idioma neutro, español en `*.es.resx`):
+
+- `src/DJTube.App/Resources/Strings*.resx`: interfaz.
+- `src/DJTube.Core/Resources/Messages*.resx`: mensajes de error de las librerías.
+
+## Versión
+
+La versión del programa está en `Directory.Build.props` (`<Version>`); al compilar se le
+añade el commit de git y se muestra en «Ayuda → Acerca de DJTube».
 
 ## Licencia de BASS
 

@@ -1,14 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DJTube.App.Localization;
 using DJTube.Core.Abstractions;
 using DJTube.Core.Logic;
 
 namespace DJTube.App.ViewModels;
-
-public sealed record CrossfaderCurveOption(CrossfaderCurveType Type, string Name)
-{
-    public override string ToString() => Name;
-}
 
 /// <summary>Faders de canal y crossfader: calculan la ganancia de cada plato hacia el master.</summary>
 public partial class MixerViewModel : ObservableObject
@@ -28,21 +24,21 @@ public partial class MixerViewModel : ObservableObject
     private double _crossfader;
 
     [ObservableProperty]
-    private CrossfaderCurveOption _selectedCurve;
+    private LocalizedOption<CrossfaderCurveType> _selectedCurve;
 
-    public MixerViewModel(IDeck deckA, IDeck deckB)
+    public MixerViewModel(IDeck deckA, IDeck deckB, CrossfaderCurveType curve = CrossfaderCurveType.Linear)
     {
         _deckA = deckA;
         _deckB = deckB;
-        _selectedCurve = Curves[0];
+        _selectedCurve = Curves.FirstOrDefault(c => c.Value == curve) ?? Curves[0];
         ApplyGains();
     }
 
-    public IReadOnlyList<CrossfaderCurveOption> Curves { get; } =
+    public IReadOnlyList<LocalizedOption<CrossfaderCurveType>> Curves { get; } =
     [
-        new(CrossfaderCurveType.Linear, "Lineal"),
-        new(CrossfaderCurveType.FastCut, "Corte rápido"),
-        new(CrossfaderCurveType.ConstantPower, "Suave (potencia constante)"),
+        new(CrossfaderCurveType.Linear, _ => Loc.T("Curve_Linear")),
+        new(CrossfaderCurveType.FastCut, _ => Loc.T("Curve_FastCut")),
+        new(CrossfaderCurveType.ConstantPower, _ => Loc.T("Curve_ConstantPower")),
     ];
 
     partial void OnVolumeAChanged(double value) => ApplyGains();
@@ -51,14 +47,14 @@ public partial class MixerViewModel : ObservableObject
 
     partial void OnCrossfaderChanged(double value) => ApplyGains();
 
-    partial void OnSelectedCurveChanged(CrossfaderCurveOption value) => ApplyGains();
+    partial void OnSelectedCurveChanged(LocalizedOption<CrossfaderCurveType> value) => ApplyGains();
 
     [RelayCommand]
     private void CenterCrossfader() => Crossfader = 0;
 
     private void ApplyGains()
     {
-        var gains = CrossfaderCurve.Gains(Crossfader, SelectedCurve.Type);
+        var gains = CrossfaderCurve.Gains(Crossfader, SelectedCurve.Value);
         _deckA.MasterGain = FaderTaper.ToGain(VolumeA) * gains.A;
         _deckB.MasterGain = FaderTaper.ToGain(VolumeB) * gains.B;
     }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using DJTube.Core.Localization;
 
 namespace DJTube.Sources.YouTube;
 
@@ -40,7 +41,7 @@ public static class YtDlp
         var output = new StringBuilder();
         var result = await RunAsync(exe, ["-U"], line => output.AppendLine(line), ct).ConfigureAwait(false);
         if (result.ExitCode != 0 && output.Length == 0)
-            output.Append($"yt-dlp terminó con código {result.ExitCode}");
+            output.Append(Messages.YtDlpExitCode(result.ExitCode));
         return output.ToString().Trim();
     }
 
@@ -75,7 +76,7 @@ public static class YtDlp
         process.ErrorDataReceived += (_, e) => { if (e.Data is not null) onLine(e.Data); };
 
         if (!process.Start())
-            throw new YouTubeSourceException("No se pudo ejecutar yt-dlp.");
+            throw new YouTubeSourceException(Messages.YtDlpRunFailed);
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
 

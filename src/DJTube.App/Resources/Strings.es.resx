@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="Menu_File" xml:space="preserve"><value>_Archivo</value></data>
+  <data name="Menu_LoadFileA" xml:space="preserve"><value>Cargar archivo en el plato _A…</value></data>
+  <data name="Menu_LoadFileB" xml:space="preserve"><value>Cargar archivo en el plato _B…</value></data>
+  <data name="Menu_OpenCache" xml:space="preserve"><value>Abrir carpeta de _caché de YouTube</value></data>
+  <data name="Menu_Exit" xml:space="preserve"><value>_Salir</value></data>
+  <data name="Menu_Settings" xml:space="preserve"><value>_Configuración</value></data>
+  <data name="Menu_Preferences" xml:space="preserve"><value>_Preferencias…</value></data>
+  <data name="Menu_Language" xml:space="preserve"><value>_Idioma</value></data>
+  <data name="Menu_UpdateYtDlp" xml:space="preserve"><value>_Actualizar yt-dlp</value></data>
+  <data name="Menu_View" xml:space="preserve"><value>_Ver</value></data>
+  <data name="Menu_ZoomIn" xml:space="preserve"><value>_Ampliar la onda</value></data>
+  <data name="Menu_ZoomOut" xml:space="preserve"><value>_Reducir la onda</value></data>
+  <data name="Menu_Help" xml:space="preserve"><value>Ay_uda</value></data>
+  <data name="Menu_Shortcuts" xml:space="preserve"><value>_Atajos de teclado</value></data>
+  <data name="Menu_About" xml:space="preserve"><value>Acerca _de DJTube</value></data>
+  <data name="Output" xml:space="preserve"><value>Salida</value></data>
+  <data name="OutputStopped" xml:space="preserve"><value>Salida detenida</value></data>
+  <data name="OutputStatus" xml:space="preserve"><value>WASAPI · {0} · {1} Hz · {2} canales · buffer {3:0.0} ms</value></data>
+  <data name="OutputError" xml:space="preserve"><value>Error de salida: {0}</value></data>
+  <data name="ShortcutsHint" xml:space="preserve"><value>Atajos — A: Espacio = play/pausa, C = cue · B: Intro = play/pausa, M = cue · F1 = todos los atajos · arrastra enlaces o archivos a un plato</value></data>
+  <data name="UpdateYtDlp" xml:space="preserve"><value>Actualizar yt-dlp</value></data>
+  <data name="UpdateYtDlpTip" xml:space="preserve"><value>YouTube cambia a menudo: si fallan las descargas, actualiza yt-dlp</value></data>
+  <data name="OpenCache" xml:space="preserve"><value>Abrir caché</value></data>
+  <data name="YtDlpChecking" xml:space="preserve"><value>yt-dlp: comprobando…</value></data>
+  <data name="YtDlpVersion" xml:space="preserve"><value>yt-dlp {0}</value></data>
+  <data name="YtDlpNotFound" xml:space="preserve"><value>yt-dlp no encontrado: instálalo con «winget install yt-dlp.yt-dlp»</value></data>
+  <data name="YtDlpUpdating" xml:space="preserve"><value>yt-dlp: actualizando…</value></data>
+  <data name="YtDlpUpdateError" xml:space="preserve"><value>yt-dlp: error al actualizar ({0})</value></data>
+  <data name="YtDlpError" xml:space="preserve"><value>yt-dlp: {0}</value></data>
+  <data name="ZoomTip" xml:space="preserve"><value>Rueda: zoom · arrastrar: mover la pista</value></data>
+  <data name="EngineStartError" xml:space="preserve"><value>No se pudo iniciar el motor de audio:{0}{0}{1}</value></data>
+  <data name="NoTrack" xml:space="preserve"><value>Sin pista</value></data>
+  <data name="LinkHint" xml:space="preserve"><value>Pega un enlace de YouTube y pulsa Intro</value></data>
+  <data name="Load" xml:space="preserve"><value>CARGAR</value></data>
+  <data name="LoadTip" xml:space="preserve"><value>Descargar y cargar el enlace</value></data>
+  <data name="FileButton" xml:space="preserve"><value>ARCHIVO…</value></data>
+  <data name="FileTip" xml:space="preserve"><value>Cargar un archivo de audio del disco</value></data>
+  <data name="CancelDownloadTip" xml:space="preserve"><value>Cancelar la descarga</value></data>
+  <data name="Downloading" xml:space="preserve"><value>Descargando… {0:0} %</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Preparando…</value></data>
+  <data name="Elapsed" xml:space="preserve"><value>TRANSCURRIDO</value></data>
+  <data name="Remaining" xml:space="preserve"><value>RESTANTE</value></data>
+  <data name="OriginalBpm" xml:space="preserve"><value>original {0}</value></data>
+  <data name="Analyzing" xml:space="preserve"><value>Analizando… {0:0} %</value></data>
+  <data name="HalveTip" xml:space="preserve"><value>El BPM detectado es el doble del real</value></data>
+  <data name="DoubleTip" xml:space="preserve"><value>El BPM detectado es la mitad del real</value></data>
+  <data name="SyncTip" xml:space="preserve"><value>Igualar el tempo con el otro plato y, si los dos suenan, alinear los golpes</value></data>
+  <data name="Pitch" xml:space="preserve"><value>PITCH</value></data>
+  <data name="OriginalKey" xml:space="preserve"><value>tono original</value></data>
+  <data name="KeyShift" xml:space="preserve"><value>tono {0:+0.0;-0.0} st</value></data>
+  <data name="RangeTip" xml:space="preserve"><value>Rango del pitch: ±8 % / ±16 %</value></data>
+  <data name="KeyLock" xml:space="preserve"><value>KEY LOCK</value></data>
+  <data name="KeyLockTip" xml:space="preserve"><value>Cambiar el tempo sin cambiar el tono</value></data>
+  <data name="ResetPitchTip" xml:space="preserve"><value>Volver a la velocidad original (o doble clic en el fader)</value></data>
+  <data name="PitchWheelTip" xml:space="preserve"><value>Rueda del ratón: ajuste fino (0,02 %)</value></data>
+  <data name="Err_SyncNeedsTracks" xml:space="preserve"><value>SYNC necesita una pista cargada en cada plato.</value></data>
+  <data name="Err_SyncNeedsBpm" xml:space="preserve"><value>SYNC necesita el BPM de las dos pistas.</value></data>
+  <data name="Err_SyncOutOfRange" xml:space="preserve"><value>El tempo del plato {0} queda fuera del rango de pitch.</value></data>
+  <data name="Err_UnsupportedFormat" xml:space="preserve"><value>Formato no admitido: {0}</value></data>
+  <data name="Err_NotYouTubeLink" xml:space="preserve"><value>No es un enlace a un vídeo de YouTube.</value></data>
+  <data name="Err_NotLinkOrFile" xml:space="preserve"><value>No es un enlace de YouTube ni un archivo de audio.</value></data>
+  <data name="Err_Analysis" xml:space="preserve"><value>No se pudo analizar la pista: {0}</value></data>
+  <data name="Mixer" xml:space="preserve"><value>MEZCLADOR</value></data>
+  <data name="Curve" xml:space="preserve"><value>CURVA</value></data>
+  <data name="Curve_Linear" xml:space="preserve"><value>Lineal</value></data>
+  <data name="Curve_FastCut" xml:space="preserve"><value>Corte rápido</value></data>
+  <data name="Curve_ConstantPower" xml:space="preserve"><value>Suave (potencia constante)</value></data>
+  <data name="CrossfaderTip" xml:space="preserve"><value>Crossfader (doble clic: centrar)</value></data>
+  <data name="VolumeATip" xml:space="preserve"><value>Volumen del plato A</value></data>
+  <data name="VolumeBTip" xml:space="preserve"><value>Volumen del plato B</value></data>
+  <data name="Dialog_LoadTrack" xml:space="preserve"><value>Cargar pista</value></data>
+  <data name="Dialog_Audio" xml:space="preserve"><value>Audio ({0})</value></data>
+  <data name="Dialog_AllFiles" xml:space="preserve"><value>Todos los archivos (*.*)</value></data>
+  <data name="Pref_Title" xml:space="preserve"><value>Preferencias</value></data>
+  <data name="Pref_Language" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Pref_Output" xml:space="preserve"><value>Salida de audio</value></data>
+  <data name="Pref_Cache" xml:space="preserve"><value>Carpeta de caché de YouTube</value></data>
+  <data name="Pref_Open" xml:space="preserve"><value>Abrir</value></data>
+  <data name="Pref_LanguageNote" xml:space="preserve"><value>El idioma cambia al momento, sin reiniciar.</value></data>
+  <data name="OK" xml:space="preserve"><value>Aceptar</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Close" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="About_Title" xml:space="preserve"><value>Acerca de DJTube</value></data>
+  <data name="About_Tagline" xml:space="preserve"><value>Programa de DJ ligero de dos platos</value></data>
+  <data name="About_Version" xml:space="preserve"><value>Versión {0}</value></data>
+  <data name="About_Build" xml:space="preserve"><value>Compilación {0}</value></data>
+  <data name="About_Runtime" xml:space="preserve"><value>Entorno: {0}</value></data>
+  <data name="About_Audio" xml:space="preserve"><value>Motor de audio: BASS de un4seen.com (gratuito para uso no comercial).</value></data>
+  <data name="About_YouTube" xml:space="preserve"><value>Los enlaces de YouTube se descargan con yt-dlp. Descargar de YouTube va en contra de sus condiciones de uso: úsalo bajo tu responsabilidad y solo con contenido que tengas derecho a utilizar.</value></data>
+  <data name="About_Project" xml:space="preserve"><value>Página del proyecto</value></data>
+  <data name="About_Libraries" xml:space="preserve"><value>Librerías de audio</value></data>
+  <data name="Shortcuts_Title" xml:space="preserve"><value>Atajos de teclado</value></data>
+  <data name="Sc_PlayA" xml:space="preserve"><value>Play / pausa del plato A</value></data>
+  <data name="Sc_CueA" xml:space="preserve"><value>Cue del plato A (mantener para escuchar)</value></data>
+  <data name="Sc_PlayB" xml:space="preserve"><value>Play / pausa del plato B</value></data>
+  <data name="Sc_CueB" xml:space="preserve"><value>Cue del plato B (mantener para escuchar)</value></data>
+  <data name="Sc_LoadA" xml:space="preserve"><value>Cargar un archivo en el plato A</value></data>
+  <data name="Sc_LoadB" xml:space="preserve"><value>Cargar un archivo en el plato B</value></data>
+  <data name="Sc_Zoom" xml:space="preserve"><value>Ampliar / reducir la onda</value></data>
+  <data name="Sc_Preferences" xml:space="preserve"><value>Preferencias</value></data>
+  <data name="Sc_Escape" xml:space="preserve"><value>Salir del campo de enlace</value></data>
+  <data name="Sc_Help" xml:space="preserve"><value>Esta lista</value></data>
+  <data name="Sc_Wheel" xml:space="preserve"><value>Rueda sobre el pitch: ajuste fino · doble clic: 0 %</value></data>
+  <data name="Key_Space" xml:space="preserve"><value>Espacio</value></data>
+  <data name="Key_Enter" xml:space="preserve"><value>Intro</value></data>
+</root>
