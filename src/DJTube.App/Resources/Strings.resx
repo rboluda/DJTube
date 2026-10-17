@@ -106,6 +106,7 @@
   <data name="Close" xml:space="preserve"><value>Close</value></data>
   <data name="About_Title" xml:space="preserve"><value>About DJTube</value></data>
   <data name="About_Tagline" xml:space="preserve"><value>Lightweight two-deck DJ software</value></data>
+  <data name="About_Author" xml:space="preserve"><value>Developed by Raúl Boluda</value></data>
   <data name="About_Version" xml:space="preserve"><value>Version {0}</value></data>
   <data name="About_Build" xml:space="preserve"><value>Build {0}</value></data>
   <data name="About_Runtime" xml:space="preserve"><value>Runtime: {0}</value></data>

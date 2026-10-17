@@ -14,7 +14,8 @@
             <TextBlock Text="DJ" FontSize="30" FontWeight="Bold" Foreground="{StaticResource DeckABrush}" />
             <TextBlock Text="Tube" FontSize="30" FontWeight="Bold" Foreground="{StaticResource DeckBBrush}" />
         </StackPanel>
-        <TextBlock Text="{loc:Tr About_Tagline}" Foreground="{StaticResource TextDimBrush}" Margin="0,2,0,14" />
+        <TextBlock Text="{loc:Tr About_Tagline}" Foreground="{StaticResource TextDimBrush}" Margin="0,2,0,0" />
+        <TextBlock Text="{loc:Tr About_Author}" FontWeight="SemiBold" Margin="0,6,0,14" />
 
         <TextBlock Text="{Binding VersionText}" FontSize="15" FontWeight="SemiBold" />
         <TextBlock Text="{Binding BuildText}" Style="{StaticResource CaptionText}" Margin="0,2,0,0" />

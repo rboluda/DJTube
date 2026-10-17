@@ -4,6 +4,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [versionado semántico](https://semver.org/lang/es/). La versión se define en
 `Directory.Build.props`.
 
+## [0.5.1] - 2026-10-17
+
+### Cambiado
+- ASIO: si la tarjeta no tiene los canales elegidos para auriculares, el master suena igual y
+  solo se avisa del problema de auriculares (probado con ASIO4ALL).
+- «Acerca de» indica que el programa está desarrollado por Raúl Boluda (también en los datos
+  del ejecutable).
+
 ## [0.5.0] - 2026-10-17
 
 ### Añadido

@@ -184,6 +184,12 @@ public sealed class BassAudioEngine : IAudioEngine
         try
         {
             bool withCue = config.CueChannel >= 0;
+            // Si la tarjeta no tiene los canales de auriculares, el master suena igual y se avisa.
+            if (withCue && config.CueChannel + 1 >= asio.Outputs)
+            {
+                CueOutputError = Messages.AsioChannelsMissing(config.CueChannel + 1, config.CueChannel + 2, asio.Outputs);
+                withCue = false;
+            }
             ConfigureMixers(asio.SampleRate, 2, withCue ? asio.SampleRate : 0, 2);
             asio.Start(_master.Handle, config.MasterChannel, withCue ? _cue.Handle : 0, config.CueChannel);
             _asio = asio;

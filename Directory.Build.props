@@ -6,11 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Las DLL nativas de BASS son x64: todo el proceso debe ser x64. -->
     <PlatformTarget>x64</PlatformTarget>
-    <Authors>DJTube</Authors>
+    <Authors>Raúl Boluda</Authors>
+    <Company>Raúl Boluda</Company>
+    <Copyright>© 2026 Raúl Boluda</Copyright>
     <Product>DJTube</Product>
     <!-- Versión del programa (semver). Ver CHANGELOG.md. El SDK añade el commit de git
          a la versión informativa: 0.4.0+<commit>. -->
-    <Version>0.5.0</Version>
+    <Version>0.5.1</Version>
     <!-- Idiomas de la interfaz: inglés (neutro) y español. No copiar otros idiomas de los paquetes. -->
     <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>es</SatelliteResourceLanguages>
