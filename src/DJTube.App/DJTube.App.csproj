@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- SkiaSharp.Views.WPF 4.x exige Windows 10 2004 (19041) o superior. -->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DJTube.Core\DJTube.Core.csproj" />
+    <ProjectReference Include="..\DJTube.Audio.Bass\DJTube.Audio.Bass.csproj" />
+    <ProjectReference Include="..\DJTube.Sources.Local\DJTube.Sources.Local.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="SkiaSharp.Views.WPF" Version="4.153.1" />
+  </ItemGroup>
+
+</Project>
