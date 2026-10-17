@@ -256,4 +256,12 @@ No: add only this song</value></data>
   <data name="Preview_Playing" xml:space="preserve"><value>Pre-listening on the headphones: {0}</value></data>
   <data name="Preview_NeedsHeadphones" xml:space="preserve"><value>To pre-listen, choose a headphones output at the top (or an ASIO pair).</value></data>
   <data name="Preview_Failed" xml:space="preserve"><value>Could not pre-listen to this song.</value></data>
+  <data name="Fx_Echo" xml:space="preserve"><value>ECHO</value></data>
+  <data name="Fx_Reverb" xml:space="preserve"><value>REVERB</value></data>
+  <data name="Fx_Flanger" xml:space="preserve"><value>FLANGER</value></data>
+  <data name="Fx_Phaser" xml:space="preserve"><value>PHASER</value></data>
+  <data name="Fx_Tip" xml:space="preserve"><value>Deck effect</value></data>
+  <data name="Fx_OnTip" xml:space="preserve"><value>Effect on/off (it sounds on the master and on the headphones)</value></data>
+  <data name="Fx_AmountTip" xml:space="preserve"><value>Amount of effect</value></data>
+  <data name="Fx_BeatsTip" xml:space="preserve"><value>Beats: echo delay or sweep length, in time with the BPM</value></data>
 </root>

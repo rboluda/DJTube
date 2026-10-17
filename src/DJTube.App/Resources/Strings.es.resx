@@ -256,4 +256,12 @@ No: añadir solo esta canción</value></data>
   <data name="Preview_Playing" xml:space="preserve"><value>Pre-escucha por los auriculares: {0}</value></data>
   <data name="Preview_NeedsHeadphones" xml:space="preserve"><value>Para pre-escuchar, elige una salida de auriculares arriba (o un par ASIO).</value></data>
   <data name="Preview_Failed" xml:space="preserve"><value>No se ha podido pre-escuchar esta canción.</value></data>
+  <data name="Fx_Echo" xml:space="preserve"><value>ECO</value></data>
+  <data name="Fx_Reverb" xml:space="preserve"><value>REVERB</value></data>
+  <data name="Fx_Flanger" xml:space="preserve"><value>FLANGER</value></data>
+  <data name="Fx_Phaser" xml:space="preserve"><value>PHASER</value></data>
+  <data name="Fx_Tip" xml:space="preserve"><value>Efecto del plato</value></data>
+  <data name="Fx_OnTip" xml:space="preserve"><value>Efecto encendido/apagado (suena en el master y en los auriculares)</value></data>
+  <data name="Fx_AmountTip" xml:space="preserve"><value>Cantidad de efecto</value></data>
+  <data name="Fx_BeatsTip" xml:space="preserve"><value>Tiempos: retardo del eco o duración del barrido, a tempo con el BPM</value></data>
 </root>

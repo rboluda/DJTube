@@ -44,6 +44,7 @@ internal sealed class BassDeck : IDeck, IDisposable
     private double _phonesVolume = 1;
     private EqSettings _eq;
     private double _autoGainDb;
+    private EffectSettings _effect = EffectSettings.Off;
     private double _masterVolume = 1;
     private readonly float[] _levels = new float[2];
 
@@ -67,6 +68,10 @@ internal sealed class BassDeck : IDeck, IDisposable
 
         /// <summary>Sync que hace el loop (0 = sin loop).</summary>
         public int LoopSync { get; set; }
+
+        /// <summary>Efecto activo (0 = ninguno) y su tipo.</summary>
+        public int EffectFx { get; set; }
+        public EffectKind EffectKind { get; set; }
     }
 
     /// <summary>
@@ -81,6 +86,7 @@ internal sealed class BassDeck : IDeck, IDisposable
     // Orden en la cadena: primero el EQ y después el filtro (mayor prioridad = antes).
     private const int EqPriority = 3;
     private const int FilterPriority = 2;
+    private const int EffectPriority = 1;
 
     public TrackInfo? Track
     {
@@ -231,6 +237,85 @@ internal sealed class BassDeck : IDeck, IDisposable
         }
     }
 
+    public EffectSettings Effect
+    {
+        get { lock (_sync) return _effect; }
+        set
+        {
+            lock (_sync)
+            {
+                _effect = value;
+                if (_chain is { } chain)
+                    ApplyEffectNoLock(chain);
+            }
+        }
+    }
+
+    /// <summary>Crea, ajusta o quita el efecto (después del EQ y del filtro).</summary>
+    private void ApplyEffectNoLock(Chain chain)
+    {
+        var s = _effect;
+        if (!s.On || (chain.EffectFx != 0 && chain.EffectKind != s.Kind))
+        {
+            if (chain.EffectFx != 0)
+                Bass.ChannelRemoveFX(chain.Tempo, chain.EffectFx);
+            chain.EffectFx = 0;
+            if (!s.On)
+                return;
+        }
+
+        IEffectParameter parameters = s.Kind switch
+        {
+            EffectKind.Echo => new EchoParameters
+            {
+                fDryMix = 1,
+                fWetMix = (float)(0.7 * s.Amount),
+                fFeedback = (float)EffectMath.EchoFeedback(s.Amount),
+                fDelay = (float)EffectMath.EchoDelay(s),
+                bStereo = 0,
+                lChannel = FXChannelFlags.All,
+            },
+            EffectKind.Reverb => new ReverbParameters
+            {
+                fDryMix = 1,
+                fWetMix = (float)(1.5 * s.Amount),
+                fRoomSize = (float)(0.55 + 0.4 * s.Amount),
+                fDamp = 0.5f,
+                fWidth = 1,
+                lMode = 0,
+                lChannel = FXChannelFlags.All,
+            },
+            EffectKind.Flanger => new ChorusParameters
+            {
+                fDryMix = 1,
+                fWetMix = (float)(0.9 * s.Amount),
+                fFeedback = 0.6f,
+                fMinSweep = 1,
+                fMaxSweep = 4,
+                fRate = (float)EffectMath.FlangerRate(s, 1, 4),
+                lChannel = FXChannelFlags.All,
+            },
+            _ => new PhaserParameters
+            {
+                fDryMix = 1,
+                fWetMix = (float)(0.9 * s.Amount),
+                fFeedback = 0.6f,
+                fRate = (float)EffectMath.PhaserRate(s),
+                fRange = 4,
+                fFreq = 200,
+                lChannel = FXChannelFlags.All,
+            },
+        };
+
+        if (chain.EffectFx == 0)
+        {
+            chain.EffectFx = Bass.ChannelSetFX(chain.Tempo, parameters.FXType, EffectPriority);
+            chain.EffectKind = s.Kind;
+        }
+        if (chain.EffectFx != 0)
+            Bass.FXSetParameters(chain.EffectFx, parameters);
+    }
+
     /// <summary>Volumen master (lo fija el motor para todos los platos).</summary>
     internal void SetMasterVolume(double volume)
     {
@@ -319,6 +404,7 @@ internal sealed class BassDeck : IDeck, IDisposable
             _playing = false;
             ApplyPitchNoLock();
             ApplyEqNoLock();
+            ApplyEffectNoLock(loaded);
             ApplyGainsNoLock();
 
             try

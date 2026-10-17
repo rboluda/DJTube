@@ -140,6 +140,22 @@ public partial class DeckViewModel : ObservableObject
     [ObservableProperty]
     private string _autoGainText = "";
 
+    /// <summary>Efecto elegido (eco, reverb, flanger, phaser).</summary>
+    [ObservableProperty]
+    private LocalizedOption<EffectKind> _selectedFx = null!;
+
+    [ObservableProperty]
+    private bool _fxOn;
+
+    /// <summary>Cantidad de efecto (0..1).</summary>
+    [ObservableProperty]
+    private double _fxAmount = 0.5;
+
+    /// <summary>Tiempos de compás del efecto (retardo del eco, periodo del barrido).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FxBeatsText))]
+    private double _fxBeats = 0.5;
+
     /// <summary>Tamaño del loop automático, en tiempos.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LoopSizeText))]
@@ -161,6 +177,14 @@ public partial class DeckViewModel : ObservableObject
         _quantize = quantize;
         _autoGainTarget = autoGainTarget;
         HotCues = Enumerable.Range(0, HotCueMath.Count).Select(i => new HotCueSlot(i)).ToList();
+        FxKinds =
+        [
+            new(EffectKind.Echo, _ => Loc.T("Fx_Echo")),
+            new(EffectKind.Reverb, _ => Loc.T("Fx_Reverb")),
+            new(EffectKind.Flanger, _ => Loc.T("Fx_Flanger")),
+            new(EffectKind.Phaser, _ => Loc.T("Fx_Phaser")),
+        ];
+        _selectedFx = FxKinds[0];
         Name = name;
         _deck = deck;
         _localSource = localSource;
@@ -189,6 +213,48 @@ public partial class DeckViewModel : ObservableObject
     public IReadOnlyList<HotCueSlot> HotCues { get; }
 
     public string LoopSizeText => LoopMath.FormatSize(LoopSize);
+
+    public IReadOnlyList<LocalizedOption<EffectKind>> FxKinds { get; }
+
+    public string FxBeatsText => EffectMath.UsesBeats(SelectedFx.Value) ? EffectMath.FormatBeats(FxBeats) : "—";
+
+    partial void OnSelectedFxChanged(LocalizedOption<EffectKind> value)
+    {
+        FxBeats = EffectMath.DefaultBeats(value.Value);
+        OnPropertyChanged(nameof(FxBeatsText));
+        ApplyEffect();
+    }
+
+    partial void OnFxOnChanged(bool value) => ApplyEffect();
+
+    partial void OnFxAmountChanged(double value) => ApplyEffect();
+
+    partial void OnFxBeatsChanged(double value) => ApplyEffect();
+
+    [RelayCommand]
+    private void FxBeatsDown() => FxBeats = StepBeats(-1);
+
+    [RelayCommand]
+    private void FxBeatsUp() => FxBeats = StepBeats(+1);
+
+    private double StepBeats(int direction)
+    {
+        var list = EffectMath.Beats;
+        int i = 0;
+        for (int k = 1; k < list.Count; k++)
+        {
+            if (Math.Abs(list[k] - FxBeats) < Math.Abs(list[i] - FxBeats))
+                i = k;
+        }
+        return list[Math.Clamp(i + direction, 0, list.Count - 1)];
+    }
+
+    /// <summary>Manda el efecto al plato (también al cambiar el pitch o el BPM: el tempo cambia).</summary>
+    private void ApplyEffect() =>
+        _deck.Effect = new EffectSettings(SelectedFx.Value, FxOn, FxAmount, FxBeats,
+            EffectMath.BeatSeconds(Grid?.Bpm, PlaybackRate));
+
+    partial void OnGridChanged(BeatGrid? value) => ApplyEffect();
 
     /// <summary>
     /// Tonalidad que suena: sin key lock, el pitch la mueve (cada ~6 % es un semitono), como en un vinilo.
@@ -270,6 +336,8 @@ public partial class DeckViewModel : ObservableObject
             return;
         }
         _deck.PitchPercent = value;
+        if (FxOn)
+            ApplyEffect();
         OnPropertyChanged(nameof(PlayingKey));
         OnPropertyChanged(nameof(MusicalKeyText));
     }
