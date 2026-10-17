@@ -91,6 +91,19 @@
                            Margin="14,0,8,0" TextTrimming="CharacterEllipsis" ToolTip="{loc:Tr Library_Hint}" />
             </DockPanel>
 
+            <!-- Automix: estado, siguiente, saltar, vaciar -->
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6" DataContext="{Binding Automix}"
+                       Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibility}, FallbackValue=Collapsed}">
+                <Button DockPanel.Dock="Right" Content="{loc:Tr Automix_Clear}" Style="{StaticResource SmallButton}"
+                        Margin="6,0,0,0" Command="{Binding ClearCommand}" />
+                <Button DockPanel.Dock="Right" Content="▸▸" Style="{StaticResource SmallButton}" Margin="6,0,0,0"
+                        Command="{Binding SkipCommand}" ToolTip="{loc:Tr Automix_SkipTip}" />
+                <ToggleButton DockPanel.Dock="Left" Content="AUTOMIX" Padding="10,3" Margin="0,0,10,0"
+                              IsChecked="{Binding IsOn, Mode=OneWay}" Command="{Binding ToggleCommand}"
+                              Tag="{StaticResource PlayBrush}" ToolTip="{loc:Tr Automix_Tip}" />
+                <TextBlock Text="{Binding StatusText}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </DockPanel>
+
             <!-- Pre-escucha en curso -->
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6"
                        Visibility="{Binding IsPreviewing, Converter={StaticResource BoolToVisibility}}">
@@ -159,6 +172,8 @@
                             <MenuItem Header="{loc:Tr Library_LoadA}" Command="{Binding LoadToACommand}" />
                             <MenuItem Header="{loc:Tr Library_LoadB}" Command="{Binding LoadToBCommand}" />
                             <Separator />
+                            <MenuItem Header="{loc:Tr Automix_Add}" Command="{Binding AddToAutomixCommand}" />
+                            <Separator />
                             <MenuItem Header="{loc:Tr Library_Edit}" Click="OnEditClick" />
                             <MenuItem Header="{loc:Tr Library_RemoveFromPlaylist}" Command="{Binding RemoveFromPlaylistCommand}"
                                       Visibility="{Binding Selected.Group.IsPlaylist, Converter={StaticResource BoolToVisibility}, FallbackValue=Collapsed}" />
@@ -196,6 +211,10 @@
                                                                     </DockPanel>
                                                                     <Border.ContextMenu>
                                                                         <ContextMenu>
+                                                                            <MenuItem Header="{loc:Tr Automix_Group}"
+                                                                                      Command="{Binding PlacementTarget.TemplatedParent.Tag.AutomixGroupCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                                      CommandParameter="{Binding Name}" />
+                                                                            <Separator />
                                                                             <MenuItem Header="{loc:Tr Library_UpdatePlaylist}"
                                                                                       Command="{Binding PlacementTarget.TemplatedParent.Tag.UpdatePlaylistCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                                                       CommandParameter="{Binding Name}"

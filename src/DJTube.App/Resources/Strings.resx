@@ -277,4 +277,12 @@ No: add only this song</value></data>
   <data name="History_Save" xml:space="preserve"><value>Save…</value></data>
   <data name="History_Time" xml:space="preserve"><value>Time</value></data>
   <data name="Col_Deck" xml:space="preserve"><value>Deck</value></data>
+  <data name="Automix_Add" xml:space="preserve"><value>Add to Automix queue</value></data>
+  <data name="Automix_Group" xml:space="preserve"><value>Automix this playlist</value></data>
+  <data name="Automix_Tip" xml:space="preserve"><value>Automix: plays the queue on its own, with tempo-matched crossfades</value></data>
+  <data name="Automix_Next" xml:space="preserve"><value>Next: {0} · {1} in queue</value></data>
+  <data name="Automix_LastSong" xml:space="preserve"><value>Last song: nothing more in the queue</value></data>
+  <data name="Automix_Queued" xml:space="preserve"><value>{0} songs in the queue: press AUTOMIX to start</value></data>
+  <data name="Automix_SkipTip" xml:space="preserve"><value>Go to the next song now</value></data>
+  <data name="Automix_Clear" xml:space="preserve"><value>Clear</value></data>
 </root>

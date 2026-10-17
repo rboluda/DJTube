@@ -277,4 +277,12 @@ No: añadir solo esta canción</value></data>
   <data name="History_Save" xml:space="preserve"><value>Guardar…</value></data>
   <data name="History_Time" xml:space="preserve"><value>Hora</value></data>
   <data name="Col_Deck" xml:space="preserve"><value>Plato</value></data>
+  <data name="Automix_Add" xml:space="preserve"><value>Añadir a la cola de Automix</value></data>
+  <data name="Automix_Group" xml:space="preserve"><value>Automix con esta lista</value></data>
+  <data name="Automix_Tip" xml:space="preserve"><value>Automix: pincha la cola solo, con fundidos al mismo tempo</value></data>
+  <data name="Automix_Next" xml:space="preserve"><value>Siguiente: {0} · {1} en cola</value></data>
+  <data name="Automix_LastSong" xml:space="preserve"><value>Última canción: no queda nada en la cola</value></data>
+  <data name="Automix_Queued" xml:space="preserve"><value>{0} canciones en la cola: pulsa AUTOMIX para empezar</value></data>
+  <data name="Automix_SkipTip" xml:space="preserve"><value>Pasar ya a la siguiente</value></data>
+  <data name="Automix_Clear" xml:space="preserve"><value>Vaciar</value></data>
 </root>

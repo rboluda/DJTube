@@ -778,6 +778,31 @@ public partial class LibraryViewModel : ObservableObject
             ImportStatus = "";
     }
 
+    // ---------- Automix ----------
+
+    public AutomixViewModel? Automix { get; init; }
+
+    /// <summary>Añade la canción (o la seleccionada) al final de la cola del automix.</summary>
+    [RelayCommand]
+    private void AddToAutomix(LibraryEntry? entry)
+    {
+        if ((entry ?? Selected)?.Track is { } track)
+            Automix?.Enqueue([new AutomixItem(track.Id, track.DisplayName)]);
+    }
+
+    /// <summary>Pone en cola las canciones de una rama (en su orden) y enciende el automix.</summary>
+    [RelayCommand]
+    private async Task AutomixGroup(LibraryGroup? group)
+    {
+        if (group is null || Automix is not { } automix)
+            return;
+        var items = Entries.Where(e => e.Group == group).OrderBy(e => e.Position).ThenBy(e => e.Track.DisplayName)
+            .Select(e => new AutomixItem(e.Track.Id, e.Track.DisplayName)).ToList();
+        automix.Enqueue(items);
+        if (!automix.IsOn)
+            await automix.ToggleCommand.ExecuteAsync(null);
+    }
+
     // ---------- Quitar ----------
 
     /// <summary>Quita la canción de la biblioteca (de todas las listas) y borra el audio.</summary>

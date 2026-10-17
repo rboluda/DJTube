@@ -106,6 +106,7 @@ public partial class MainViewModel : ObservableObject
                 SaveSettings();
         };
 
+        Automix = new AutomixViewModel(DeckA, DeckB, Mixer, youTube, settings);
         Recording = new RecordingViewModel(engine, settings, SaveSettings);
         History = new Core.Recording.SessionHistory(() => Recording.IsActive ? Recording.RecordedTime : null);
         Recording.History = History;
@@ -115,7 +116,7 @@ public partial class MainViewModel : ObservableObject
         string playlistsFile = System.IO.Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJTube", "playlists.json");
         Library = new LibraryViewModel(youTube, analyzer, new Core.Library.PlaylistStore(playlistsFile),
-            DeckA, DeckB, engine, settings, SaveSettings);
+            DeckA, DeckB, engine, settings, SaveSettings) { Automix = Automix };
         _showLibrary = settings.ShowLibrary;
         _libraryHeight = Math.Clamp(settings.LibraryHeight, MinLibraryHeight, 2000);
 
@@ -144,6 +145,9 @@ public partial class MainViewModel : ObservableObject
 
     /// <summary>Aviso de actualizaciones.</summary>
     public UpdateViewModel Update { get; }
+
+    /// <summary>Pincha solo una cola de canciones.</summary>
+    public AutomixViewModel Automix { get; }
 
     /// <summary>Canciones que han sonado en la sesión.</summary>
     public Core.Recording.SessionHistory History { get; }
@@ -303,6 +307,7 @@ public partial class MainViewModel : ObservableObject
         Mixer.Refresh();
         Recording.Refresh();
         Library.Refresh();
+        Automix.Refresh();
         var now = DateTime.Now;
         if ((now - _lastHistoryUpdate).TotalSeconds >= 0.5)
         {

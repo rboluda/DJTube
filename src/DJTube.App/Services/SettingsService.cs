@@ -57,6 +57,12 @@ public sealed class AppSettings
     /// <summary>Posición del mando de volumen master (0..1).</summary>
     public double MasterVolume { get; set; } = 1;
 
+    /// <summary>Duración del fundido del automix (segundos).</summary>
+    public double AutomixFadeSeconds { get; set; } = 10;
+
+    /// <summary>El automix iguala el tempo de la siguiente canción (si cabe en el pitch).</summary>
+    public bool AutomixMatchTempo { get; set; } = true;
+
     /// <summary>Hot cues y loops caen en el golpe más cercano.</summary>
     public bool Quantize { get; set; } = true;
 

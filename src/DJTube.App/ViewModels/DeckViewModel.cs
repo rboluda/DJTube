@@ -327,6 +327,24 @@ public partial class DeckViewModel : ObservableObject
     /// <summary>Pista cargada en el plato (para no borrarla de la biblioteca mientras se usa).</summary>
     public TrackInfo? LoadedTrack => _deck.Track;
 
+    /// <summary>Duración de la pista cargada (segundos).</summary>
+    public double DurationSeconds => _deck.DurationSeconds;
+
+    /// <summary>Reproducir / pausar sin pasar por la lógica del botón CUE (automix).</summary>
+    public void PlayNow()
+    {
+        if (_deck.IsLoaded)
+            _deck.Play();
+    }
+
+    public void PauseNow() => _deck.Pause();
+
+    public void SeekTo(double seconds)
+    {
+        if (_deck.IsLoaded)
+            _deck.Seek(seconds);
+    }
+
     /// <summary>Cuenta las cargas: volver a cargar la misma canción cuenta como otra vez (historial).</summary>
     public int LoadGeneration { get; private set; }
 
