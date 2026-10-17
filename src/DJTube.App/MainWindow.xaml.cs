@@ -133,6 +133,7 @@ public partial class MainWindow : Window
     private bool? ShowDialog(Window dialog)
     {
         dialog.Owner = this;
+        dialog.Icon = Icon;
         dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         DarkTitleBar.Attach(dialog);
         bool? result = dialog.ShowDialog();

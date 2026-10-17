@@ -151,9 +151,10 @@ public sealed class WaveformOverview : SKElement
 /// <summary>Colores y primitivas de dibujo compartidas por las vistas de onda.</summary>
 internal static class WaveformPaint
 {
-    public static readonly SKColor Background = new(0x17, 0x1A, 0x20);
-    public static readonly SKColor Grid = new(0x2A, 0x2E, 0x37);
-    public static readonly SKColor Cue = new(0xFF, 0x9F, 0x1A);
+    // Paleta de marca (ver Themes/Dark.xaml).
+    public static readonly SKColor Background = new(0x16, 0x0D, 0x27);
+    public static readonly SKColor Grid = new(0x2B, 0x1D, 0x4A);
+    public static readonly SKColor Cue = new(0xFD, 0xCD, 0x21);
 
     public static SKColor ToSk(Color c) => new(c.R, c.G, c.B, c.A);
 

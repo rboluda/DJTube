@@ -11,8 +11,12 @@
         Title="{loc:Tr About_Title}">
     <StackPanel Margin="24" Width="440">
         <StackPanel Orientation="Horizontal">
-            <TextBlock Text="DJ" FontSize="30" FontWeight="Bold" Foreground="{StaticResource DeckABrush}" />
-            <TextBlock Text="Tube" FontSize="30" FontWeight="Bold" Foreground="{StaticResource DeckBBrush}" />
+            <Image Source="{StaticResource LogoLarge}" Width="72" Height="72" Margin="0,0,14,0"
+                   RenderOptions.BitmapScalingMode="HighQuality" />
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="DJ" FontSize="34" FontWeight="Bold" Foreground="{StaticResource DeckABrush}" />
+                <TextBlock Text="Tube" FontSize="34" FontWeight="Bold" Foreground="{StaticResource DeckBBrush}" />
+            </StackPanel>
         </StackPanel>
         <TextBlock Text="{loc:Tr About_Tagline}" Foreground="{StaticResource TextDimBrush}" Margin="0,2,0,0" />
         <TextBlock Text="{loc:Tr About_Author}" FontWeight="SemiBold" Margin="0,6,0,14" />

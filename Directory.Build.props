@@ -12,7 +12,7 @@
     <Product>DJTube</Product>
     <!-- Versión del programa (semver). Ver CHANGELOG.md. El SDK añade el commit de git
          a la versión informativa: 0.4.0+<commit>. -->
-    <Version>0.5.1</Version>
+    <Version>0.6.0</Version>
     <!-- Idiomas de la interfaz: inglés (neutro) y español. No copiar otros idiomas de los paquetes. -->
     <NeutralLanguage>en</NeutralLanguage>
     <SatelliteResourceLanguages>es</SatelliteResourceLanguages>

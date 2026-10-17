@@ -14,41 +14,46 @@
         Background="{StaticResource BackgroundBrush}"
         Foreground="{StaticResource TextBrush}"
         FontFamily="Segoe UI"
+        Icon="pack://application:,,,/Assets/djtube.ico"
         PreviewKeyDown="OnPreviewKeyDown" PreviewKeyUp="OnPreviewKeyUp">
     <DockPanel>
-        <!-- Menú -->
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="{loc:Tr Menu_File}">
-                <MenuItem Header="{loc:Tr Menu_LoadFileA}" InputGestureText="Ctrl+1"
-                          Command="{Binding DeckA.LoadFileCommand}" />
-                <MenuItem Header="{loc:Tr Menu_LoadFileB}" InputGestureText="Ctrl+2"
-                          Command="{Binding DeckB.LoadFileCommand}" />
-                <Separator />
-                <MenuItem Header="{loc:Tr Menu_OpenCache}" Command="{Binding OpenCacheCommand}" />
-                <Separator />
-                <MenuItem Header="{loc:Tr Menu_Exit}" InputGestureText="Alt+F4" Click="OnExitClick" />
-            </MenuItem>
-            <MenuItem Header="{loc:Tr Menu_Settings}">
-                <MenuItem Header="{loc:Tr Menu_Preferences}" InputGestureText="Ctrl+," Click="OnPreferencesClick" />
-                <MenuItem Header="{loc:Tr Menu_Language}">
-                    <MenuItem Header="Español" IsChecked="{Binding IsSpanish, Mode=OneWay}"
-                              Command="{Binding SetLanguageCommand}" CommandParameter="es" />
-                    <MenuItem Header="English" IsChecked="{Binding IsEnglish, Mode=OneWay}"
-                              Command="{Binding SetLanguageCommand}" CommandParameter="en" />
+        <!-- Menú, con el logo a la izquierda -->
+        <DockPanel DockPanel.Dock="Top" Background="{StaticResource PanelBrush}">
+            <Image DockPanel.Dock="Left" Source="{StaticResource LogoSmall}" Width="22" Height="22"
+                   Margin="12,0,2,0" RenderOptions.BitmapScalingMode="HighQuality" />
+            <Menu>
+                <MenuItem Header="{loc:Tr Menu_File}">
+                    <MenuItem Header="{loc:Tr Menu_LoadFileA}" InputGestureText="Ctrl+1"
+                              Command="{Binding DeckA.LoadFileCommand}" />
+                    <MenuItem Header="{loc:Tr Menu_LoadFileB}" InputGestureText="Ctrl+2"
+                              Command="{Binding DeckB.LoadFileCommand}" />
+                    <Separator />
+                    <MenuItem Header="{loc:Tr Menu_OpenCache}" Command="{Binding OpenCacheCommand}" />
+                    <Separator />
+                    <MenuItem Header="{loc:Tr Menu_Exit}" InputGestureText="Alt+F4" Click="OnExitClick" />
                 </MenuItem>
-                <Separator />
-                <MenuItem Header="{loc:Tr Menu_UpdateYtDlp}" Command="{Binding UpdateYtDlpCommand}" />
-            </MenuItem>
-            <MenuItem Header="{loc:Tr Menu_View}">
-                <MenuItem Header="{loc:Tr Menu_ZoomIn}" InputGestureText="Ctrl++" Command="{Binding ZoomInCommand}" />
-                <MenuItem Header="{loc:Tr Menu_ZoomOut}" InputGestureText="Ctrl+-" Command="{Binding ZoomOutCommand}" />
-            </MenuItem>
-            <MenuItem Header="{loc:Tr Menu_Help}">
-                <MenuItem Header="{loc:Tr Menu_Shortcuts}" InputGestureText="F1" Click="OnShortcutsClick" />
-                <Separator />
-                <MenuItem Header="{loc:Tr Menu_About}" Click="OnAboutClick" />
-            </MenuItem>
-        </Menu>
+                <MenuItem Header="{loc:Tr Menu_Settings}">
+                    <MenuItem Header="{loc:Tr Menu_Preferences}" InputGestureText="Ctrl+," Click="OnPreferencesClick" />
+                    <MenuItem Header="{loc:Tr Menu_Language}">
+                        <MenuItem Header="Español" IsChecked="{Binding IsSpanish, Mode=OneWay}"
+                                  Command="{Binding SetLanguageCommand}" CommandParameter="es" />
+                        <MenuItem Header="English" IsChecked="{Binding IsEnglish, Mode=OneWay}"
+                                  Command="{Binding SetLanguageCommand}" CommandParameter="en" />
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="{loc:Tr Menu_UpdateYtDlp}" Command="{Binding UpdateYtDlpCommand}" />
+                </MenuItem>
+                <MenuItem Header="{loc:Tr Menu_View}">
+                    <MenuItem Header="{loc:Tr Menu_ZoomIn}" InputGestureText="Ctrl++" Command="{Binding ZoomInCommand}" />
+                    <MenuItem Header="{loc:Tr Menu_ZoomOut}" InputGestureText="Ctrl+-" Command="{Binding ZoomOutCommand}" />
+                </MenuItem>
+                <MenuItem Header="{loc:Tr Menu_Help}">
+                    <MenuItem Header="{loc:Tr Menu_Shortcuts}" InputGestureText="F1" Click="OnShortcutsClick" />
+                    <Separator />
+                    <MenuItem Header="{loc:Tr Menu_About}" Click="OnAboutClick" />
+                </MenuItem>
+            </Menu>
+        </DockPanel>
 
         <DockPanel Margin="16,12,16,16">
             <!-- Salida de audio y auriculares (pre-escucha) -->

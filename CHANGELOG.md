@@ -4,6 +4,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [versionado semántico](https://semver.org/lang/es/). La versión se define en
 `Directory.Build.props`.
 
+## [0.6.0] - 2026-10-17
+
+### Añadido
+- Logo de DJTube: icono del programa (ejecutable, barra de título y barra de tareas), junto al
+  menú y en «Acerca de».
+- `assets/`: logo original, logo con fondo transparente e icono `.ico` con todos los tamaños.
+- `tools/BrandAssets`: genera el logo transparente y el icono a partir de `assets/logo-original.png`.
+
+### Cambiado
+- Nueva paleta sacada del logo: fondos morado oscuro, plato A en naranja, plato B en violeta y
+  marcas de cue en amarillo (también en las formas de onda).
+
 ## [0.5.1] - 2026-10-17
 
 ### Cambiado

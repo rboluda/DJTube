@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/logo.png" alt="DJTube" width="160"></p>
+
 # DJTube
 
 Aplicación de DJ de escritorio para Windows, sencilla y ligera, con dos platos,
@@ -62,6 +64,15 @@ Los textos están en archivos `.resx` (inglés como idioma neutro, español en `
 
 - `src/DJTube.App/Resources/Strings*.resx`: interfaz.
 - `src/DJTube.Core/Resources/Messages*.resx`: mensajes de error de las librerías.
+
+## Logo e icono
+
+El logo original está en `assets/logo-original.png`. Si cambia, se regeneran el logo transparente
+y el icono con:
+
+```
+dotnet run --project tools/BrandAssets -- assets/logo-original.png assets src/DJTube.App/Assets
+```
 
 ## Versión
 

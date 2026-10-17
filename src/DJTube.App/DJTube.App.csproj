@@ -7,7 +7,15 @@
     <UseWPF>true</UseWPF>
     <!-- Requerido por [LibraryImport] (barra de título oscura). -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Icono del ejecutable (generado con tools/BrandAssets a partir de assets/logo-original.png). -->
+    <ApplicationIcon>Assets\djtube.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\djtube.ico" />
+    <Resource Include="Assets\logo-64.png" />
+    <Resource Include="Assets\logo-256.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DJTube.Core\DJTube.Core.csproj" />
