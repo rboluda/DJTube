@@ -25,6 +25,9 @@
         <TextBlock Text="{loc:Tr Pref_OutputModeNote}" Style="{StaticResource CaptionText}" Margin="0,4,0,0"
                    TextWrapping="Wrap" />
 
+        <CheckBox Content="{loc:Tr Pref_CheckUpdates}" IsChecked="{Binding CheckForUpdates}" Margin="0,16,0,0"
+                  Foreground="{StaticResource TextBrush}" />
+
         <TextBlock Text="{loc:Tr Pref_Cache}" Style="{StaticResource CaptionText}" Margin="0,16,0,4" />
         <DockPanel>
             <Button DockPanel.Dock="Right" Content="{loc:Tr Pref_Open}" Margin="8,0,0,0" Padding="10,4"

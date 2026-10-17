@@ -59,3 +59,5 @@ Name: "{autodesktop}\DJTube"; Filename: "{app}\DJTube.exe"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\DJTube.exe"; Description: "{cm:LaunchProgram,DJTube}"; Flags: nowait postinstall skipifsilent
+; Actualización automática desde DJTube (instalador en modo silencioso): volver a abrir el programa.
+Filename: "{app}\DJTube.exe"; Flags: nowait postinstall skipifnotsilent

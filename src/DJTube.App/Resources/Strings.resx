@@ -18,6 +18,21 @@
   <data name="Menu_Help" xml:space="preserve"><value>_Help</value></data>
   <data name="Menu_Shortcuts" xml:space="preserve"><value>_Keyboard shortcuts</value></data>
   <data name="Menu_About" xml:space="preserve"><value>_About DJTube</value></data>
+  <data name="Menu_CheckUpdates" xml:space="preserve"><value>Check for _updates…</value></data>
+  <data name="Update_Available" xml:space="preserve"><value>DJTube {0} is available (you have {1}).</value></data>
+  <data name="Update_Notes" xml:space="preserve"><value>What&apos;s new</value></data>
+  <data name="Update_Install" xml:space="preserve"><value>Update now</value></data>
+  <data name="Update_DownloadPage" xml:space="preserve"><value>Download</value></data>
+  <data name="Update_Later" xml:space="preserve"><value>Later</value></data>
+  <data name="Update_Checking" xml:space="preserve"><value>Checking for updates…</value></data>
+  <data name="Update_UpToDate" xml:space="preserve"><value>You have the latest version ({0}).</value></data>
+  <data name="Update_Downloading" xml:space="preserve"><value>Downloading the update… {0:0} %</value></data>
+  <data name="Update_Installing" xml:space="preserve"><value>Installing… DJTube will restart.</value></data>
+  <data name="Update_Error" xml:space="preserve"><value>Could not check for updates: {0}</value></data>
+  <data name="Update_DownloadError" xml:space="preserve"><value>The update could not be downloaded: {0}</value></data>
+  <data name="Update_ChecksumError" xml:space="preserve"><value>The downloaded file is damaged (its checksum does not match).</value></data>
+  <data name="Update_ConfirmPlaying" xml:space="preserve"><value>DJTube will close to install the update and the music will stop. Continue?</value></data>
+  <data name="Pref_CheckUpdates" xml:space="preserve"><value>Check for updates on startup</value></data>
   <data name="Output" xml:space="preserve"><value>Output</value></data>
   <data name="OutputStopped" xml:space="preserve"><value>Output stopped</value></data>
   <data name="OutputStatus" xml:space="preserve"><value>{0} · {1} · {2} Hz · {3} ch · buffer {4:0.0} ms</value></data>

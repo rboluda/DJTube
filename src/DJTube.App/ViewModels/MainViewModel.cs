@@ -101,6 +101,9 @@ public partial class MainViewModel : ObservableObject
                 SaveSettings();
         };
 
+        Update = new UpdateViewModel(() => DeckA.IsPlaying || DeckB.IsPlaying);
+        _checkForUpdates = settings.CheckForUpdates;
+
         MasterPairs = AsioPairs.Select(PairOption).ToList();
         CuePairs = [new LocalizedOption<int>(-1, _ => Loc.T("NoHeadphones")), .. AsioPairs.Select(PairOption)];
         OutputModes =
@@ -123,6 +126,18 @@ public partial class MainViewModel : ObservableObject
     public DeckViewModel DeckB { get; }
 
     public MixerViewModel Mixer { get; }
+
+    /// <summary>Aviso de actualizaciones.</summary>
+    public UpdateViewModel Update { get; }
+
+    /// <summary>Buscar actualizaciones al arrancar (Preferencias).</summary>
+    [ObservableProperty]
+    private bool _checkForUpdates;
+
+    partial void OnCheckForUpdatesChanged(bool value) => SaveSettings();
+
+    [RelayCommand]
+    private Task CheckUpdatesNow() => Update.CheckAsync(manual: true);
 
     /// <summary>Dispositivos WASAPI para el master.</summary>
     public ObservableCollection<LocalizedOption<AudioDevice>> Devices { get; } = [];
@@ -218,6 +233,15 @@ public partial class MainViewModel : ObservableObject
         }
         StartOutput();
         _ = RefreshYtDlpStatusAsync();
+        if (CheckForUpdates)
+            _ = CheckUpdatesOnStartupAsync();
+    }
+
+    private async Task CheckUpdatesOnStartupAsync()
+    {
+        // Un poco después de arrancar, para no competir con la apertura de la salida de audio.
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        await Update.CheckAsync(manual: false);
     }
 
     /// <summary>Se llama en cada fotograma.</summary>
@@ -303,6 +327,7 @@ public partial class MainViewModel : ObservableObject
         _settings.CrossfaderCurve = Mixer.SelectedCurve.Value.ToString();
         _settings.CueMix = Mixer.CueMix;
         _settings.HeadphoneVolume = Mixer.HeadphoneVolume;
+        _settings.CheckForUpdates = CheckForUpdates;
         _settingsService.Save(_settings);
     }
 

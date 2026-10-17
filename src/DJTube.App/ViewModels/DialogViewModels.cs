@@ -17,11 +17,15 @@ public partial class PreferencesViewModel : ObservableObject
     [ObservableProperty]
     private LocalizedOption<OutputMode> _selectedOutputMode;
 
+    [ObservableProperty]
+    private bool _checkForUpdates;
+
     public PreferencesViewModel(MainViewModel main)
     {
         _main = main;
         _selectedLanguage = Languages.First(l => l.Code == Loc.Instance.Language);
         _selectedOutputMode = main.OutputModes.First(m => m.Value == main.OutputMode);
+        _checkForUpdates = main.CheckForUpdates;
     }
 
     public IReadOnlyList<LanguageOption> Languages => Loc.Languages;
@@ -38,6 +42,7 @@ public partial class PreferencesViewModel : ObservableObject
             _main.SetLanguageCommand.Execute(SelectedLanguage.Code);
         if (SelectedOutputMode.Value != _main.OutputMode)
             _main.OutputMode = SelectedOutputMode.Value;
+        _main.CheckForUpdates = CheckForUpdates;
     }
 }
 

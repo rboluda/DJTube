@@ -4,6 +4,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [versionado semántico](https://semver.org/lang/es/). La versión se define en
 `Directory.Build.props`.
 
+## [0.7.0] - 2026-10-17
+
+### Añadido
+- Aviso de actualizaciones: al arrancar (y desde Ayuda → «Buscar actualizaciones…») DJTube
+  consulta la última release publicada en GitHub y, si hay una versión nueva, lo indica en una
+  franja bajo el menú con «Novedades», «Actualizar ahora» y «Más tarde».
+- Actualización automática: descarga el instalador con progreso, comprueba su huella SHA-256,
+  cierra DJTube, instala en silencio y lo vuelve a abrir. Si hay música sonando, pide confirmación.
+  Solo acepta descargas de las releases de `rboluda/DJTube`.
+- En la versión portable, el botón abre la página de descarga.
+- Preferencias: «Buscar actualizaciones al iniciar».
+
 ## [0.6.1] - 2026-10-17
 
 ### Añadido

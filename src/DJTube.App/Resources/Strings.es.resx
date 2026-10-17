@@ -18,6 +18,21 @@
   <data name="Menu_Help" xml:space="preserve"><value>Ay_uda</value></data>
   <data name="Menu_Shortcuts" xml:space="preserve"><value>_Atajos de teclado</value></data>
   <data name="Menu_About" xml:space="preserve"><value>Acerca _de DJTube</value></data>
+  <data name="Menu_CheckUpdates" xml:space="preserve"><value>Buscar a_ctualizaciones…</value></data>
+  <data name="Update_Available" xml:space="preserve"><value>Hay una nueva versión de DJTube: {0} (tienes la {1}).</value></data>
+  <data name="Update_Notes" xml:space="preserve"><value>Novedades</value></data>
+  <data name="Update_Install" xml:space="preserve"><value>Actualizar ahora</value></data>
+  <data name="Update_DownloadPage" xml:space="preserve"><value>Descargar</value></data>
+  <data name="Update_Later" xml:space="preserve"><value>Más tarde</value></data>
+  <data name="Update_Checking" xml:space="preserve"><value>Buscando actualizaciones…</value></data>
+  <data name="Update_UpToDate" xml:space="preserve"><value>Tienes la última versión ({0}).</value></data>
+  <data name="Update_Downloading" xml:space="preserve"><value>Descargando la actualización… {0:0} %</value></data>
+  <data name="Update_Installing" xml:space="preserve"><value>Instalando… DJTube se volverá a abrir.</value></data>
+  <data name="Update_Error" xml:space="preserve"><value>No se pudo buscar actualizaciones: {0}</value></data>
+  <data name="Update_DownloadError" xml:space="preserve"><value>No se pudo descargar la actualización: {0}</value></data>
+  <data name="Update_ChecksumError" xml:space="preserve"><value>El archivo descargado está dañado (su huella no coincide).</value></data>
+  <data name="Update_ConfirmPlaying" xml:space="preserve"><value>DJTube se cerrará para instalar la actualización y se cortará la música. ¿Continuar?</value></data>
+  <data name="Pref_CheckUpdates" xml:space="preserve"><value>Buscar actualizaciones al iniciar</value></data>
   <data name="Output" xml:space="preserve"><value>Salida</value></data>
   <data name="OutputStopped" xml:space="preserve"><value>Salida detenida</value></data>
   <data name="OutputStatus" xml:space="preserve"><value>{0} · {1} · {2} Hz · {3} canales · buffer {4:0.0} ms</value></data>

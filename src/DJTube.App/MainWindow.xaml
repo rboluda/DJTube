@@ -49,11 +49,47 @@
                 </MenuItem>
                 <MenuItem Header="{loc:Tr Menu_Help}">
                     <MenuItem Header="{loc:Tr Menu_Shortcuts}" InputGestureText="F1" Click="OnShortcutsClick" />
+                    <MenuItem Header="{loc:Tr Menu_CheckUpdates}" Command="{Binding CheckUpdatesNowCommand}" />
                     <Separator />
                     <MenuItem Header="{loc:Tr Menu_About}" Click="OnAboutClick" />
                 </MenuItem>
             </Menu>
         </DockPanel>
+
+        <!-- Aviso de actualización -->
+        <Border DockPanel.Dock="Top" DataContext="{Binding Update}" Padding="16,8"
+                Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibility}}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="{StaticResource ControlBrush}" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsError}" Value="True">
+                            <Setter Property="Background" Value="#FF4A1A2A" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="✕" Padding="8,2" Margin="8,0,0,0" FontSize="11"
+                        Command="{Binding DismissCommand}" ToolTip="{loc:Tr Update_Later}" />
+                <Button DockPanel.Dock="Right" Content="{loc:Tr Update_Install}" Padding="12,4" Margin="8,0,0,0"
+                        Command="{Binding InstallCommand}" Background="{StaticResource DeckABrush}" Foreground="Black"
+                        Visibility="{Binding CanInstall, Converter={StaticResource BoolToVisibility}}" />
+                <Button DockPanel.Dock="Right" Content="{loc:Tr Update_DownloadPage}" Padding="12,4" Margin="8,0,0,0"
+                        Command="{Binding OpenNotesCommand}" Background="{StaticResource DeckABrush}" Foreground="Black"
+                        Visibility="{Binding CanDownloadPage, Converter={StaticResource BoolToVisibility}}" />
+                <Button DockPanel.Dock="Right" Content="{loc:Tr Update_Notes}" Padding="12,4" Margin="8,0,0,0"
+                        Command="{Binding OpenNotesCommand}"
+                        Visibility="{Binding HasUpdate, Converter={StaticResource BoolToVisibility}}" />
+                <ProgressBar DockPanel.Dock="Right" Width="160" Margin="12,0,0,0" VerticalAlignment="Center"
+                             Minimum="0" Maximum="1" Value="{Binding Progress, Mode=OneWay, TargetNullValue=0}"
+                             Foreground="{StaticResource DeckABrush}"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,10,0"
+                           Foreground="{StaticResource CueBrush}" />
+                <TextBlock Text="{Binding Message}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </DockPanel>
+        </Border>
 
         <DockPanel Margin="16,12,16,16">
             <!-- Salida de audio y auriculares (pre-escucha) -->

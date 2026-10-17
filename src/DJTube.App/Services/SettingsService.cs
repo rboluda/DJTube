@@ -33,6 +33,9 @@ public sealed class AppSettings
     public double CueMix { get; set; }
 
     public double HeadphoneVolume { get; set; } = 0.8;
+
+    /// <summary>Buscar una versión nueva en GitHub al arrancar.</summary>
+    public bool CheckForUpdates { get; set; } = true;
 }
 
 /// <summary>Lee y guarda <see cref="AppSettings"/> en %APPDATA%\DJTube\settings.json.</summary>
