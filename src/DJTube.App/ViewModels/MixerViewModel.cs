@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DJTube.App.Localization;
 using DJTube.Core.Abstractions;
@@ -44,8 +44,20 @@ public partial class MixerViewModel : ObservableObject
     [ObservableProperty]
     private double _headphoneVolume;
 
-    public MixerViewModel(IAudioEngine engine, CrossfaderCurveType curve, double cueMix, double headphoneVolume)
+    /// <summary>Mando de volumen master (0..1).</summary>
+    [ObservableProperty]
+    private double _masterVolume;
+
+    [ObservableProperty]
+    private double _masterLevelLeft;
+
+    [ObservableProperty]
+    private double _masterLevelRight;
+
+    public MixerViewModel(IAudioEngine engine, CrossfaderCurveType curve, double cueMix, double headphoneVolume, double masterVolume = 1)
     {
+        _masterVolume = Math.Clamp(masterVolume, 0, 1);
+        engine.MasterVolume = FaderTaper.ToGain(_masterVolume);
         _engine = engine;
         _deckA = engine.Decks[0];
         _deckB = engine.Decks[1];
@@ -83,7 +95,14 @@ public partial class MixerViewModel : ObservableObject
     {
         EqA.RefreshLevel();
         EqB.RefreshLevel();
+        var (left, right) = _engine.GetMasterLevel();
+        MasterLevelLeft = Follow(MasterLevelLeft, EqMath.MeterFraction(left));
+        MasterLevelRight = Follow(MasterLevelRight, EqMath.MeterFraction(right));
     }
+
+    private static double Follow(double shown, double target) => target >= shown ? target : Math.Max(target, shown - 0.012);
+
+    partial void OnMasterVolumeChanged(double value) => _engine.MasterVolume = FaderTaper.ToGain(value);
 
     public string CueATip => Loc.F("PflTip", "A");
 

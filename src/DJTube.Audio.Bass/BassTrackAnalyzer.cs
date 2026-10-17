@@ -1,4 +1,5 @@
-using DJTube.Core.Abstractions;
+﻿using DJTube.Core.Abstractions;
+using DJTube.Core.Analysis;
 using DJTube.Core.Localization;
 using DJTube.Core.Logic;
 using DJTube.Core.Models;
@@ -10,7 +11,7 @@ using Bass = ManagedBass.Bass;
 
 /// <summary>
 /// Analiza una pista con un decodificador propio (independiente del que suena) en un hilo de fondo:
-/// forma de onda (picos y graves) y curva de energía para detectar el BPM.
+/// forma de onda (por bandas), curva de energía para detectar el BPM, sonoridad (LUFS) y tonalidad.
 /// </summary>
 public sealed class BassTrackAnalyzer : ITrackAnalyzer
 {
@@ -74,6 +75,9 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
             int hopCount = 0;
             long framesDone = 0;
             int lastReported = -1;
+            var loudness = new LoudnessMeter(sampleRate, channels);
+            var keys = new KeyDetector(sampleRate);
+            var monoBuffer = new float[16384];
 
             var buffer = new float[16384 * channels];
             while (true)
@@ -84,6 +88,7 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
                     break;
 
                 int frames = bytes / (sizeof(float) * channels);
+                loudness.Process(buffer.AsSpan(0, frames * channels));
                 for (int f = 0; f < frames; f++)
                 {
                     double mono = 0;
@@ -91,6 +96,7 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
                     for (int c = 0; c < channels; c++)
                         mono += buffer[offset + c];
                     mono /= channels;
+                    monoBuffer[f] = (float)mono;
 
                     lp1 += a * (mono - lp1);
                     lp2 += a * (lp1 - lp2);
@@ -126,6 +132,7 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
                     }
                 }
 
+                keys.Process(monoBuffer.AsSpan(0, frames));
                 framesDone += frames;
                 int percent = (int)(100 * framesDone / totalFrames);
                 if (percent != lastReported)
@@ -151,7 +158,7 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
             var grid = BeatDetector.Detect(onset, sampleRate / (double)hopFrames);
 
             progress?.Report(1);
-            return new TrackAnalysis(waveform, grid);
+            return new TrackAnalysis(waveform, grid, loudness.IntegratedLufs(), keys.Result());
         }
         finally
         {

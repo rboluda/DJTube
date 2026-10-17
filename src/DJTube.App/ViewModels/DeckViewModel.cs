@@ -28,6 +28,8 @@ public partial class DeckViewModel : ObservableObject
     private readonly CueController _cue;
     private readonly TrackMarksStore _marks;
     private readonly Func<bool> _quantize;
+    private readonly Func<double?> _autoGainTarget;
+    private double? _lufs;
     private string? _marksKey;
     private double? _loopIn;
     private LoopRegion? _lastLoop;
@@ -129,6 +131,15 @@ public partial class DeckViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasLoopIn;
 
+    /// <summary>Tonalidad de la pista (sin pitch), o null si no se conoce.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MusicalKeyText), nameof(PlayingKey))]
+    private MusicalKey? _musicalKey;
+
+    /// <summary>Ajuste de la ganancia automática ("AUTO −2,0 dB"); vacío si está desactivada.</summary>
+    [ObservableProperty]
+    private string _autoGainText = "";
+
     /// <summary>Tamaño del loop automático, en tiempos.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LoopSizeText))]
@@ -143,10 +154,12 @@ public partial class DeckViewModel : ObservableObject
         Func<double> outputDelaySeconds,
         IFileDialogService dialogs,
         TrackMarksStore marks,
-        Func<bool> quantize)
+        Func<bool> quantize,
+        Func<double?> autoGainTarget)
     {
         _marks = marks;
         _quantize = quantize;
+        _autoGainTarget = autoGainTarget;
         HotCues = Enumerable.Range(0, HotCueMath.Count).Select(i => new HotCueSlot(i)).ToList();
         Name = name;
         _deck = deck;
@@ -176,6 +189,31 @@ public partial class DeckViewModel : ObservableObject
     public IReadOnlyList<HotCueSlot> HotCues { get; }
 
     public string LoopSizeText => LoopMath.FormatSize(LoopSize);
+
+    /// <summary>
+    /// Tonalidad que suena: sin key lock, el pitch la mueve (cada ~6 % es un semitono), como en un vinilo.
+    /// </summary>
+    public MusicalKey? PlayingKey => MusicalKey is { } key && !KeyLock
+        ? key.Transpose((int)Math.Round(PitchMath.Semitones(PitchPercent)))
+        : MusicalKey;
+
+    public string MusicalKeyText => PlayingKey is { } k ? $"{k.Camelot} · {k.Name}" : "";
+
+    /// <summary>Aplica (o quita) la ganancia automática según la sonoridad de la pista y el ajuste.</summary>
+    public void ApplyAutoGain()
+    {
+        if (_autoGainTarget() is { } target && _lufs is not null)
+        {
+            double db = GainMath.AutoGainDb(_lufs, target);
+            _deck.AutoGainDb = db;
+            AutoGainText = "AUTO " + GainMath.FormatDb(db);
+        }
+        else
+        {
+            _deck.AutoGainDb = 0;
+            AutoGainText = "";
+        }
+    }
 
     /// <summary>Plato con el que se sincroniza este al pulsar SYNC.</summary>
     public DeckViewModel? SyncTarget { get; set; }
@@ -232,11 +270,18 @@ public partial class DeckViewModel : ObservableObject
             return;
         }
         _deck.PitchPercent = value;
+        OnPropertyChanged(nameof(PlayingKey));
+        OnPropertyChanged(nameof(MusicalKeyText));
     }
 
     partial void OnPitchRangeChanged(double value) => PitchPercent = PitchMath.Clamp(PitchPercent, value);
 
-    partial void OnKeyLockChanged(bool value) => _deck.KeyLock = value;
+    partial void OnKeyLockChanged(bool value)
+    {
+        _deck.KeyLock = value;
+        OnPropertyChanged(nameof(PlayingKey));
+        OnPropertyChanged(nameof(MusicalKeyText));
+    }
 
     [RelayCommand]
     private void ResetPitch() => PitchPercent = 0;
@@ -689,6 +734,9 @@ public partial class DeckViewModel : ObservableObject
 
         Waveform = null;
         Grid = null;
+        MusicalKey = null;
+        _lufs = null;
+        ApplyAutoGain();
         AnalysisProgress = 0;
         IsAnalyzing = true;
         var progress = new Progress<double>(p =>
@@ -704,6 +752,9 @@ public partial class DeckViewModel : ObservableObject
                 return;
             Waveform = analysis.Waveform;
             Grid = analysis.Grid;
+            MusicalKey = analysis.Key;
+            _lufs = analysis.LoudnessLufs;
+            ApplyAutoGain();
             GridChanged?.Invoke(this, path);
         }
         catch (OperationCanceledException)

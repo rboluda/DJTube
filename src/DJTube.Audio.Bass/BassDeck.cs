@@ -43,6 +43,8 @@ internal sealed class BassDeck : IDeck, IDisposable
     private double _cueMix;
     private double _phonesVolume = 1;
     private EqSettings _eq;
+    private double _autoGainDb;
+    private double _masterVolume = 1;
     private readonly float[] _levels = new float[2];
 
     /// <param name="outputDelayBytes">Bytes de salida del mezclador master que aún no se han oído.</param>
@@ -216,6 +218,32 @@ internal sealed class BassDeck : IDeck, IDisposable
         chain.LoopSync = 0;
     }
 
+    public double AutoGainDb
+    {
+        get { lock (_sync) return _autoGainDb; }
+        set
+        {
+            lock (_sync)
+            {
+                _autoGainDb = double.IsFinite(value) ? Math.Clamp(value, -GainMath.MaxCutDb, GainMath.MaxBoostDb) : 0;
+                ApplyGainsNoLock();
+            }
+        }
+    }
+
+    /// <summary>Volumen master (lo fija el motor para todos los platos).</summary>
+    internal void SetMasterVolume(double volume)
+    {
+        lock (_sync)
+        {
+            _masterVolume = Math.Clamp(volume, 0, 1);
+            ApplyGainsNoLock();
+        }
+    }
+
+    /// <summary>Ganancia de entrada total: mando GAIN × ganancia automática.</summary>
+    private double InputGainNoLock() => EqMath.GainFactor(_eq.Gain) * GainMath.DbToFactor(_autoGainDb);
+
     public (float Left, float Right) GetLevel()
     {
         lock (_sync)
@@ -226,7 +254,7 @@ internal sealed class BassDeck : IDeck, IDisposable
             // No incluye el volumen del canal (fader), pero sí la ganancia de entrada, que va en ese volumen.
             if (BassMix.ChannelGetLevel(chain.MasterSplit, _levels, 0.03f, LevelRetrievalFlags.Stereo) <= 0)
                 return (0, 0);
-            float trim = (float)EqMath.GainFactor(_eq.Gain);
+            float trim = (float)InputGainNoLock();
             return (_levels[0] * trim, _levels[1] * trim);
         }
     }
@@ -564,8 +592,8 @@ internal sealed class BassDeck : IDeck, IDisposable
         if (_chain is not { } chain)
             return;
         // La ganancia de entrada (trim) afecta a las dos rutas; el fader solo al master.
-        double trim = EqMath.GainFactor(_eq.Gain);
-        Bass.ChannelSetAttribute(chain.MasterSplit, ChannelAttribute.Volume, _gain * trim);
+        double trim = InputGainNoLock();
+        Bass.ChannelSetAttribute(chain.MasterSplit, ChannelAttribute.Volume, _gain * trim * _masterVolume);
         Bass.ChannelSetAttribute(chain.CueSplit, ChannelAttribute.Volume,
             trim * HeadphoneMath.CueGain(_cueEnabled, _cueMix, _gain, _phonesVolume));
     }

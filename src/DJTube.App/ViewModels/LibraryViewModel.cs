@@ -38,6 +38,15 @@ public partial class LibraryItem : ObservableObject
     [ObservableProperty]
     private ImageSource? _artwork;
 
+    /// <summary>Tonalidad (si ya se ha analizado).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(KeyText), nameof(KeySort))]
+    private MusicalKey? _key;
+
+    /// <summary>Encaja armónicamente con lo que suena (se resalta en verde).</summary>
+    [ObservableProperty]
+    private bool _isHarmonic;
+
     public LibraryItem(TrackInfo track, Action<LibraryItem> save)
     {
         Id = track.Id;
@@ -55,6 +64,11 @@ public partial class LibraryItem : ObservableObject
     public string DurationText => Duration is { } d ? $"{(int)d.TotalMinutes}:{d.Seconds:00}" : "";
 
     public string BpmText => Bpm is { } b ? b.ToString("0.0", CultureInfo.InvariantCulture) : "";
+
+    public string KeyText => Key is { } k ? k.Camelot : "";
+
+    /// <summary>Orden por la rueda Camelot: 1A, 1B, 2A, 2B…</summary>
+    public int KeySort => Key is { } k ? k.CamelotNumber * 2 + (k.Minor ? 0 : 1) : int.MaxValue;
 
     public string DisplayName => TrackTitleParser.Display(Artist, Title);
 
@@ -218,6 +232,15 @@ public partial class LibraryViewModel : ObservableObject
         source.TrackAdded += (_, track) => Application.Current?.Dispatcher.InvokeAsync(() => OnTrackAdded(track));
         deckA.GridChanged += (_, path) => RefreshBpm(path);
         deckB.GridChanged += (_, path) => RefreshBpm(path);
+        // Mezcla armónica: se resaltan las canciones que encajan con lo que suena.
+        foreach (var deck in new[] { deckA, deckB })
+        {
+            deck.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName is nameof(DeckViewModel.PlayingKey) or nameof(DeckViewModel.IsPlaying))
+                    UpdateHarmony();
+            };
+        }
         Entries.CollectionChanged += (_, _) => OnPropertyChanged(nameof(CountText));
         Loc.Instance.LanguageChanged += (_, _) =>
         {
@@ -703,17 +726,46 @@ public partial class LibraryViewModel : ObservableObject
         if (path is null)
             return;
         var item = _tracks.Values.FirstOrDefault(i => string.Equals(_source.GetAudioPath(i.Id), path, StringComparison.OrdinalIgnoreCase));
-        if (item is not null)
-            item.Bpm = _analyzer.TryGetCachedGrid(path)?.Bpm;
+        if (item is null)
+            return;
+        var summary = _analyzer.TryGetCachedSummary(path);
+        item.Bpm = summary?.Grid?.Bpm ?? _analyzer.TryGetCachedGrid(path)?.Bpm;
+        item.Key = summary?.Key;
+        UpdateHarmony(item);
     }
+
+    /// <summary>Tonalidad de referencia: la del plato que suena (si suenan los dos, la del A).</summary>
+    private MusicalKey? ReferenceKey =>
+        _deckA.IsPlaying && _deckA.PlayingKey is { } a ? a
+        : _deckB.IsPlaying && _deckB.PlayingKey is { } b ? b
+        : null;
+
+    private MusicalKey? _harmonyReference;
+
+    private void UpdateHarmony()
+    {
+        var reference = ReferenceKey;
+        if (reference == _harmonyReference)
+            return;
+        _harmonyReference = reference;
+        foreach (var item in _tracks.Values)
+            UpdateHarmony(item);
+    }
+
+    private void UpdateHarmony(LibraryItem item) =>
+        item.IsHarmonic = _harmonyReference is { } r && item.Key is { } k && r.IsCompatibleWith(k);
 
     private async Task FillDetailsAsync(LibraryItem item, bool analyzeIfMissing)
     {
         string audio = _source.GetAudioPath(item.Id);
-        var (bpm, image) = await Task.Run(() => (_analyzer.TryGetCachedGrid(audio)?.Bpm, LoadThumbnail(Path.ChangeExtension(audio, ".jpg"))));
-        item.Bpm = bpm;
+        var (summary, needs, image) = await Task.Run(() =>
+            (_analyzer.TryGetCachedSummary(audio), _analyzer.NeedsAnalysis(audio), LoadThumbnail(Path.ChangeExtension(audio, ".jpg"))));
+        item.Bpm = summary?.Grid?.Bpm ?? _analyzer.TryGetCachedGrid(audio)?.Bpm;
+        item.Key = summary?.Key;
+        UpdateHarmony(item);
         item.Artwork = image;
-        if (bpm is null && analyzeIfMissing)
+        // Sin analizar, o con un análisis antiguo sin sonoridad ni tonalidad: a la cola.
+        if (needs && analyzeIfMissing)
             QueueAnalysis(audio);
         if (image is null)
         {

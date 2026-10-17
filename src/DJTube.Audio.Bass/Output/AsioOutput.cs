@@ -1,4 +1,4 @@
-using DJTube.Core.Localization;
+﻿using DJTube.Core.Localization;
 using DJTube.Core.Models;
 using ManagedBass.Asio;
 
@@ -66,6 +66,7 @@ internal sealed class AsioOutput : IDisposable
         if (!BassAsio.Start(0, 0))
             throw new BassException(Messages.AsioStartFailed, BassAsio.LastError);
         _started = true;
+        _masterChannel = masterChannel;
 
         LatencyFrames = Math.Max(0, BassAsio.GetLatency(false));
         double latencyMs = LatencyFrames * 1000.0 / SampleRate;
@@ -82,6 +83,18 @@ internal sealed class AsioOutput : IDisposable
         // join = true: los dos canales del mezclador (estéreo) van a firstChannel y firstChannel + 1.
         if (!BassAsio.ChannelEnableBass(false, firstChannel, mixer, true))
             throw new BassException(Messages.AsioChannelFailed(firstChannel + 1, firstChannel + 2), BassAsio.LastError);
+    }
+
+    private int _masterChannel = -1;
+
+    /// <summary>Nivel de pico (0..1) del par de canales del master.</summary>
+    public (float Left, float Right) GetMasterLevel()
+    {
+        if (_disposed || !_started || _masterChannel < 0)
+            return (0, 0);
+        BassAsio.CurrentDevice = _device;
+        return ((float)Math.Max(0, BassAsio.ChannelGetLevel(false, _masterChannel)),
+                (float)Math.Max(0, BassAsio.ChannelGetLevel(false, _masterChannel + 1)));
     }
 
     public void Dispose()

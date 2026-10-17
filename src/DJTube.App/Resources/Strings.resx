@@ -236,4 +236,10 @@ No: add only this song</value></data>
   <data name="LoopTip" xml:space="preserve"><value>Loop of this many beats from here (on the beat); click again to exit</value></data>
   <data name="RollTip" xml:space="preserve"><value>Loop roll: repeats while held; on release the track continues where it would have been</value></data>
   <data name="Err_LoopNeedsBpm" xml:space="preserve"><value>Loops need the BPM: wait for the analysis to finish.</value></data>
+  <data name="AutoGainTip" xml:space="preserve"><value>Automatic gain: the song is brought to the same loudness as the others (Preferences)</value></data>
+  <data name="MusicalKeyTip" xml:space="preserve"><value>Key of the song (Camelot · name). Without key lock, the pitch moves it.</value></data>
+  <data name="MasterTip" xml:space="preserve"><value>Master volume (not the headphones)</value></data>
+  <data name="MasterVuTip" xml:space="preserve"><value>Master output level: red means it is close to saturating</value></data>
+  <data name="Col_Key" xml:space="preserve"><value>Key</value></data>
+  <data name="Col_KeyTip" xml:space="preserve"><value>Key in Camelot notation. Green: it mixes well with what is playing (same number, ±1, or the other letter).</value></data>
 </root>

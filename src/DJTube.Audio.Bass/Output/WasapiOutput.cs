@@ -1,4 +1,4 @@
-using DJTube.Audio.Bass.Native;
+﻿using DJTube.Audio.Bass.Native;
 using DJTube.Core.Localization;
 using DJTube.Core.Models;
 using ManagedBass.Wasapi;
@@ -81,6 +81,19 @@ internal sealed class WasapiOutput : IDisposable
             int bytes = BassWasapi.GetData(IntPtr.Zero, (int)ManagedBass.DataFlags.Available);
             return bytes > 0 ? bytes / _bytesPerDeviceFrame : 0;
         }
+    }
+
+    private readonly float[] _levels = new float[8];
+
+    /// <summary>Nivel de pico (0..1) de lo que suena por el dispositivo (los dos primeros canales).</summary>
+    public (float Left, float Right) GetLevel()
+    {
+        if (_disposed)
+            return (0, 0);
+        BassWasapi.CurrentDevice = _device;
+        if (BassWasapi.GetLevel(_levels, 0.03f, ManagedBass.LevelRetrievalFlags.Stereo) <= 0)
+            return (0, 0);
+        return (_levels[0], _levels[1]);
     }
 
     public void Dispose()

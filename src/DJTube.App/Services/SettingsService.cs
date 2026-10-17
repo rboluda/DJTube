@@ -45,6 +45,18 @@ public sealed class AppSettings
     /// <summary>Tamaño de letra de la biblioteca (más pequeño = más canciones a la vista).</summary>
     public double LibraryFontSize { get; set; } = 13;
 
+    /// <summary>Igualar la sonoridad de las canciones (ganancia automática).</summary>
+    public bool AutoGain { get; set; } = true;
+
+    /// <summary>Sonoridad objetivo de la ganancia automática (LUFS).</summary>
+    public double TargetLufs { get; set; } = -11;
+
+    /// <summary>Limitador en el master.</summary>
+    public bool Limiter { get; set; } = true;
+
+    /// <summary>Posición del mando de volumen master (0..1).</summary>
+    public double MasterVolume { get; set; } = 1;
+
     /// <summary>Hot cues y loops caen en el golpe más cercano.</summary>
     public bool Quantize { get; set; } = true;
 

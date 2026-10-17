@@ -236,4 +236,10 @@ No: añadir solo esta canción</value></data>
   <data name="LoopTip" xml:space="preserve"><value>Loop de estos tiempos desde aquí (en el golpe); otro clic para salir</value></data>
   <data name="RollTip" xml:space="preserve"><value>Loop roll: repite mientras lo mantienes; al soltar, la pista sigue donde habría ido</value></data>
   <data name="Err_LoopNeedsBpm" xml:space="preserve"><value>Los loops necesitan el BPM: espera a que termine el análisis.</value></data>
+  <data name="AutoGainTip" xml:space="preserve"><value>Ganancia automática: la canción se lleva al mismo volumen que las demás (Preferencias)</value></data>
+  <data name="MusicalKeyTip" xml:space="preserve"><value>Tonalidad de la canción (Camelot · nombre). Sin key lock, el pitch la mueve.</value></data>
+  <data name="MasterTip" xml:space="preserve"><value>Volumen master (no afecta a los auriculares)</value></data>
+  <data name="MasterVuTip" xml:space="preserve"><value>Nivel de la salida master: en rojo, cerca de saturar</value></data>
+  <data name="Col_Key" xml:space="preserve"><value>Tono</value></data>
+  <data name="Col_KeyTip" xml:space="preserve"><value>Tonalidad en notación Camelot. En verde: encaja con lo que suena (mismo número, ±1, o la otra letra).</value></data>
 </root>

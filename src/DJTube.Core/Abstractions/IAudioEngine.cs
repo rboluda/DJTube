@@ -1,4 +1,4 @@
-using DJTube.Core.Models;
+﻿using DJTube.Core.Models;
 
 namespace DJTube.Core.Abstractions;
 
@@ -34,6 +34,15 @@ public interface IAudioEngine : IDisposable
     void StartOutput(OutputConfig config);
 
     void StopOutput();
+
+    /// <summary>Volumen master (factor lineal 0..1; no afecta a los auriculares).</summary>
+    double MasterVolume { get; set; }
+
+    /// <summary>Limitador en el master: evita que la salida (y la grabación) se sature.</summary>
+    bool LimiterEnabled { get; set; }
+
+    /// <summary>Nivel de pico (0..1) de lo que sale por el master ahora mismo.</summary>
+    (float Left, float Right) GetMasterLevel();
 
     /// <summary>Abre una copia de la salida master para grabar la sesión (sigue al cambiar de salida).</summary>
     IAudioTap OpenMasterTap();

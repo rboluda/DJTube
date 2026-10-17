@@ -2,7 +2,9 @@
 using DJTube.Core.Abstractions;
 using DJTube.Core.Localization;
 using DJTube.Core.Models;
+using DJTube.Core.Logic;
 using ManagedBass;
+
 using ManagedBass.Mix;
 using ManagedBass.Wasapi;
 
@@ -26,6 +28,13 @@ public sealed class BassAudioEngine : IAudioEngine
     private AsioOutput? _asio;
     private double _cueMix;
     private double _headphoneVolume = 1;
+    private double _masterVolume = 1;
+    private bool _limiter = true;
+    private int _limiterDsp;
+    private volatile PeakLimiter? _peakLimiter;
+    private readonly DSPProcedure _limiterProc;
+    private readonly BassMasterTap _meter;
+    private readonly float[] _meterBuffer = new float[8192];
     private bool _disposed;
     private readonly List<BassMasterTap> _taps = [];
 
@@ -34,6 +43,10 @@ public sealed class BassAudioEngine : IAudioEngine
         ArgumentOutOfRangeException.ThrowIfLessThan(deckCount, 1);
         BassRuntime.EnsureInitialized();
         _decks = Enumerable.Range(0, deckCount).Select(_ => new BassDeck(GetOutputDelayBytes)).ToArray();
+        _limiterProc = LimiterDsp;
+        // Copia del master para el VU (como la de la grabación): mide exactamente lo que sale.
+        _meter = new BassMasterTap(_ => { });
+        _taps.Add(_meter);
     }
 
     /// <summary>
@@ -57,10 +70,11 @@ public sealed class BassAudioEngine : IAudioEngine
     {
         get
         {
+            int limiter = _peakLimiter?.LatencyFrames ?? 0;
             if (_wasapiMaster is { SampleRate: > 0 } wasapi)
-                return wasapi.BufferedFrames / (double)wasapi.SampleRate;
+                return (wasapi.BufferedFrames + limiter) / (double)wasapi.SampleRate;
             if (_asio is { SampleRate: > 0 } asio)
-                return asio.LatencyFrames / (double)asio.SampleRate;
+                return (asio.LatencyFrames + limiter) / (double)asio.SampleRate;
             return 0;
         }
     }
@@ -128,6 +142,76 @@ public sealed class BassAudioEngine : IAudioEngine
         _asio?.Dispose();
         _asio = null;
         CueOutputError = null;
+    }
+
+    public double MasterVolume
+    {
+        get => _masterVolume;
+        set
+        {
+            _masterVolume = Math.Clamp(double.IsFinite(value) ? value : 0, 0, 1);
+            foreach (var deck in _decks)
+                deck.SetMasterVolume(_masterVolume);
+        }
+    }
+
+    public bool LimiterEnabled
+    {
+        get => _limiter;
+        set
+        {
+            _limiter = value;
+            ApplyLimiter();
+        }
+    }
+
+    /// <summary>Pico de lo que ha salido por el master desde la última consulta (se llama en cada fotograma).</summary>
+    public (float Left, float Right) GetMasterLevel()
+    {
+        float left = 0, right = 0;
+        while (true)
+        {
+            var read = _meter.Read(_meterBuffer);
+            if (read.Samples <= 0)
+                break;
+            int channels = Math.Max(1, read.Channels);
+            for (int i = 0; i + channels - 1 < read.Samples; i += channels)
+            {
+                left = Math.Max(left, Math.Abs(_meterBuffer[i]));
+                right = Math.Max(right, Math.Abs(_meterBuffer[i + (channels > 1 ? 1 : 0)]));
+            }
+        }
+        return (left, right);
+    }
+
+    /// <summary>
+    /// Limitador de picos (con anticipación) en la salida del mezclador master: ni el dispositivo ni la
+    /// grabación reciben nunca nada por encima de −0,3 dBFS. Corre como DSP de BASS: sin reservar memoria
+    /// ni bloquear.
+    /// </summary>
+    private void ApplyLimiter()
+    {
+        if (_master.Handle == 0)
+            return;
+        if (!_limiter)
+        {
+            if (_limiterDsp != 0)
+                Bass.ChannelRemoveDSP(_master.Handle, _limiterDsp);
+            _limiterDsp = 0;
+            _peakLimiter = null;
+            return;
+        }
+        if (_limiterDsp == 0)
+        {
+            _peakLimiter = new PeakLimiter(_master.Rate, _master.Channels);
+            _limiterDsp = Bass.ChannelSetDSP(_master.Handle, _limiterProc, IntPtr.Zero, 0);
+        }
+    }
+
+    private unsafe void LimiterDsp(int handle, int channel, IntPtr buffer, int length, IntPtr user)
+    {
+        if (_peakLimiter is { } limiter && buffer != IntPtr.Zero && length > 0)
+            limiter.Process(new Span<float>((void*)buffer, length / sizeof(float)));
     }
 
     public IAudioTap OpenMasterTap()
@@ -229,6 +313,9 @@ public sealed class BassAudioEngine : IAudioEngine
             FreeMaster();
             // PositionEx: guarda historial de posiciones para compensar la latencia de salida.
             _master = CreateMixer(rate, channels, BassFlags.MixerPositionEx, withOutputSplit: true);
+            _limiterDsp = 0;
+            _peakLimiter = null;
+            ApplyLimiter();
             lock (_taps)
             {
                 foreach (var tap in _taps)
@@ -299,7 +386,7 @@ public sealed class BassAudioEngine : IAudioEngine
 
     private int GetOutputDelayBytes()
     {
-        int frames = _wasapiMaster?.BufferedFrames ?? _asio?.LatencyFrames ?? 0;
+        int frames = (_wasapiMaster?.BufferedFrames ?? _asio?.LatencyFrames ?? 0) + (_peakLimiter?.LatencyFrames ?? 0);
         return frames * _master.Channels * sizeof(float);
     }
 

@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using DJTube.Core.Abstractions;
 using DJTube.Core.Models;
@@ -25,17 +25,30 @@ public sealed class CachingTrackAnalyzer : ITrackAnalyzer
     public async Task<TrackAnalysis> AnalyzeAsync(string filePath, IProgress<double>? progress = null, CancellationToken ct = default)
     {
         string? cachePath = CachePath(filePath);
-        if (cachePath is not null && TryRead(cachePath, readWaveform: true) is { } cached)
+        var (cached, version) = cachePath is not null ? TryReadVersioned(cachePath, readWaveform: true) : (null, 0);
+        if (cached is not null && version >= FormatVersion)
         {
             progress?.Report(1);
             return cached;
         }
 
         var analysis = await _inner.AnalyzeAsync(filePath, progress, ct).ConfigureAwait(false);
+        // Un análisis antiguo (sin sonoridad ni tonalidad) se completa, pero se respeta su BPM: puede
+        // haberse corregido a mano con ½ / ×2.
+        if (cached is not null)
+            analysis = analysis with { Grid = cached.Grid };
         if (cachePath is not null)
             TryWrite(cachePath, analysis);
         return analysis;
     }
+
+    /// <summary>Lo guardado de una pista sin la onda (BPM, sonoridad, tonalidad), o null si no se ha analizado.</summary>
+    public TrackAnalysis? TryGetCachedSummary(string filePath) =>
+        CachePath(filePath) is { } cachePath ? TryReadVersioned(cachePath, readWaveform: false).Analysis : null;
+
+    /// <summary>¿Falta analizar (o completar el análisis de) este archivo?</summary>
+    public bool NeedsAnalysis(string filePath) =>
+        CachePath(filePath) is not { } cachePath || TryReadVersioned(cachePath, readWaveform: false).Version < FormatVersion;
 
     public void SaveGrid(string filePath, BeatGrid? grid)
     {
@@ -53,7 +66,7 @@ public sealed class CachingTrackAnalyzer : ITrackAnalyzer
             File.Delete(cachePath);
     }
 
-    /// <summary>Formato binario: cabecera, rejilla y las cuatro bandas de la onda.</summary>
+    /// <summary>Formato binario (v2): cabecera, rejilla, sonoridad, tonalidad y las cuatro bandas de la onda.</summary>
     public static void Write(Stream stream, TrackAnalysis analysis)
     {
         using var w = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
@@ -62,6 +75,10 @@ public sealed class CachingTrackAnalyzer : ITrackAnalyzer
         w.Write(analysis.Grid is not null);
         w.Write(analysis.Grid?.Bpm ?? 0);
         w.Write(analysis.Grid?.FirstBeatSeconds ?? 0);
+        w.Write(analysis.LoudnessLufs is not null);
+        w.Write(analysis.LoudnessLufs ?? 0);
+        w.Write(analysis.Key is not null);
+        w.Write(analysis.Key?.Code ?? 0);
         var wave = analysis.Waveform;
         w.Write(wave.BinsPerSecond);
         w.Write(wave.Length);
@@ -71,22 +88,37 @@ public sealed class CachingTrackAnalyzer : ITrackAnalyzer
         foreach (float v in wave.High) w.Write(v);
     }
 
-    /// <returns>null si no es un análisis válido de esta versión.</returns>
-    public static TrackAnalysis? Read(Stream stream, bool readWaveform = true)
+    /// <returns>null si no es un análisis válido.</returns>
+    public static TrackAnalysis? Read(Stream stream, bool readWaveform = true) => ReadVersioned(stream, readWaveform).Analysis;
+
+    /// <summary>Lee también la versión: la 1 no tenía sonoridad ni tonalidad.</summary>
+    private static (TrackAnalysis? Analysis, int Version) ReadVersioned(Stream stream, bool readWaveform)
     {
         using var r = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
-        if (r.ReadInt32() != Magic || r.ReadInt32() != FormatVersion)
-            return null;
+        int version;
+        if (r.ReadInt32() != Magic || (version = r.ReadInt32()) is < 1 or > FormatVersion)
+            return (null, 0);
         bool hasGrid = r.ReadBoolean();
         double bpm = r.ReadDouble(), firstBeat = r.ReadDouble();
         BeatGrid? grid = hasGrid && bpm > 0 ? new BeatGrid(bpm, firstBeat) : null;
+        double? lufs = null;
+        MusicalKey? key = null;
+        if (version >= 2)
+        {
+            bool hasLufs = r.ReadBoolean();
+            double l = r.ReadDouble();
+            bool hasKey = r.ReadBoolean();
+            int code = r.ReadInt32();
+            lufs = hasLufs ? l : null;
+            key = hasKey && code is >= 0 and < 24 ? MusicalKey.FromCode(code) : null;
+        }
 
         double binsPerSecond = r.ReadDouble();
         int count = r.ReadInt32();
         if (binsPerSecond <= 0 || count < 0 || count > 50_000_000)
-            return null;
+            return (null, 0);
         if (!readWaveform)
-            return new TrackAnalysis(new WaveformData(binsPerSecond, [], [], [], []), grid);
+            return (new TrackAnalysis(new WaveformData(binsPerSecond, [], [], [], []), grid, lufs, key), version);
 
         float[] ReadBand()
         {
@@ -96,11 +128,11 @@ public sealed class CachingTrackAnalyzer : ITrackAnalyzer
             return band;
         }
         float[] peak = ReadBand(), low = ReadBand(), mid = ReadBand(), high = ReadBand();
-        return new TrackAnalysis(new WaveformData(binsPerSecond, peak, low, mid, high), grid);
+        return (new TrackAnalysis(new WaveformData(binsPerSecond, peak, low, mid, high), grid, lufs, key), version);
     }
 
     private const int Magic = 0x41544A44; // "DJTA"
-    private const int FormatVersion = 1;
+    private const int FormatVersion = 2;
 
     private string? CachePath(string filePath)
     {
@@ -119,18 +151,20 @@ public sealed class CachingTrackAnalyzer : ITrackAnalyzer
         }
     }
 
-    private static TrackAnalysis? TryRead(string cachePath, bool readWaveform)
+    private static TrackAnalysis? TryRead(string cachePath, bool readWaveform) => TryReadVersioned(cachePath, readWaveform).Analysis;
+
+    private static (TrackAnalysis? Analysis, int Version) TryReadVersioned(string cachePath, bool readWaveform)
     {
         try
         {
             if (!File.Exists(cachePath))
-                return null;
+                return (null, 0);
             using var stream = new BufferedStream(File.OpenRead(cachePath));
-            return Read(stream, readWaveform);
+            return ReadVersioned(stream, readWaveform);
         }
         catch (Exception ex) when (ex is IOException or EndOfStreamException or UnauthorizedAccessException or ArgumentException)
         {
-            return null;
+            return (null, 0);
         }
     }
 

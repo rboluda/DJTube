@@ -72,9 +72,10 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                    <StackPanel Grid.Column="0" Margin="0,0,6,0">
                         <TextBlock Text="{loc:Tr Mix_Short}" Style="{StaticResource KnobLabel}" />
                         <controls:Knob Minimum="0" Maximum="1" DefaultValue="0.5" Value="{Binding CueMix}"
                                        Accent="{StaticResource CueBrush}">
@@ -86,7 +87,7 @@
                             </controls:Knob.ToolTip>
                         </controls:Knob>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                    <StackPanel Grid.Column="1" Margin="0,0,6,0">
                         <TextBlock Text="{loc:Tr Vol_Short}" Style="{StaticResource KnobLabel}" />
                         <controls:Knob Minimum="0" Maximum="1" DefaultValue="0.8" IsBipolar="False"
                                        Value="{Binding HeadphoneVolume}" Accent="{StaticResource CueBrush}">
@@ -98,7 +99,23 @@
                             </controls:Knob.ToolTip>
                         </controls:Knob>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" VerticalAlignment="Bottom">
+                    <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Margin="0,0,6,0">
+                        <TextBlock Text="MASTER" Style="{StaticResource KnobLabel}" />
+                        <StackPanel Orientation="Horizontal">
+                            <controls:Knob Minimum="0" Maximum="1" DefaultValue="1" IsBipolar="False"
+                                           Value="{Binding MasterVolume}" Accent="{StaticResource TextBrush}">
+                                <controls:Knob.ToolTip>
+                                    <StackPanel>
+                                        <TextBlock Text="{loc:Tr MasterTip}" />
+                                        <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                    </StackPanel>
+                                </controls:Knob.ToolTip>
+                            </controls:Knob>
+                            <controls:LevelMeter Width="8" Height="30" Margin="4,0,0,0" Left="{Binding MasterLevelLeft}"
+                                                 Right="{Binding MasterLevelRight}" ToolTip="{loc:Tr MasterVuTip}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" VerticalAlignment="Bottom">
                         <TextBlock Text="{loc:Tr Curve}" Style="{StaticResource KnobLabel}" HorizontalAlignment="Left" />
                         <ComboBox ItemsSource="{Binding Curves}" SelectedItem="{Binding SelectedCurve}" Focusable="False"
                                   FontSize="11">

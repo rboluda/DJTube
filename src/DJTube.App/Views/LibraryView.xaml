@@ -277,6 +277,38 @@
                         <DataGridTextColumn Header="{loc:Tr Col_Bpm}" Width="64" IsReadOnly="True"
                                             Binding="{Binding Track.BpmText, Mode=OneWay}" SortMemberPath="Track.Bpm"
                                             ElementStyle="{StaticResource RightCell}" />
+                        <!-- Tonalidad (Camelot): en verde si encaja con lo que suena -->
+                        <DataGridTemplateColumn Header="{loc:Tr Col_Key}" Width="58" SortMemberPath="Track.KeySort">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border HorizontalAlignment="Center" CornerRadius="3" Padding="5,0" ToolTip="{loc:Tr Col_KeyTip}">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Track.IsHarmonic}" Value="True">
+                                                        <Setter Property="Background" Value="{StaticResource PlayBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding Track.KeyText}" FontFamily="Consolas">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Track.IsHarmonic}" Value="True">
+                                                            <Setter Property="Foreground" Value="Black" />
+                                                            <Setter Property="FontWeight" Value="Bold" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
 

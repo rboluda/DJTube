@@ -1,4 +1,4 @@
-namespace DJTube.Core.Models;
+﻿namespace DJTube.Core.Models;
 
 /// <summary>
 /// Rejilla de beats de tempo constante: un beat cada 60/BPM segundos a partir de <see cref="FirstBeatSeconds"/>.
@@ -32,5 +32,8 @@ public sealed record BeatGrid
     private static double Mod(double value, double modulus) => value - modulus * Math.Floor(value / modulus);
 }
 
-/// <summary>Resultado del análisis de una pista.</summary>
-public sealed record TrackAnalysis(WaveformData Waveform, BeatGrid? Grid);
+/// <summary>
+/// Resultado del análisis de una pista: onda, rejilla de beats, sonoridad integrada (LUFS, para la ganancia
+/// automática) y tonalidad.
+/// </summary>
+public sealed record TrackAnalysis(WaveformData Waveform, BeatGrid? Grid, double? LoudnessLufs = null, MusicalKey? Key = null);

@@ -90,17 +90,19 @@ public partial class MainViewModel : ObservableObject
         string dataFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJTube");
         var marks = new Core.Library.TrackMarksStore(System.IO.Path.Combine(dataFolder, "hotcues.json"));
         Func<bool> quantize = () => _settings.Quantize;
-        DeckA = new DeckViewModel("A", engine.Decks[0], localSource, youTube, analyzer, delay, dialogs, marks, quantize);
-        DeckB = new DeckViewModel("B", engine.Decks[1], localSource, youTube, analyzer, delay, dialogs, marks, quantize);
+        Func<double?> autoGain = () => _settings.AutoGain ? _settings.TargetLufs : null;
+        DeckA = new DeckViewModel("A", engine.Decks[0], localSource, youTube, analyzer, delay, dialogs, marks, quantize, autoGain);
+        DeckB = new DeckViewModel("B", engine.Decks[1], localSource, youTube, analyzer, delay, dialogs, marks, quantize, autoGain);
         DeckA.SyncTarget = DeckB;
         DeckB.SyncTarget = DeckA;
 
         var curve = Enum.TryParse(settings.CrossfaderCurve, out CrossfaderCurveType saved) ? saved : CrossfaderCurveType.Linear;
-        Mixer = new MixerViewModel(engine, curve, settings.CueMix, settings.HeadphoneVolume);
+        Mixer = new MixerViewModel(engine, curve, settings.CueMix, settings.HeadphoneVolume, settings.MasterVolume);
+        engine.LimiterEnabled = settings.Limiter;
         Mixer.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName is nameof(MixerViewModel.SelectedCurve) or nameof(MixerViewModel.CueMix)
-                or nameof(MixerViewModel.HeadphoneVolume))
+                or nameof(MixerViewModel.HeadphoneVolume) or nameof(MixerViewModel.MasterVolume))
                 SaveSettings();
         };
 
@@ -362,6 +364,7 @@ public partial class MainViewModel : ObservableObject
         _settings.CrossfaderCurve = Mixer.SelectedCurve.Value.ToString();
         _settings.CueMix = Mixer.CueMix;
         _settings.HeadphoneVolume = Mixer.HeadphoneVolume;
+        _settings.MasterVolume = Mixer.MasterVolume;
         _settings.CheckForUpdates = CheckForUpdates;
         _settings.ShowLibrary = ShowLibrary;
         _settings.LibraryHeight = LibraryHeight;

@@ -32,6 +32,9 @@ public interface IDeck : IDeckTransport
     /// </summary>
     EqSettings Eq { get; set; }
 
+    /// <summary>Ganancia automática (dB) para igualar la sonoridad de las canciones; 0 = sin ajuste.</summary>
+    double AutoGainDb { get; set; }
+
     /// <summary>
     /// Nivel de pico (0..1 por canal) de lo que está sonando del plato, después de ganancia y EQ y antes
     /// del fader. (0, 0) si no suena.
