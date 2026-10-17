@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using DJTube.App.ViewModels;
@@ -28,9 +29,20 @@ public partial class MainWindow : Window
         _ => null,
     };
 
+    private static bool IsTyping => Keyboard.FocusedElement is TextBox;
+
+    // Un clic fuera del campo de enlace le quita el foco (para que vuelvan los atajos).
+    protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+    {
+        base.OnPreviewMouseDown(e);
+        if (IsTyping && e.OriginalSource is DependencyObject source && FindAncestor<TextBox>(source) is null)
+            Focus();
+    }
+
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
-        if (MapKey(e.Key) is not var (deck, isCue))
+        // Mientras se escribe un enlace, las teclas son para el campo de texto.
+        if (IsTyping || MapKey(e.Key) is not var (deck, isCue))
             return;
 
         e.Handled = true;
@@ -45,10 +57,17 @@ public partial class MainWindow : Window
 
     private void OnPreviewKeyUp(object sender, KeyEventArgs e)
     {
-        if (MapKey(e.Key) is (var deck, true))
+        if (!IsTyping && MapKey(e.Key) is (var deck, true))
         {
             deck.CueUpCommand.Execute(null);
             e.Handled = true;
         }
+    }
+
+    private static T? FindAncestor<T>(DependencyObject? node) where T : DependencyObject
+    {
+        while (node is not null and not T)
+            node = node is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(node) : LogicalTreeHelper.GetParent(node);
+        return node as T;
     }
 }

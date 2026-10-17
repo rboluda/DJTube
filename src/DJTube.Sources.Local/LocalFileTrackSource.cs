@@ -50,7 +50,7 @@ public sealed class LocalFileTrackSource : ITrackSource
         }
     }
 
-    public Task<TrackMedia> OpenAsync(TrackInfo track, CancellationToken ct = default)
+    public Task<TrackMedia> OpenAsync(TrackInfo track, IProgress<double>? progress = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(track);
         if (track.SourceName != SourceName)

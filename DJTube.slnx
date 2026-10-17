@@ -4,6 +4,7 @@
     <Project Path="src/DJTube.Audio.Bass/DJTube.Audio.Bass.csproj" />
     <Project Path="src/DJTube.Core/DJTube.Core.csproj" />
     <Project Path="src/DJTube.Sources.Local/DJTube.Sources.Local.csproj" />
+    <Project Path="src/DJTube.Sources.YouTube/DJTube.Sources.YouTube.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/DJTube.Core.Tests/DJTube.Core.Tests.csproj" />

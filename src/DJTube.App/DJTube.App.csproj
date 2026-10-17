@@ -11,6 +11,7 @@
     <ProjectReference Include="..\DJTube.Core\DJTube.Core.csproj" />
     <ProjectReference Include="..\DJTube.Audio.Bass\DJTube.Audio.Bass.csproj" />
     <ProjectReference Include="..\DJTube.Sources.Local\DJTube.Sources.Local.csproj" />
+    <ProjectReference Include="..\DJTube.Sources.YouTube\DJTube.Sources.YouTube.csproj" />
   </ItemGroup>
 
   <ItemGroup>

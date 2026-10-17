@@ -3,6 +3,7 @@ using DJTube.App.Services;
 using DJTube.App.ViewModels;
 using DJTube.Audio.Bass;
 using DJTube.Sources.Local;
+using DJTube.Sources.YouTube;
 
 namespace DJTube.App;
 
@@ -27,7 +28,8 @@ public partial class App : Application
             return;
         }
 
-        var viewModel = new MainViewModel(_engine, new LocalFileTrackSource(), new FileDialogService());
+        var viewModel = new MainViewModel(
+            _engine, new LocalFileTrackSource(), new YouTubeTrackSource(), new FileDialogService());
         var window = new MainWindow { DataContext = viewModel };
         MainWindow = window;
         window.Show();

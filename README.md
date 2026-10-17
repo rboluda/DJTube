@@ -7,14 +7,29 @@ crossfader, pitch con key lock, SYNC, forma de onda y pre-escucha por auriculare
 
 - Windows 10 2004 o superior (x64).
 - SDK de .NET 10.
+- Para cargar enlaces de YouTube: [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+  (`winget install yt-dlp.yt-dlp`, que instala también Deno y FFmpeg).
 
 ## Compilar y ejecutar
+
+Desde la carpeta del proyecto:
 
 ```
 dotnet build DJTube.slnx
 dotnet test DJTube.slnx
 dotnet run --project src/DJTube.App
 ```
+
+## Cargar pistas
+
+- **Enlace de YouTube:** pégalo en el campo de la pletina y pulsa Intro (o arrástralo desde
+  el navegador). Se descarga solo el audio (M4A/AAC) a `%LOCALAPPDATA%\DJTube\Cache\YouTube`;
+  la siguiente vez carga al instante. Si las descargas dejan de funcionar, pulsa
+  «Actualizar yt-dlp»: YouTube cambia a menudo.
+- **Archivo local:** botón «ARCHIVO…» o arrastrar el archivo (MP3, FLAC, WAV, AAC, M4A).
+
+Descargar contenido de YouTube va en contra de sus condiciones de uso. Usa esta función
+bajo tu responsabilidad y solo con contenido que tengas derecho a utilizar.
 
 ## Estructura
 
@@ -23,6 +38,7 @@ dotnet run --project src/DJTube.App
 | `src/DJTube.Core` | Modelos, interfaces y lógica pura (sin dependencias de audio) |
 | `src/DJTube.Audio.Bass` | Motor de audio sobre BASS (ManagedBass) |
 | `src/DJTube.Sources.Local` | Fuente de pistas: archivos locales |
+| `src/DJTube.Sources.YouTube` | Fuente de pistas: enlaces de YouTube (yt-dlp + caché) |
 | `src/DJTube.App` | Interfaz WPF (MVVM) |
 | `tests/DJTube.Core.Tests` | Tests unitarios (xUnit) |
 

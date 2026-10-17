@@ -5,6 +5,7 @@ using DJTube.Core.Abstractions;
 using DJTube.Core.Logic;
 using DJTube.Core.Models;
 using DJTube.Sources.Local;
+using DJTube.Sources.YouTube;
 
 namespace DJTube.App.ViewModels;
 
@@ -14,6 +15,7 @@ public partial class DeckViewModel : ObservableObject
 
     private readonly IDeck _deck;
     private readonly ITrackSource _localSource;
+    private readonly YouTubeTrackSource _youTube;
     private readonly IFileDialogService _dialogs;
     private readonly CueController _cue;
     private CancellationTokenSource? _loadCts;
@@ -62,16 +64,31 @@ public partial class DeckViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(KeyText))]
     private bool _keyLock;
 
-    public DeckViewModel(string name, IDeck deck, ITrackSource localSource, IFileDialogService dialogs)
+    /// <summary>Texto del campo de enlace de YouTube.</summary>
+    [ObservableProperty]
+    private string _linkText = "";
+
+    /// <summary>Progreso de la descarga (0..1), o null si no se conoce.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LoadStatus), nameof(IsLoadProgressKnown))]
+    private double? _loadProgress;
+
+    public DeckViewModel(
+        string name, IDeck deck, ITrackSource localSource, YouTubeTrackSource youTube, IFileDialogService dialogs)
     {
         Name = name;
         _deck = deck;
         _localSource = localSource;
+        _youTube = youTube;
         _dialogs = dialogs;
         _cue = new CueController(deck);
     }
 
     public string Name { get; }
+
+    public string LoadStatus => LoadProgress is { } p ? $"Descargando… {p * 100:0} %" : "Preparando…";
+
+    public bool IsLoadProgressKnown => LoadProgress is not null;
 
     public string PitchText => PitchMath.Format(PitchPercent);
 
@@ -171,6 +188,37 @@ public partial class DeckViewModel : ObservableObject
         await LoadTrackAsync(_localSource, LocalFileTrackSource.CreateTrackInfo(path));
     }
 
+    /// <summary>Carga el enlace de YouTube escrito en el campo de la pletina.</summary>
+    [RelayCommand]
+    private async Task LoadLink()
+    {
+        string text = LinkText.Trim();
+        if (text.Length == 0)
+            return;
+        if (!YouTubeUrl.TryGetVideoId(text, out _))
+        {
+            Error = "No es un enlace a un vídeo de YouTube.";
+            return;
+        }
+        LinkText = "";
+        await LoadTextAsync(text);
+    }
+
+    /// <summary>Carga un enlace de YouTube o la ruta de un archivo (al soltar texto o archivos en la pletina).</summary>
+    public async Task LoadTextAsync(string text)
+    {
+        text = text.Trim();
+        if (YouTubeUrl.TryGetVideoId(text, out string videoId))
+            await LoadTrackAsync(_youTube, _youTube.CreateTrackInfo(videoId));
+        else if (System.IO.File.Exists(text))
+            await LoadFileAsync(text);
+        else
+            Error = "No es un enlace de YouTube ni un archivo de audio.";
+    }
+
+    [RelayCommand]
+    private void CancelLoad() => _loadCts?.Cancel();
+
     public async Task LoadTrackAsync(ITrackSource source, TrackInfo track)
     {
         _loadCts?.Cancel();
@@ -178,33 +226,51 @@ public partial class DeckViewModel : ObservableObject
         _loadCts = cts;
 
         IsLoading = true;
+        LoadProgress = null;
         Error = null;
-        Title = $"Cargando «{track.Title}»…";
+        Title = FormatTitle(track);
+        var progress = new Progress<double>(fraction =>
+        {
+            if (_loadCts == cts)
+                LoadProgress = fraction;
+        });
+
         try
         {
-            using TrackMedia media = await source.OpenAsync(track, cts.Token);
+            using TrackMedia media = await source.OpenAsync(track, progress, cts.Token);
+            LoadProgress = null;
             await _deck.LoadAsync(media, cts.Token);
             _cue.Reset();
-            Title = string.IsNullOrEmpty(track.Artist) ? track.Title : $"{track.Artist} — {track.Title}";
+            Title = FormatTitle(media.Track);
         }
         catch (OperationCanceledException)
         {
-            // La sustituyó otra carga.
+            // Si la canceló el usuario (no otra carga), se vuelve a mostrar la pista que hay en el plato.
+            if (_loadCts == cts)
+                Title = FormatTitle(_deck.Track);
         }
         catch (Exception ex)
         {
             Error = ex.Message;
-            Title = _deck.Track?.Title ?? EmptyTitle;
+            Title = FormatTitle(_deck.Track);
         }
         finally
         {
             if (_loadCts == cts)
             {
                 IsLoading = false;
+                LoadProgress = null;
                 _loadCts = null;
             }
             cts.Dispose();
         }
         Refresh();
     }
+
+    private static string FormatTitle(TrackInfo? track) => track switch
+    {
+        null => EmptyTitle,
+        { Artist: { Length: > 0 } artist } => $"{artist} — {track.Title}",
+        _ => track.Title,
+    };
 }
