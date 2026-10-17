@@ -1,6 +1,7 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using DJTube.Core.Logic;
 using DJTube.Core.Models;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
@@ -26,6 +27,7 @@ public sealed class ZoomWaveform : SKElement
     public static readonly DependencyProperty CuePointProperty = Register(nameof(CuePoint), typeof(double), 0.0);
     public static readonly DependencyProperty AccentProperty = Register(nameof(Accent), typeof(Color), Colors.DodgerBlue);
     public static readonly DependencyProperty LabelProperty = Register(nameof(Label), typeof(string), null);
+    public static readonly DependencyProperty MarkersProperty = Register(nameof(Markers), typeof(DeckMarkers), null);
 
     public static readonly DependencyProperty SecondsVisibleProperty = DependencyProperty.Register(
         nameof(SecondsVisible), typeof(double), typeof(ZoomWaveform),
@@ -62,6 +64,9 @@ public sealed class ZoomWaveform : SKElement
 
     public string? Label { get => (string?)GetValue(LabelProperty); set => SetValue(LabelProperty, value); }
 
+    /// <summary>Hot cues y loop del plato.</summary>
+    public DeckMarkers? Markers { get => (DeckMarkers?)GetValue(MarkersProperty); set => SetValue(MarkersProperty, value); }
+
     /// <summary>Segundos de tiempo real que caben de lado a lado (zoom).</summary>
     public double SecondsVisible { get => (double)GetValue(SecondsVisibleProperty); set => SetValue(SecondsVisibleProperty, value); }
 
@@ -88,6 +93,9 @@ public sealed class ZoomWaveform : SKElement
         using (var axis = new SKPaint { Color = WaveformPaint.Grid, StrokeWidth = 1 })
             canvas.DrawLine(0, h / 2f, w, h / 2f, axis);
 
+        if (Markers?.Loop is { } loop && Waveform is not null)
+            WaveformPaint.DrawLoop(canvas, XAt(loop.Start), XAt(loop.End), h, scale);
+
         if (Waveform is { } waveform)
             WaveformPaint.DrawColumns(canvas, waveform, w, h, TimeAt, spp);
 
@@ -102,6 +110,18 @@ public sealed class ZoomWaveform : SKElement
             {
                 float x = XAt(grid.TimeOfBeat(k));
                 canvas.DrawLine(x, 0, x, h, k % 4 == 0 ? bar : beat);
+            }
+        }
+
+        if (Markers is { } markers && Waveform is not null)
+        {
+            for (int i = 0; i < markers.HotCues.Count; i++)
+            {
+                if (markers.HotCues[i] is not { } t)
+                    continue;
+                float x = XAt(t);
+                if (x >= -20 && x <= w + 20)
+                    WaveformPaint.DrawHotCue(canvas, x, h, scale, i, compact: false);
             }
         }
 

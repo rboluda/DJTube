@@ -67,7 +67,7 @@ public partial class MainWindow : Window
     }
 
     /// <summary>Alto mínimo que necesitan platos y mezclador para verse enteros.</summary>
-    private const double DecksMinHeight = 372;
+    private const double DecksMinHeight = 406;
 
     /// <summary>La biblioteca cede sitio a los platos si la ventana es baja (sin cambiar el alto guardado).</summary>
     private double FitLibraryHeight(double wanted)

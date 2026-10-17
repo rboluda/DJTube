@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -87,8 +87,11 @@ public partial class MainViewModel : ObservableObject
         _outputMode = Enum.TryParse(settings.OutputMode, out OutputMode mode) ? mode : OutputMode.Wasapi;
 
         Func<double> delay = () => engine.OutputDelaySeconds;
-        DeckA = new DeckViewModel("A", engine.Decks[0], localSource, youTube, analyzer, delay, dialogs);
-        DeckB = new DeckViewModel("B", engine.Decks[1], localSource, youTube, analyzer, delay, dialogs);
+        string dataFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJTube");
+        var marks = new Core.Library.TrackMarksStore(System.IO.Path.Combine(dataFolder, "hotcues.json"));
+        Func<bool> quantize = () => _settings.Quantize;
+        DeckA = new DeckViewModel("A", engine.Decks[0], localSource, youTube, analyzer, delay, dialogs, marks, quantize);
+        DeckB = new DeckViewModel("B", engine.Decks[1], localSource, youTube, analyzer, delay, dialogs, marks, quantize);
         DeckA.SyncTarget = DeckB;
         DeckB.SyncTarget = DeckA;
 

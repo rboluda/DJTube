@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using DJTube.App.Localization;
 using DJTube.App.Services;
 using DJTube.Core.Abstractions;
+using DJTube.Core.Library;
 using DJTube.Core.Logic;
 using DJTube.Core.Models;
 using DJTube.Sources.Local;
@@ -25,6 +26,12 @@ public partial class DeckViewModel : ObservableObject
     private readonly Func<double> _outputDelaySeconds;
     private readonly IFileDialogService _dialogs;
     private readonly CueController _cue;
+    private readonly TrackMarksStore _marks;
+    private readonly Func<bool> _quantize;
+    private string? _marksKey;
+    private double? _loopIn;
+    private LoopRegion? _lastLoop;
+    private (double Position, TimeSpan Started)? _roll;
     private readonly PlayheadSmoother _smoother = new();
     private CancellationTokenSource? _loadCts;
     private CancellationTokenSource? _analysisCts;
@@ -111,6 +118,22 @@ public partial class DeckViewModel : ObservableObject
     [ObservableProperty]
     private ImageSource? _artwork;
 
+    /// <summary>Hot cues y loop, para dibujarlos sobre las ondas.</summary>
+    [ObservableProperty]
+    private DeckMarkers _markers = DeckMarkers.Empty;
+
+    [ObservableProperty]
+    private bool _isLooping;
+
+    /// <summary>Hay un LOOP IN marcado esperando el OUT.</summary>
+    [ObservableProperty]
+    private bool _hasLoopIn;
+
+    /// <summary>Tamaño del loop automático, en tiempos.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LoopSizeText))]
+    private double _loopSize = LoopMath.DefaultSize;
+
     public DeckViewModel(
         string name,
         IDeck deck,
@@ -118,8 +141,13 @@ public partial class DeckViewModel : ObservableObject
         YouTubeTrackSource youTube,
         ITrackAnalyzer analyzer,
         Func<double> outputDelaySeconds,
-        IFileDialogService dialogs)
+        IFileDialogService dialogs,
+        TrackMarksStore marks,
+        Func<bool> quantize)
     {
+        _marks = marks;
+        _quantize = quantize;
+        HotCues = Enumerable.Range(0, HotCueMath.Count).Select(i => new HotCueSlot(i)).ToList();
         Name = name;
         _deck = deck;
         _localSource = localSource;
@@ -143,6 +171,11 @@ public partial class DeckViewModel : ObservableObject
     }
 
     public string Name { get; }
+
+    /// <summary>Los 8 botones de hot cue.</summary>
+    public IReadOnlyList<HotCueSlot> HotCues { get; }
+
+    public string LoopSizeText => LoopMath.FormatSize(LoopSize);
 
     /// <summary>Plato con el que se sincroniza este al pulsar SYNC.</summary>
     public DeckViewModel? SyncTarget { get; set; }
@@ -230,6 +263,197 @@ public partial class DeckViewModel : ObservableObject
         CueFraction = duration > 0 ? _cue.CuePoint / duration : 0;
         IsCueLit = loaded && (_cue.IsPreviewing
             || (!playing && Math.Abs(reported - _cue.CuePoint) <= CueController.OnCueTolerance));
+
+        // El loop puede desaparecer en el motor (al saltar fuera de él o cargar otra pista).
+        var loop = _deck.Loop;
+        if (loop != Markers.Loop)
+            UpdateMarkers();
+        IsLooping = loop is not null;
+    }
+
+    // ---------- Hot cues ----------
+
+    /// <summary>Hot cue vacío: lo fija aquí (en el golpe si hay cuantización). Con punto: salta a él.</summary>
+    [RelayCommand]
+    private void HotCue(int index)
+    {
+        if (!_deck.IsLoaded || index < 0 || index >= HotCues.Count)
+            return;
+        var slot = HotCues[index];
+        if (slot.Position is { } target)
+        {
+            _deck.Seek(target);
+            return;
+        }
+        double here = _deck.PositionSeconds;
+        slot.Position = _quantize() ? LoopMath.Quantize(here, Grid) : here;
+        SaveHotCues();
+    }
+
+    [RelayCommand]
+    private void DeleteHotCue(int index)
+    {
+        if (index < 0 || index >= HotCues.Count || HotCues[index].Position is null)
+            return;
+        HotCues[index].Position = null;
+        SaveHotCues();
+    }
+
+    private void LoadHotCues(TrackInfo track)
+    {
+        _marksKey = TrackMarksStore.Key(track.SourceName, track.Id);
+        var saved = _marks.GetHotCues(_marksKey);
+        for (int i = 0; i < HotCues.Count; i++)
+            HotCues[i].Position = saved[i];
+        UpdateMarkers();
+    }
+
+    private void SaveHotCues()
+    {
+        if (_marksKey is { } key)
+            _marks.SetHotCues(key, HotCues.Select(h => h.Position).ToList());
+        UpdateMarkers();
+    }
+
+    private void UpdateMarkers() =>
+        Markers = new DeckMarkers(HotCues.Select(h => h.Position).ToList(), _deck.Loop);
+
+    // ---------- Loops ----------
+
+    /// <summary>LOOP: entra en un loop de <see cref="LoopSize"/> tiempos desde aquí, o sale del que haya.</summary>
+    [RelayCommand]
+    private void ToggleLoop()
+    {
+        if (!_deck.IsLoaded)
+            return;
+        if (_deck.Loop is not null)
+        {
+            ExitLoop();
+            return;
+        }
+        if (LoopMath.AutoLoop(_deck.PositionSeconds, Grid, LoopSize, _deck.DurationSeconds, _quantize()) is not { } loop)
+        {
+            Error = Loc.T("Err_LoopNeedsBpm");
+            return;
+        }
+        StartLoop(loop);
+    }
+
+    /// <summary>Loop a la mitad (o, sin loop, tamaño más pequeño).</summary>
+    [RelayCommand]
+    private void LoopHalve()
+    {
+        int i = IndexOfSize(LoopSize);
+        if (i > 0)
+            LoopSize = LoopMath.Sizes[i - 1];
+        if (_deck.Loop is { } loop)
+            StartLoop(LoopMath.Halve(loop));
+    }
+
+    /// <summary>Loop al doble (o, sin loop, tamaño más grande).</summary>
+    [RelayCommand]
+    private void LoopDouble()
+    {
+        int i = IndexOfSize(LoopSize);
+        if (i < LoopMath.Sizes.Count - 1)
+            LoopSize = LoopMath.Sizes[i + 1];
+        if (_deck.Loop is { } loop)
+            StartLoop(LoopMath.Double(loop, _deck.DurationSeconds));
+    }
+
+    /// <summary>LOOP IN: marca el principio de un loop manual.</summary>
+    [RelayCommand]
+    private void LoopIn()
+    {
+        if (!_deck.IsLoaded)
+            return;
+        double here = _deck.PositionSeconds;
+        _loopIn = _quantize() ? LoopMath.Quantize(here, Grid) : here;
+        HasLoopIn = true;
+    }
+
+    /// <summary>LOOP OUT: cierra el loop manual aquí y empieza a repetirlo.</summary>
+    [RelayCommand]
+    private void LoopOut()
+    {
+        if (!_deck.IsLoaded || _loopIn is not { } start)
+            return;
+        double here = _deck.PositionSeconds;
+        double end = _quantize() ? LoopMath.Quantize(here, Grid) : here;
+        if (LoopMath.Manual(start, end, _deck.DurationSeconds) is { } loop)
+        {
+            StartLoop(loop);
+            _loopIn = null;
+            HasLoopIn = false;
+        }
+    }
+
+    /// <summary>RELOOP: sale del loop o vuelve a entrar en el último.</summary>
+    [RelayCommand]
+    private void Reloop()
+    {
+        if (!_deck.IsLoaded)
+            return;
+        if (_deck.Loop is not null)
+            ExitLoop();
+        else if (_lastLoop is { } last)
+        {
+            _deck.Seek(last.Start);
+            StartLoop(last);
+        }
+    }
+
+    /// <summary>LOOP ROLL: mientras se mantiene, repite; al soltar, la pista sigue donde iría.</summary>
+    [RelayCommand]
+    private void RollDown()
+    {
+        if (!_deck.IsLoaded || _roll is not null || !_deck.IsPlaying)
+            return;
+        if (LoopMath.AutoLoop(_deck.PositionSeconds, Grid, LoopSize, _deck.DurationSeconds, _quantize()) is not { } loop)
+        {
+            Error = Loc.T("Err_LoopNeedsBpm");
+            return;
+        }
+        _roll = (_deck.PositionSeconds, Clock.Elapsed);
+        _deck.SetLoop(loop);
+        UpdateMarkers();
+    }
+
+    [RelayCommand]
+    private void RollUp()
+    {
+        if (_roll is not { } roll)
+            return;
+        _roll = null;
+        _deck.ClearLoop();
+        double elapsed = (Clock.Elapsed - roll.Started).TotalSeconds;
+        _deck.Seek(LoopMath.RollExitPosition(roll.Position, elapsed, PlaybackRate, _deck.DurationSeconds));
+        UpdateMarkers();
+    }
+
+    private void StartLoop(LoopRegion loop)
+    {
+        _deck.SetLoop(loop);
+        _lastLoop = loop;
+        Error = null;
+        UpdateMarkers();
+    }
+
+    private void ExitLoop()
+    {
+        _deck.ClearLoop();
+        UpdateMarkers();
+    }
+
+    private static int IndexOfSize(double size)
+    {
+        int best = 0;
+        for (int i = 1; i < LoopMath.Sizes.Count; i++)
+        {
+            if (Math.Abs(LoopMath.Sizes[i] - size) < Math.Abs(LoopMath.Sizes[best] - size))
+                best = i;
+        }
+        return best;
     }
 
     [RelayCommand]
@@ -415,6 +639,11 @@ public partial class DeckViewModel : ObservableObject
             LoadProgress = null;
             await _deck.LoadAsync(media, cts.Token);
             _cue.Reset();
+            _loopIn = null;
+            _lastLoop = null;
+            _roll = null;
+            HasLoopIn = false;
+            LoadHotCues(media.Track);
             Title = FormatTitle(media.Track);
             loaded = true;
             if (media.FilePath is { } path)

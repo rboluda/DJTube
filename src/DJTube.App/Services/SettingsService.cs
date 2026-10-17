@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 
 namespace DJTube.App.Services;
@@ -44,6 +44,9 @@ public sealed class AppSettings
 
     /// <summary>Tamaño de letra de la biblioteca (más pequeño = más canciones a la vista).</summary>
     public double LibraryFontSize { get; set; } = 13;
+
+    /// <summary>Hot cues y loops caen en el golpe más cercano.</summary>
+    public bool Quantize { get; set; } = true;
 
     /// <summary>Carpeta de las grabaciones (null = Música\DJTube).</summary>
     public string? RecordingsFolder { get; set; }

@@ -227,4 +227,13 @@ No: añadir solo esta canción</value></data>
   <data name="Library_DownloadingSong" xml:space="preserve"><value>Descargando la canción…</value></data>
   <data name="Library_SongAdded" xml:space="preserve"><value>Añadida «{0}»</value></data>
   <data name="Library_SongAlready" xml:space="preserve"><value>«{0}» ya estaba en la biblioteca</value></data>
+  <data name="HotCueTip" xml:space="preserve"><value>Hot cue: clic para fijarlo aquí (vacío) o saltar a él · clic derecho: borrar</value></data>
+  <data name="LoopInTip" xml:space="preserve"><value>LOOP IN: marca el principio de un loop manual</value></data>
+  <data name="LoopOutTip" xml:space="preserve"><value>LOOP OUT: cierra el loop aquí y empieza a repetirlo</value></data>
+  <data name="ReloopTip" xml:space="preserve"><value>Salir del loop, o volver a entrar en el último</value></data>
+  <data name="LoopHalveTip" xml:space="preserve"><value>Loop a la mitad (o tamaño más pequeño)</value></data>
+  <data name="LoopDoubleTip" xml:space="preserve"><value>Loop al doble (o tamaño más grande)</value></data>
+  <data name="LoopTip" xml:space="preserve"><value>Loop de estos tiempos desde aquí (en el golpe); otro clic para salir</value></data>
+  <data name="RollTip" xml:space="preserve"><value>Loop roll: repite mientras lo mantienes; al soltar, la pista sigue donde habría ido</value></data>
+  <data name="Err_LoopNeedsBpm" xml:space="preserve"><value>Los loops necesitan el BPM: espera a que termine el análisis.</value></data>
 </root>

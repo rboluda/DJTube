@@ -212,6 +212,7 @@
                                            Rate="{Binding DeckA.PlaybackRate}"
                                            Grid="{Binding DeckA.Grid}"
                                            CuePoint="{Binding DeckA.CuePoint}"
+                                           Markers="{Binding DeckA.Markers}"
                                            Accent="{StaticResource DeckAColor}"
                                            SecondsVisible="{Binding ZoomSeconds}"
                                            SeekCommand="{Binding DeckA.SeekSecondsCommand}" />
@@ -221,6 +222,7 @@
                                            Rate="{Binding DeckB.PlaybackRate}"
                                            Grid="{Binding DeckB.Grid}"
                                            CuePoint="{Binding DeckB.CuePoint}"
+                                           Markers="{Binding DeckB.Markers}"
                                            Accent="{StaticResource DeckBColor}"
                                            SecondsVisible="{Binding ZoomSeconds}"
                                            SeekCommand="{Binding DeckB.SeekSecondsCommand}" />
@@ -230,7 +232,7 @@
             <!-- Platos y mezclador; debajo, la biblioteca (el divisor ajusta su alto) -->
             <Grid x:Name="BodyGrid" SizeChanged="OnBodySizeChanged">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" MinHeight="372" />
+                    <RowDefinition Height="*" MinHeight="406" />
                     <RowDefinition x:Name="SplitterRow" Height="10" />
                     <RowDefinition x:Name="LibraryRow" Height="220" />
                 </Grid.RowDefinitions>

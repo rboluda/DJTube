@@ -62,7 +62,19 @@ internal sealed class BassDeck : IDeck, IDisposable
         /// <summary>Filtro de canal: solo existe mientras está activo (0 = apagado).</summary>
         public int FilterFx { get; set; }
         public FilterKind FilterKind { get; set; }
+
+        /// <summary>Sync que hace el loop (0 = sin loop).</summary>
+        public int LoopSync { get; set; }
     }
+
+    /// <summary>
+    /// Loop sin cortes: un sync "mixtime" en el final del loop salta al principio en el mismo momento en
+    /// que el decodificador llega ahí (técnica de BASS para loops exactos). Es una única llamada, sin
+    /// reservar memoria; el delegado es estático para que nunca se recoja.
+    /// </summary>
+    private static readonly SyncProcedure LoopJump = (_, channel, _, user) => Bass.ChannelSetPosition(channel, user.ToInt64());
+
+    private LoopRegion? _loop;
 
     // Orden en la cadena: primero el EQ y después el filtro (mayor prioridad = antes).
     private const int EqPriority = 3;
@@ -161,6 +173,49 @@ internal sealed class BassDeck : IDeck, IDisposable
         }
     }
 
+    public LoopRegion? Loop
+    {
+        get { lock (_sync) return _loop; }
+    }
+
+    public void SetLoop(LoopRegion loop)
+    {
+        lock (_sync)
+        {
+            if (_chain is not { } chain || loop.Length <= 0)
+                return;
+            RemoveLoopSyncNoLock(chain);
+            long start = Bass.ChannelSeconds2Bytes(chain.Decoder, loop.Start);
+            long end = Bass.ChannelSeconds2Bytes(chain.Decoder, loop.End);
+            chain.LoopSync = Bass.ChannelSetSync(chain.Decoder, SyncFlags.Position | SyncFlags.Mixtime, end, LoopJump, new IntPtr(start));
+            if (chain.LoopSync == 0)
+                return;
+            _loop = loop;
+
+            // Si ya se ha pasado el final, se vuelve al principio (si no, el sync no saltaría nunca).
+            double position = Bass.ChannelBytes2Seconds(chain.Decoder, Bass.ChannelGetPosition(chain.Tempo, PositionFlags.Bytes));
+            if (position >= loop.End || position < loop.Start - 0.5)
+                SeekNoLock(chain, loop.Start);
+        }
+    }
+
+    public void ClearLoop()
+    {
+        lock (_sync)
+        {
+            if (_chain is { } chain)
+                RemoveLoopSyncNoLock(chain);
+            _loop = null;
+        }
+    }
+
+    private static void RemoveLoopSyncNoLock(Chain chain)
+    {
+        if (chain.LoopSync != 0)
+            Bass.ChannelRemoveSync(chain.Decoder, chain.LoopSync);
+        chain.LoopSync = 0;
+    }
+
     public (float Left, float Right) GetLevel()
     {
         lock (_sync)
@@ -230,6 +285,7 @@ internal sealed class BassDeck : IDeck, IDisposable
 
             old = DetachChainNoLock();
             _chain = loaded;
+            _loop = null;
             _track = media.Track;
             _duration = Bass.ChannelBytes2Seconds(loaded.Decoder, Bass.ChannelGetLength(loaded.Decoder, PositionFlags.Bytes));
             _playing = false;
@@ -303,10 +359,21 @@ internal sealed class BassDeck : IDeck, IDisposable
             }
 
             double target = Math.Clamp(seconds, 0, Math.Max(0, _duration - 0.001));
-            Bass.ChannelSetPosition(chain.Tempo, Bass.ChannelSeconds2Bytes(chain.Decoder, target), PositionFlags.Bytes);
-            // Descarta lo que los splitters tenían ya leído de la posición anterior.
-            BassMix.SplitStreamReset(chain.Tempo);
+            // Saltar fuera del loop lo quita (si no, al pasar por el final volvería atrás sin querer).
+            if (_loop is { } loop && !loop.Contains(target))
+            {
+                RemoveLoopSyncNoLock(chain);
+                _loop = null;
+            }
+            SeekNoLock(chain, target);
         }
+    }
+
+    private static void SeekNoLock(Chain chain, double seconds)
+    {
+        Bass.ChannelSetPosition(chain.Tempo, Bass.ChannelSeconds2Bytes(chain.Decoder, seconds), PositionFlags.Bytes);
+        // Descarta lo que los splitters tenían ya leído de la posición anterior.
+        BassMix.SplitStreamReset(chain.Tempo);
     }
 
     /// <summary>Engancha el plato a los mezcladores (al arrancar o cambiar la salida). cueMixer 0 = sin auriculares.</summary>
@@ -517,6 +584,7 @@ internal sealed class BassDeck : IDeck, IDisposable
     private void ResetTrackNoLock()
     {
         _chain = null;
+        _loop = null;
         _track = null;
         _duration = 0;
         _playing = false;

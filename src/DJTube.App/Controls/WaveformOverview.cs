@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using DJTube.Core.Logic;
@@ -35,6 +35,11 @@ public sealed class WaveformOverview : SKElement
     public static readonly DependencyProperty SeekCommandProperty = DependencyProperty.Register(
         nameof(SeekCommand), typeof(ICommand), typeof(WaveformOverview));
 
+    /// <summary>Hot cues y loop (en segundos) para marcarlos sobre la onda.</summary>
+    public static readonly DependencyProperty MarkersProperty = DependencyProperty.Register(
+        nameof(Markers), typeof(DeckMarkers), typeof(WaveformOverview),
+        new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+
     private SKBitmap? _cache;
     private WaveformData? _cacheData;
     private Color _cacheAccent;
@@ -68,6 +73,12 @@ public sealed class WaveformOverview : SKElement
         set => SetValue(AccentProperty, value);
     }
 
+    public DeckMarkers? Markers
+    {
+        get => (DeckMarkers?)GetValue(MarkersProperty);
+        set => SetValue(MarkersProperty, value);
+    }
+
     /// <summary>Recibe la fracción (0..1) de la pista a la que saltar.</summary>
     public ICommand? SeekCommand
     {
@@ -98,6 +109,17 @@ public sealed class WaveformOverview : SKElement
         }
 
         float scale = w / (float)Math.Max(1, ActualWidth);
+        if (Markers is { } markers && Waveform is { DurationSeconds: > 0 } wf)
+        {
+            float XAt(double t) => (float)(t / wf.DurationSeconds * w);
+            if (markers.Loop is { } loop)
+                WaveformPaint.DrawLoop(canvas, XAt(loop.Start), XAt(loop.End), h, scale);
+            for (int i = 0; i < markers.HotCues.Count; i++)
+            {
+                if (markers.HotCues[i] is { } t)
+                    WaveformPaint.DrawHotCue(canvas, XAt(t), h, scale, i, compact: true);
+            }
+        }
         WaveformPaint.DrawCueMarker(canvas, (float)(Math.Clamp(CueFraction, 0, 1) * w), h, scale);
         WaveformPaint.DrawPlayhead(canvas, (float)(Math.Clamp(Progress, 0, 1) * w), h, scale);
     }
@@ -197,6 +219,36 @@ internal static class WaveformPaint
     {
         using var paint = new SKPaint { Color = SKColors.White, StrokeWidth = 2 * scale, IsAntialias = true };
         canvas.DrawLine(x, 0, x, height, paint);
+    }
+
+    private static readonly SKTypeface CueTypeface = SKTypeface.FromFamilyName("Segoe UI", SKFontStyle.Bold);
+
+    /// <summary>Zona del loop: verde translúcido con los bordes marcados.</summary>
+    public static void DrawLoop(SKCanvas canvas, float x1, float x2, int height, float scale)
+    {
+        using var fill = new SKPaint { Color = new SKColor(0x3D, 0xDC, 0x84, 55) };
+        canvas.DrawRect(x1, 0, Math.Max(1, x2 - x1), height, fill);
+        using var edge = new SKPaint { Color = new SKColor(0x3D, 0xDC, 0x84, 230), StrokeWidth = 2 * scale };
+        canvas.DrawLine(x1, 0, x1, height, edge);
+        canvas.DrawLine(x2, 0, x2, height, edge);
+    }
+
+    /// <summary>Hot cue: línea de su color con el número abajo (en la onda completa, sin número).</summary>
+    public static void DrawHotCue(SKCanvas canvas, float x, int height, float scale, int index, bool compact)
+    {
+        var (r, g, b) = HotCueMath.Colors[index % HotCueMath.Colors.Count];
+        var color = new SKColor(r, g, b);
+        using var line = new SKPaint { Color = color.WithAlpha(200), StrokeWidth = 1.5f * scale };
+        canvas.DrawLine(x, 0, x, height, line);
+        if (compact)
+            return;
+        float size = 13 * scale;
+        using var box = new SKPaint { Color = color, IsAntialias = true };
+        canvas.DrawRoundRect(x, height - size, size, size, 2 * scale, 2 * scale, box);
+        using var font = new SKFont(CueTypeface, 10 * scale);
+        using var text = new SKPaint { Color = SKColors.Black, IsAntialias = true };
+        canvas.DrawText((index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            x + size / 2, height - 3 * scale, SKTextAlign.Center, font, text);
     }
 
     public static void DrawCueMarker(SKCanvas canvas, float x, int height, float scale)

@@ -38,6 +38,17 @@ public interface IDeck : IDeckTransport
     /// </summary>
     (float Left, float Right) GetLevel();
 
+    /// <summary>Loop activo (null si no hay). Se quita al cargar otra pista o saltar fuera de él.</summary>
+    LoopRegion? Loop { get; }
+
+    /// <summary>
+    /// Repite <paramref name="loop"/> sin cortes. Si la posición está después del final, salta al principio.
+    /// </summary>
+    void SetLoop(LoopRegion loop);
+
+    /// <summary>Sale del loop: la pista sigue desde donde esté.</summary>
+    void ClearLoop();
+
     /// <summary>
     /// Prepara la pista en segundo plano y la sustituye por la actual cuando está lista.
     /// El plato queda en pausa al principio. Si se inicia otra carga antes de terminar,
