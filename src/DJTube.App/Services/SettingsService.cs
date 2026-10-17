@@ -42,6 +42,9 @@ public sealed class AppSettings
 
     public double LibraryHeight { get; set; } = 220;
 
+    /// <summary>Tamaño de letra de la biblioteca (más pequeño = más canciones a la vista).</summary>
+    public double LibraryFontSize { get; set; } = 13;
+
     /// <summary>Carpeta de las grabaciones (null = Música\DJTube).</summary>
     public string? RecordingsFolder { get; set; }
 }

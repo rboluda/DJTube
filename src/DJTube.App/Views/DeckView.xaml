@@ -11,7 +11,7 @@
              d:DataContext="{d:DesignInstance Type=vm:DeckViewModel}"
              d:DesignWidth="520" d:DesignHeight="320"
              AllowDrop="True" Drop="OnDrop" DragOver="OnDragOver">
-    <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="16">
+    <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

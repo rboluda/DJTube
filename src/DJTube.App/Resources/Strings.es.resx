@@ -33,7 +33,7 @@
   <data name="Library_DeleteConfirm" xml:space="preserve"><value>¿Quitar «{0}» de la biblioteca? Se borrará el audio descargado.</value></data>
   <data name="Library_InUse" xml:space="preserve"><value>«{0}» está cargada en un plato: carga otra canción en ese plato antes de quitarla.</value></data>
   <data name="Library_Empty" xml:space="preserve"><value>Aquí aparecerán las canciones que cargues desde enlaces de YouTube.</value></data>
-  <data name="Library_Hint" xml:space="preserve"><value>Doble clic: cargar en el plato que no suena · arrastrar a un plato · F2: editar</value></data>
+  <data name="Library_Hint" xml:space="preserve"><value>Doble clic: al plato libre · arrastrar a un plato · F2: editar · Ctrl+rueda: tamaño de letra</value></data>
   <data name="Library_ToggleTip" xml:space="preserve"><value>Mostrar u ocultar la biblioteca</value></data>
   <data name="Menu_Library" xml:space="preserve"><value>_Biblioteca</value></data>
   <data name="LibraryButton" xml:space="preserve"><value>Biblioteca</value></data>
@@ -197,4 +197,34 @@
   <data name="Menu_Record" xml:space="preserve"><value>_Grabar / seguir grabando</value></data>
   <data name="Menu_PauseRecording" xml:space="preserve"><value>_Pausar grabación</value></data>
   <data name="Menu_StopRecording" xml:space="preserve"><value>_Detener grabación</value></data>
+  <data name="Library_Import" xml:space="preserve"><value>Pega un enlace de YouTube (canción o lista)</value></data>
+  <data name="Library_ImportButton" xml:space="preserve"><value>Añadir</value></data>
+  <data name="Library_ImportTip" xml:space="preserve"><value>Descarga una canción o una lista entera a la biblioteca (también puedes soltar aquí el enlace)</value></data>
+  <data name="Library_ImportWhich" xml:space="preserve"><value>Este enlace es una canción dentro de una lista.
+
+Sí: añadir la lista entera
+No: añadir solo esta canción</value></data>
+  <data name="Library_ImportQueued" xml:space="preserve"><value>Esperando a que termine la descarga en curso…</value></data>
+  <data name="Library_ReadingList" xml:space="preserve"><value>Leyendo la lista…</value></data>
+  <data name="Library_Song" xml:space="preserve"><value>canción</value></data>
+  <data name="Library_Downloading" xml:space="preserve"><value>Descargando «{0}»: {1} de {2}</value></data>
+  <data name="Library_DownloadErrors" xml:space="preserve"><value>{0} con error</value></data>
+  <data name="Library_ImportDone" xml:space="preserve"><value>«{0}»: {1} canciones nuevas</value></data>
+  <data name="Library_ImportCancelled" xml:space="preserve"><value>Descarga cancelada (lo que ya había terminado se queda en la biblioteca)</value></data>
+  <data name="Library_ImportError" xml:space="preserve"><value>No se ha podido importar: {0}</value></data>
+  <data name="Library_CancelImport" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Library_Loose" xml:space="preserve"><value>Canciones sueltas</value></data>
+  <data name="Library_PlaylistCount" xml:space="preserve"><value>{0} de {1}</value></data>
+  <data name="Library_UpdatePlaylist" xml:space="preserve"><value>Actualizar la lista (descargar las nuevas)</value></data>
+  <data name="Library_RemovePlaylist" xml:space="preserve"><value>Quitar la lista (las canciones se quedan)</value></data>
+  <data name="Library_RemovePlaylistAndSongs" xml:space="preserve"><value>Quitar la lista y sus canciones…</value></data>
+  <data name="Library_RemovePlaylistConfirm" xml:space="preserve"><value>¿Quitar «{0}» y borrar las {1} canciones que solo están en esta lista? Las que estén cargadas en un plato se conservan.</value></data>
+  <data name="Library_RemoveFromPlaylist" xml:space="preserve"><value>Quitar de esta lista</value></data>
+  <data name="Library_Analyzing" xml:space="preserve"><value>Analizando BPM: quedan {0}</value></data>
+  <data name="Library_FontSmaller" xml:space="preserve"><value>Letra más pequeña (más canciones a la vista) · Ctrl+rueda</value></data>
+  <data name="Library_FontLarger" xml:space="preserve"><value>Letra más grande · Ctrl+rueda</value></data>
+  <data name="Library_LargePlaylist" xml:space="preserve"><value>«{0}» tiene {1} canciones que aún no están en la biblioteca (unos {2} MB). ¿Descargarlas todas?</value></data>
+  <data name="Library_DownloadingSong" xml:space="preserve"><value>Descargando la canción…</value></data>
+  <data name="Library_SongAdded" xml:space="preserve"><value>Añadida «{0}»</value></data>
+  <data name="Library_SongAlready" xml:space="preserve"><value>«{0}» ya estaba en la biblioteca</value></data>
 </root>

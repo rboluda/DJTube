@@ -69,10 +69,22 @@ dotnet run --project src/DJTube.App
 Debajo de los platos está todo lo descargado (Ver → Biblioteca o Ctrl+L para ocultarla; el
 divisor cambia su alto). Artista y título salen del título del vídeo y se pueden corregir con F2.
 
+- **Añadir:** pega en el campo de la biblioteca el enlace de una canción o de una **lista de
+  reproducción** (o suéltalo encima) y pulsa Intro. Las listas se descargan enteras y aparecen como
+  una rama que se despliega con sus canciones; las demás van en «Canciones sueltas».
 - **Cargar:** botones A / B de cada fila, doble clic (va al plato que no está sonando) o
   arrastrar la fila a un plato.
 - **Buscar:** escribe parte del artista o del título.
-- **Quitar:** Supr o menú contextual; borra el audio de la caché.
+- **Quitar:** Supr o menú contextual; borra el audio de la caché. En la rama de una lista, el menú
+  permite actualizarla (bajar las canciones nuevas) o quitarla.
+- **Tamaño de letra:** A− / A+ o Ctrl+rueda, para ver más canciones a la vez.
+- El BPM se calcula solo, en segundo plano.
+
+## Grabar la sesión
+
+La barra de abajo graba lo que suena por el master en WAV (calidad CD), con pausa. Los archivos van a
+Música\DJTube (Configuración → Preferencias para cambiarlo). Se guarda en disco cada segundo: si
+DJTube se cierra de golpe, al volver a abrirlo repara la grabación y avisa.
 
 Descargar contenido de YouTube va en contra de sus condiciones de uso. Usa esta función
 bajo tu responsabilidad y solo con contenido que tengas derecho a utilizar.

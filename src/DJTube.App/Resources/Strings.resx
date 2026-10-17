@@ -33,7 +33,7 @@
   <data name="Library_DeleteConfirm" xml:space="preserve"><value>Remove “{0}” from the library? The downloaded audio will be deleted.</value></data>
   <data name="Library_InUse" xml:space="preserve"><value>“{0}” is loaded on a deck: unload it or load another track first.</value></data>
   <data name="Library_Empty" xml:space="preserve"><value>Tracks you load from YouTube links will appear here.</value></data>
-  <data name="Library_Hint" xml:space="preserve"><value>Double-click: load into the deck that is not playing · drag onto a deck · F2: edit</value></data>
+  <data name="Library_Hint" xml:space="preserve"><value>Double-click: load into the free deck · drag onto a deck · F2: edit · Ctrl+wheel: text size</value></data>
   <data name="Library_ToggleTip" xml:space="preserve"><value>Show or hide the library</value></data>
   <data name="Menu_Library" xml:space="preserve"><value>_Library</value></data>
   <data name="LibraryButton" xml:space="preserve"><value>Library</value></data>
@@ -197,4 +197,34 @@
   <data name="Menu_Record" xml:space="preserve"><value>Start / resume _recording</value></data>
   <data name="Menu_PauseRecording" xml:space="preserve"><value>_Pause recording</value></data>
   <data name="Menu_StopRecording" xml:space="preserve"><value>S_top recording</value></data>
+  <data name="Library_Import" xml:space="preserve"><value>Paste a YouTube link (song or playlist)</value></data>
+  <data name="Library_ImportButton" xml:space="preserve"><value>Add</value></data>
+  <data name="Library_ImportTip" xml:space="preserve"><value>Downloads a song or a whole playlist into the library (you can also drop the link here)</value></data>
+  <data name="Library_ImportWhich" xml:space="preserve"><value>This link is a song inside a playlist.
+
+Yes: add the whole playlist
+No: add only this song</value></data>
+  <data name="Library_ImportQueued" xml:space="preserve"><value>Waiting for the current download to finish…</value></data>
+  <data name="Library_ReadingList" xml:space="preserve"><value>Reading the playlist…</value></data>
+  <data name="Library_Song" xml:space="preserve"><value>song</value></data>
+  <data name="Library_Downloading" xml:space="preserve"><value>Downloading “{0}”: {1} of {2}</value></data>
+  <data name="Library_DownloadErrors" xml:space="preserve"><value>{0} failed</value></data>
+  <data name="Library_ImportDone" xml:space="preserve"><value>“{0}”: {1} new songs</value></data>
+  <data name="Library_ImportCancelled" xml:space="preserve"><value>Download cancelled (what was finished stays in the library)</value></data>
+  <data name="Library_ImportError" xml:space="preserve"><value>Could not import: {0}</value></data>
+  <data name="Library_CancelImport" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Library_Loose" xml:space="preserve"><value>Single songs</value></data>
+  <data name="Library_PlaylistCount" xml:space="preserve"><value>{0} of {1}</value></data>
+  <data name="Library_UpdatePlaylist" xml:space="preserve"><value>Update playlist (download new songs)</value></data>
+  <data name="Library_RemovePlaylist" xml:space="preserve"><value>Remove playlist (keep its songs)</value></data>
+  <data name="Library_RemovePlaylistAndSongs" xml:space="preserve"><value>Remove playlist and its songs…</value></data>
+  <data name="Library_RemovePlaylistConfirm" xml:space="preserve"><value>Remove “{0}” and delete the {1} songs that are only in this playlist? Songs loaded on a deck are kept.</value></data>
+  <data name="Library_RemoveFromPlaylist" xml:space="preserve"><value>Remove from this playlist</value></data>
+  <data name="Library_Analyzing" xml:space="preserve"><value>Analysing BPM: {0} left</value></data>
+  <data name="Library_FontSmaller" xml:space="preserve"><value>Smaller text (more songs in view) · Ctrl+wheel</value></data>
+  <data name="Library_FontLarger" xml:space="preserve"><value>Larger text · Ctrl+wheel</value></data>
+  <data name="Library_LargePlaylist" xml:space="preserve"><value>“{0}” has {1} songs that are not in the library yet (about {2} MB). Download them all?</value></data>
+  <data name="Library_DownloadingSong" xml:space="preserve"><value>Downloading the song…</value></data>
+  <data name="Library_SongAdded" xml:space="preserve"><value>Added “{0}”</value></data>
+  <data name="Library_SongAlready" xml:space="preserve"><value>“{0}” was already in the library</value></data>
 </root>

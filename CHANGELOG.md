@@ -4,6 +4,31 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [versionado semántico](https://semver.org/lang/es/). La versión se define en
 `Directory.Build.props`.
 
+## [0.9.0] - 2026-10-17
+
+### Añadido
+- Grabación de la sesión: barra bajo la biblioteca con grabar, pausa y detener, tiempo, tamaño,
+  espacio libre y nivel. Graba exactamente lo que suena por el master en WAV (calidad CD) en
+  Música\DJTube (se puede cambiar en Preferencias).
+- La grabación está blindada: se vuelca al disco cada segundo, se guarda sola al salir, al apagar
+  Windows o al actualizar, y si DJTube se cierra de golpe se repara al volver a abrirlo. Al llegar
+  al límite del formato WAV sigue en un archivo nuevo.
+- Listas de reproducción de YouTube: pega el enlace de una lista (o de una canción) en el campo de
+  la biblioteca, o suéltalo encima, y se descarga entera, de dos en dos, con progreso y cancelar.
+  Los «Mix» automáticos se limitan a sus 50 primeras canciones y se pide confirmación con listas
+  muy grandes.
+- La biblioteca se muestra en árbol: cada lista es una rama que se despliega con sus canciones, en
+  su orden; las que no son de ninguna lista van en «Canciones sueltas». Menú de la rama: actualizar
+  la lista, quitarla o quitarla con sus canciones. Una canción puede estar en varias listas.
+- El BPM de las canciones descargadas se calcula en segundo plano, sin cargarlas en un plato.
+- Tamaño de letra de la biblioteca (botones A− / A+ o Ctrl+rueda) para ver más canciones a la vez.
+- Rueda del ratón en faders, crossfader y mandos, también con el clic pulsado (Mayús: ajuste fino).
+
+### Cambiado
+- Más contraste: paneles con borde, botones y campos con filo, y brillo al pasar el ratón.
+- El estado de yt-dlp y su botón pasan a la barra superior; la barra de abajo deja sitio a la biblioteca.
+- README: lo que distingue a DJTube, pinchar directamente con YouTube.
+
 ## [0.8.0] - 2026-10-17
 
 ### Añadido

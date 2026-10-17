@@ -150,6 +150,22 @@
                               ToolTip="{loc:Tr HeadphonesTip}" />
                 </StackPanel>
 
+                <!-- yt-dlp (descargas de YouTube): versión o error, y actualizar -->
+                <Button DockPanel.Dock="Right" Content="{loc:Tr UpdateYtDlp}" Padding="8,3" FontSize="11" Margin="8,0,0,0"
+                        VerticalAlignment="Center" Command="{Binding UpdateYtDlpCommand}" ToolTip="{loc:Tr UpdateYtDlpTip}" />
+                <TextBlock DockPanel.Dock="Right" Text="{Binding YtDlpStatus}" VerticalAlignment="Center" FontSize="11"
+                           Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="360" ToolTip="{Binding YtDlpStatus}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasYtDlpError}" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
                 <!-- Estado de las dos salidas -->
                 <StackPanel VerticalAlignment="Center" Margin="16,0,0,0">
                     <TextBlock Text="{Binding OutputStatus}" FontSize="11" TextTrimming="CharacterEllipsis"
@@ -183,40 +199,14 @@
                 </StackPanel>
             </DockPanel>
 
-            <!-- Barra inferior: atajos y estado de yt-dlp -->
-            <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
-                <ToggleButton DockPanel.Dock="Right" Content="{loc:Tr LibraryButton}" Padding="8,3" FontSize="11" Margin="6,0,0,0"
-                              Focusable="False" IsChecked="{Binding ShowLibrary}" Tag="{StaticResource DeckABrush}"
-                              ToolTip="{loc:Tr Library_ToggleTip}" />
-                <Button DockPanel.Dock="Right" Content="{loc:Tr OpenCache}" Padding="8,3" FontSize="11" Margin="6,0,0,0"
-                        Command="{Binding OpenCacheCommand}" ToolTip="{Binding CacheFolder}" />
-                <Button DockPanel.Dock="Right" Content="{loc:Tr UpdateYtDlp}" Padding="8,3" FontSize="11" Margin="6,0,0,0"
-                        Command="{Binding UpdateYtDlpCommand}" ToolTip="{loc:Tr UpdateYtDlpTip}" />
-                <TextBlock DockPanel.Dock="Right" Text="{Binding YtDlpStatus}" VerticalAlignment="Center" FontSize="11"
-                           Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="460">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasYtDlpError}" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-                <TextBlock Style="{StaticResource CaptionText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                           Text="{loc:Tr ShortcutsHint}" />
-            </DockPanel>
-
             <!-- Barra de grabación (bajo la biblioteca) -->
             <views:RecordingBar DockPanel.Dock="Bottom" Margin="0,10,0,0" DataContext="{Binding Recording}" />
 
             <!-- Vista ampliada de los dos platos (estilo AtomixMP3): cabezal fijo en el centro -->
-            <Border DockPanel.Dock="Top" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="8"
+            <Border DockPanel.Dock="Top" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="8"
                     Margin="0,0,0,12">
                 <StackPanel>
-                    <controls:ZoomWaveform Height="64" Label="A" ToolTip="{loc:Tr ZoomTip}"
+                    <controls:ZoomWaveform Height="56" Label="A" ToolTip="{loc:Tr ZoomTip}"
                                            Waveform="{Binding DeckA.Waveform}"
                                            Position="{Binding DeckA.PositionSeconds}"
                                            Rate="{Binding DeckA.PlaybackRate}"
@@ -225,7 +215,7 @@
                                            Accent="{StaticResource DeckAColor}"
                                            SecondsVisible="{Binding ZoomSeconds}"
                                            SeekCommand="{Binding DeckA.SeekSecondsCommand}" />
-                    <controls:ZoomWaveform Height="64" Label="B" Margin="0,6,0,0" ToolTip="{loc:Tr ZoomTip}"
+                    <controls:ZoomWaveform Height="56" Label="B" Margin="0,6,0,0" ToolTip="{loc:Tr ZoomTip}"
                                            Waveform="{Binding DeckB.Waveform}"
                                            Position="{Binding DeckB.PositionSeconds}"
                                            Rate="{Binding DeckB.PlaybackRate}"
@@ -240,7 +230,7 @@
             <!-- Platos y mezclador; debajo, la biblioteca (el divisor ajusta su alto) -->
             <Grid x:Name="BodyGrid" SizeChanged="OnBodySizeChanged">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" MinHeight="300" />
+                    <RowDefinition Height="*" MinHeight="372" />
                     <RowDefinition x:Name="SplitterRow" Height="10" />
                     <RowDefinition x:Name="LibraryRow" Height="220" />
                 </Grid.RowDefinitions>

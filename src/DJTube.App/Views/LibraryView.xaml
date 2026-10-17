@@ -7,7 +7,8 @@
              xmlns:loc="clr-namespace:DJTube.App.Localization"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:LibraryViewModel}"
-             d:DesignWidth="1000" d:DesignHeight="220">
+             d:DesignWidth="1000" d:DesignHeight="220"
+             AllowDrop="True" DragOver="OnDragOver" Drop="OnDrop">
     <UserControl.Resources>
         <!-- Botones A / B de cada fila -->
         <Style x:Key="DeckLoadButton" TargetType="Button">
@@ -43,46 +44,186 @@
         <Style x:Key="TrimmedCell" TargetType="TextBlock">
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         </Style>
+
+        <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Focusable" Value="False" />
+        </Style>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="10,8,10,6">
+    <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1"
+            CornerRadius="8" Padding="10,8,10,6">
         <DockPanel>
-            <!-- Cabecera: título, número de canciones, búsqueda -->
-            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <!-- Cabecera: título, recuento, análisis; a la derecha importar, buscar, letra y ocultar -->
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
                 <Button DockPanel.Dock="Right" Content="&#xE70D;" FontFamily="Segoe MDL2 Assets" FontSize="10"
-                        Padding="8,4" Margin="8,0,0,0" Focusable="False"
+                        Style="{StaticResource SmallButton}" Margin="6,0,0,0"
                         Command="{Binding DataContext.ToggleLibraryCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                         ToolTip="{loc:Tr Library_ToggleTip}" />
-                <TextBox DockPanel.Dock="Right" x:Name="SearchBox" Width="260"
+                <Button DockPanel.Dock="Right" Content="A+" Style="{StaticResource SmallButton}" Margin="4,0,0,0"
+                        Command="{Binding FontLargerCommand}" ToolTip="{loc:Tr Library_FontLarger}" />
+                <Button DockPanel.Dock="Right" Content="A−" Style="{StaticResource SmallButton}" Margin="10,0,0,0"
+                        Command="{Binding FontSmallerCommand}" ToolTip="{loc:Tr Library_FontSmaller}" />
+                <TextBox DockPanel.Dock="Right" x:Name="SearchBox" Width="210" Margin="10,0,0,0"
                          Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                          Tag="{loc:Tr Library_Search}" KeyDown="OnSearchKeyDown" />
+                <Button DockPanel.Dock="Right" Content="{loc:Tr Library_ImportButton}" Style="{StaticResource SmallButton}"
+                        Margin="6,0,0,0" Command="{Binding ImportCommand}" ToolTip="{loc:Tr Library_ImportTip}" />
+                <TextBox DockPanel.Dock="Right" x:Name="ImportBox" Width="300"
+                         Text="{Binding ImportText, UpdateSourceTrigger=PropertyChanged}"
+                         Tag="{loc:Tr Library_Import}" KeyDown="OnImportKeyDown" ToolTip="{loc:Tr Library_ImportTip}" />
                 <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"
                            Foreground="{StaticResource DeckABrush}" Margin="2,0,8,0" />
                 <TextBlock Text="{loc:Tr Library}" FontWeight="SemiBold" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding CountText}" Style="{StaticResource CaptionText}" VerticalAlignment="Center"
                            Margin="10,0,0,0" />
+                <TextBlock Text="{Binding AnalysisStatus}" Style="{StaticResource CaptionText}" VerticalAlignment="Center"
+                           Foreground="{StaticResource CueBrush}" Margin="10,0,0,0" />
                 <TextBlock Text="{loc:Tr Library_Hint}" Style="{StaticResource CaptionText}" VerticalAlignment="Center"
-                           Margin="18,0,12,0" TextTrimming="CharacterEllipsis" />
+                           Margin="14,0,8,0" TextTrimming="CharacterEllipsis" ToolTip="{loc:Tr Library_Hint}" />
+            </DockPanel>
+
+            <!-- Progreso de la importación -->
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                <DockPanel.Style>
+                    <Style TargetType="DockPanel">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ImportStatus}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
+                <Button DockPanel.Dock="Right" Content="{loc:Tr Library_CancelImport}" Style="{StaticResource SmallButton}"
+                        Margin="8,0,0,0" Command="{Binding CancelImportCommand}"
+                        Visibility="{Binding IsImporting, Converter={StaticResource BoolToVisibility}}" />
+                <Button DockPanel.Dock="Right" Content="✕" Margin="8,0,0,0"
+                        Command="{Binding DismissImportStatusCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource SmallButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsImporting}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <ProgressBar DockPanel.Dock="Right" Width="180" Minimum="0" Maximum="1" VerticalAlignment="Center"
+                             Value="{Binding ImportProgress, Mode=OneWay, TargetNullValue=0}"
+                             Foreground="{StaticResource DeckABrush}"
+                             Visibility="{Binding IsImporting, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Text="{Binding ImportStatus}" FontSize="11" VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding ImportStatus}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ImportHasError}" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </DockPanel>
 
             <Grid>
                 <DataGrid x:Name="LibraryGrid" ItemsSource="{Binding View}" SelectedItem="{Binding Selected}"
-                          RowHeight="34" ColumnHeaderHeight="26" IsReadOnly="False"
-                          BeginningEdit="OnBeginningEdit" PreviewKeyDown="OnGridKeyDown"
-                          PreviewMouseLeftButtonDown="OnGridMouseDown" MouseMove="OnGridMouseMove">
+                          RowHeight="{Binding RowHeight}" FontSize="{Binding FontSize}" ColumnHeaderHeight="26"
+                          IsReadOnly="False" HorizontalScrollBarVisibility="Disabled"
+                          BeginningEdit="OnBeginningEdit" PreviewKeyDown="OnGridKeyDown" Sorting="OnSorting"
+                          PreviewMouseLeftButtonDown="OnGridMouseDown" MouseMove="OnGridMouseMove"
+                          PreviewMouseWheel="OnGridMouseWheel">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="{loc:Tr Library_LoadA}" Command="{Binding LoadToACommand}" />
                             <MenuItem Header="{loc:Tr Library_LoadB}" Command="{Binding LoadToBCommand}" />
                             <Separator />
                             <MenuItem Header="{loc:Tr Library_Edit}" Click="OnEditClick" />
+                            <MenuItem Header="{loc:Tr Library_RemoveFromPlaylist}" Command="{Binding RemoveFromPlaylistCommand}"
+                                      Visibility="{Binding Selected.Group.IsPlaylist, Converter={StaticResource BoolToVisibility}, FallbackValue=Collapsed}" />
                             <MenuItem Header="{loc:Tr Library_Delete}" Command="{Binding DeleteCommand}" />
                         </ContextMenu>
                     </DataGrid.ContextMenu>
+
+                    <!-- Árbol: cada lista es una rama que se despliega con sus canciones -->
+                    <DataGrid.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.ContainerStyle>
+                                <Style TargetType="GroupItem">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="GroupItem">
+                                                <StackPanel>
+                                                    <ToggleButton IsChecked="{Binding Name.IsExpanded}" Focusable="False" Cursor="Hand"
+                                                                  Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=DataGrid}}">
+                                                        <ToggleButton.Template>
+                                                            <ControlTemplate TargetType="ToggleButton">
+                                                                <Border x:Name="Bd" Background="{StaticResource ControlBrush}"
+                                                                        BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="0,0,0,1"
+                                                                        Padding="8,5" Margin="0,2,0,0" CornerRadius="4">
+                                                                    <DockPanel>
+                                                                        <TextBlock x:Name="Arrow" Text="&#xE76C;" FontFamily="Segoe MDL2 Assets"
+                                                                                   FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0"
+                                                                                   Foreground="{StaticResource TextDimBrush}" />
+                                                                        <TextBlock x:Name="Icon" Text="&#xE90B;" FontFamily="Segoe MDL2 Assets"
+                                                                                   VerticalAlignment="Center" Margin="0,0,8,0"
+                                                                                   Foreground="{StaticResource DeckBBrush}" />
+                                                                        <TextBlock Text="{Binding Name.Title}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                                                   TextTrimming="CharacterEllipsis" />
+                                                                        <TextBlock Text="{Binding Name.CountText}" Style="{StaticResource CaptionText}"
+                                                                                   VerticalAlignment="Center" Margin="10,0,0,0" />
+                                                                    </DockPanel>
+                                                                    <Border.ContextMenu>
+                                                                        <ContextMenu>
+                                                                            <MenuItem Header="{loc:Tr Library_UpdatePlaylist}"
+                                                                                      Command="{Binding PlacementTarget.TemplatedParent.Tag.UpdatePlaylistCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                                      CommandParameter="{Binding Name}"
+                                                                                      IsEnabled="{Binding Name.IsPlaylist}" />
+                                                                            <Separator />
+                                                                            <MenuItem Header="{loc:Tr Library_RemovePlaylist}"
+                                                                                      Command="{Binding PlacementTarget.TemplatedParent.Tag.RemovePlaylistCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                                      CommandParameter="{Binding Name}"
+                                                                                      IsEnabled="{Binding Name.IsPlaylist}" />
+                                                                            <MenuItem Header="{loc:Tr Library_RemovePlaylistAndSongs}"
+                                                                                      Command="{Binding PlacementTarget.TemplatedParent.Tag.RemovePlaylistAndSongsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                                      CommandParameter="{Binding Name}"
+                                                                                      IsEnabled="{Binding Name.IsPlaylist}" />
+                                                                        </ContextMenu>
+                                                                    </Border.ContextMenu>
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsChecked" Value="True">
+                                                                        <Setter TargetName="Arrow" Property="Text" Value="&#xE70D;" />
+                                                                    </Trigger>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                                                                    </Trigger>
+                                                                    <DataTrigger Binding="{Binding Name.IsPlaylist}" Value="False">
+                                                                        <Setter TargetName="Icon" Property="Text" Value="&#xE8D6;" />
+                                                                        <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                                                                    </DataTrigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </ToggleButton.Template>
+                                                    </ToggleButton>
+                                                    <ItemsPresenter Margin="14,0,0,0"
+                                                                    Visibility="{Binding Name.IsExpanded, Converter={StaticResource BoolToVisibility}}" />
+                                                </StackPanel>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </GroupStyle.ContainerStyle>
+                        </GroupStyle>
+                    </DataGrid.GroupStyle>
+
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                             <EventSetter Event="MouseDoubleClick" Handler="OnRowDoubleClick" />
-                            <Setter Property="ToolTip" Value="{Binding Link}" />
+                            <Setter Property="ToolTip" Value="{Binding Track.Link}" />
                             <Setter Property="ToolTipService.InitialShowDelay" Value="1200" />
                         </Style>
                     </DataGrid.RowStyle>
@@ -105,14 +246,16 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- Miniatura del vídeo -->
-                        <DataGridTemplateColumn Width="58" CanUserResize="False" CanUserSort="False">
+                        <!-- Miniatura del vídeo (crece con la letra) -->
+                        <DataGridTemplateColumn Width="Auto" CanUserResize="False" CanUserSort="False">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Width="48" Height="27" CornerRadius="3" Background="{StaticResource ControlBrush}">
+                                    <Border CornerRadius="3" Background="{StaticResource ControlBrush}"
+                                            Width="{Binding DataContext.ArtworkWidth, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            Height="{Binding DataContext.ArtworkHeight, RelativeSource={RelativeSource AncestorType=DataGrid}}">
                                         <Border CornerRadius="3">
                                             <Border.Background>
-                                                <ImageBrush ImageSource="{Binding Artwork}" Stretch="UniformToFill" />
+                                                <ImageBrush ImageSource="{Binding Track.Artwork}" Stretch="UniformToFill" />
                                             </Border.Background>
                                         </Border>
                                     </Border>
@@ -121,18 +264,18 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn x:Name="ArtistColumn" Header="{loc:Tr Col_Artist}" Width="*"
-                                            Binding="{Binding Artist}" SortMemberPath="Artist"
+                                            Binding="{Binding Track.Artist}" SortMemberPath="Track.Artist"
                                             ElementStyle="{StaticResource TrimmedCell}"
                                             EditingElementStyle="{StaticResource CellEditor}" />
                         <DataGridTextColumn Header="{loc:Tr Col_Title}" Width="1.6*"
-                                            Binding="{Binding Title}" SortMemberPath="Title"
+                                            Binding="{Binding Track.Title}" SortMemberPath="Track.Title"
                                             ElementStyle="{StaticResource TrimmedCell}"
                                             EditingElementStyle="{StaticResource CellEditor}" />
                         <DataGridTextColumn Header="{loc:Tr Col_Duration}" Width="70" IsReadOnly="True"
-                                            Binding="{Binding DurationText, Mode=OneWay}" SortMemberPath="Duration"
+                                            Binding="{Binding Track.DurationText, Mode=OneWay}" SortMemberPath="Track.Duration"
                                             ElementStyle="{StaticResource RightCell}" />
                         <DataGridTextColumn Header="{loc:Tr Col_Bpm}" Width="64" IsReadOnly="True"
-                                            Binding="{Binding BpmText, Mode=OneWay}" SortMemberPath="Bpm"
+                                            Binding="{Binding Track.BpmText, Mode=OneWay}" SortMemberPath="Track.Bpm"
                                             ElementStyle="{StaticResource RightCell}" />
                     </DataGrid.Columns>
                 </DataGrid>

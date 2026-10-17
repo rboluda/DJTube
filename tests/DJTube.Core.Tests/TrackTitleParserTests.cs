@@ -1,4 +1,4 @@
-using DJTube.Core.Logic;
+﻿using DJTube.Core.Logic;
 
 namespace DJTube.Core.Tests;
 
@@ -6,6 +6,8 @@ public class TrackTitleParserTests
 {
     [Theory]
     [InlineData("Apollo - Dance", "Apollo", "Dance")]
+    [InlineData("Ian Van Dahl - Castles In The Sky (OFFICAL VIDEO)", "Ian Van Dahl", "Castles In The Sky")]
+    [InlineData("Lasgo - Something   (OFFICIAL VIDEO)", "Lasgo", "Something")]
     [InlineData("Daft Punk - One More Time (Official Video)", "Daft Punk", "One More Time")]
     [InlineData("Avicii - Levels (Official Music Video) [HD]", "Avicii", "Levels")]
     [InlineData("Rosalía – MALAMENTE (Cap.1: Augurio) (Video Oficial)", "Rosalía", "MALAMENTE (Cap.1: Augurio)")]

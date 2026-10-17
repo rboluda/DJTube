@@ -70,6 +70,30 @@ public partial class App : Application
         MainWindow = window;
         window.Show();
         _viewModel.Initialize();
+
+        // --snapshot archivo.png [segundos]: dibuja la ventana en un PNG y se cierra (capturas para la
+        // documentación; funciona aunque la sesión de Windows esté bloqueada).
+        int snapshot = Array.IndexOf(e.Args, "--snapshot");
+        if (snapshot >= 0 && snapshot + 1 < e.Args.Length)
+        {
+            double delay = snapshot + 2 < e.Args.Length && double.TryParse(e.Args[snapshot + 2],
+                System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double s) ? s : 4;
+            _ = SnapshotAndExitAsync(window, e.Args[snapshot + 1], delay);
+        }
+    }
+
+    private async Task SnapshotAndExitAsync(Window window, string path, double delaySeconds)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+        try
+        {
+            Services.WindowSnapshot.Save(window, path);
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.Write(ex);
+        }
+        Shutdown();
     }
 
     private void StopRecordingQuietly()

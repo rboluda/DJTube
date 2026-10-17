@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using DJTube.Core.Abstractions;
@@ -140,22 +140,70 @@ public sealed class YouTubeTrackSource : ITrackSource
         if (!YouTubeUrl.IsValidVideoId(track.Id))
             throw new ArgumentException(Messages.InvalidVideoId(track.Id), nameof(track));
 
-        string id = track.Id;
-        // Si las dos pletinas piden el mismo vídeo, la segunda espera y lo toma de la caché.
-        var gate = _locks.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
+        var downloaded = await EnsureDownloadedAsync(track.Id, progress, ct).ConfigureAwait(false);
+        return TrackMedia.FromFile(downloaded, AudioPath(track.Id));
+    }
+
+    /// <summary>
+    /// Descarga un vídeo a la caché si aún no está (para la biblioteca, sin cargarlo en un plato).
+    /// Si lo piden a la vez una pletina y la biblioteca, el segundo espera y lo toma de la caché.
+    /// </summary>
+    public async Task<TrackInfo> EnsureDownloadedAsync(string videoId, IProgress<double>? progress = null, CancellationToken ct = default)
+    {
+        if (!YouTubeUrl.IsValidVideoId(videoId))
+            throw new ArgumentException(Messages.InvalidVideoId(videoId), nameof(videoId));
+        var gate = _locks.GetOrAdd(videoId, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            if (!TryReadCached(id, out var info))
-                info = await DownloadAsync(id, progress, ct).ConfigureAwait(false);
-
+            if (!TryReadCached(videoId, out var info))
+                info = await DownloadAsync(videoId, progress, ct).ConfigureAwait(false);
             progress?.Report(1);
-            return TrackMedia.FromFile(ToTrackInfo(info), AudioPath(id));
+            return ToTrackInfo(info);
         }
         finally
         {
             gate.Release();
         }
+    }
+
+    /// <summary>Lee el contenido de una lista de reproducción (sin descargar nada).</summary>
+    public async Task<YouTubePlaylist> GetPlaylistAsync(string url, CancellationToken ct = default)
+    {
+        string exe = _findExecutable()
+            ?? throw new YouTubeSourceException(Messages.YtDlpNotFound);
+
+        var entries = new List<YouTubePlaylistEntry>();
+        var seen = new HashSet<string>();
+        string? title = null;
+        string? lastError = null;
+        void OnLine(string line)
+        {
+            if (YtDlpOutput.TryParsePlaylistItem(line) is { } entry)
+            {
+                lock (entries)
+                {
+                    if (seen.Add(entry.Id))
+                        entries.Add(entry);
+                }
+            }
+            else if (YtDlpOutput.TryParsePlaylistTitle(line) is { } t)
+                title = t;
+            else if (YtDlpOutput.TryParseError(line) is { } error)
+                lastError = error;
+        }
+
+        int max = YouTubeUrl.TryGetPlaylistId(url, out string listId) && listId.StartsWith("RD", StringComparison.Ordinal)
+            ? YtDlpOutput.MaxMixItems
+            : YtDlpOutput.MaxPlaylistItems;
+        var result = await YtDlp.RunAsync(exe, YtDlpOutput.PlaylistArguments(url, max), OnLine, ct).ConfigureAwait(false);
+        if (entries.Count == 0)
+        {
+            throw new YouTubeSourceException(lastError is not null
+                ? Messages.DownloadFailed(lastError)
+                : Messages.DownloadFailedExitCode(result.ExitCode));
+        }
+        return new YouTubePlaylist(title ?? "YouTube", entries);
     }
 
     private async Task<YouTubeDownloadInfo> DownloadAsync(string id, IProgress<double>? progress, CancellationToken ct)

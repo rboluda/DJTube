@@ -61,7 +61,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="12,10">
+    <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
         <DockPanel>
             <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Mixer}" Style="{StaticResource CaptionText}"
                        HorizontalAlignment="Center" Margin="0,0,0,6" />

@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using DJTube.Core.Logic;
 
@@ -32,6 +32,70 @@ public static class YtDlpOutput
         "--no-simulate",
         url,
     ];
+
+    public const string PlaylistItemPrefix = "DJTUBE-ITEM ";
+    public const string PlaylistPrefix = "DJTUBE-LIST ";
+
+    /// <summary>Máximo de vídeos que se leen de una lista.</summary>
+    public const int MaxPlaylistItems = 500;
+
+    /// <summary>Los «Mix» automáticos de YouTube (listas RD…) son casi infinitos: solo los primeros.</summary>
+    public const int MaxMixItems = 50;
+
+    /// <summary>Solo lista el contenido (rápido, sin descargar nada).</summary>
+    public static IReadOnlyList<string> PlaylistArguments(string url, int maxItems = MaxPlaylistItems) =>
+    [
+        "--flat-playlist",
+        "--yes-playlist",
+        "--encoding", "utf-8",
+        "--color", "no_color",
+        "--no-warnings",
+        "-I", $":{maxItems}",
+        "--print", $"{PlaylistItemPrefix}%(.{{id,title,channel,uploader,duration}})j",
+        "--print", $"playlist:{PlaylistPrefix}%(.{{id,title}})j",
+        url,
+    ];
+
+    /// <summary>Un vídeo de la lista (null si no lo es, o si es privado o se ha borrado).</summary>
+    public static YouTubePlaylistEntry? TryParsePlaylistItem(string line)
+    {
+        if (!line.StartsWith(PlaylistItemPrefix, StringComparison.Ordinal))
+            return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(line[PlaylistItemPrefix.Length..]);
+            var root = doc.RootElement;
+            string? id = GetString(root, "id");
+            string? title = GetString(root, "title");
+            if (!YouTubeUrl.IsValidVideoId(id) || title is null || UnavailableTitles.Contains(title))
+                return null;
+            var (artist, parsedTitle) = TrackTitleParser.Parse(title, GetString(root, "channel") ?? GetString(root, "uploader"));
+            return new YouTubePlaylistEntry(id!, parsedTitle, artist, GetNumber(root, "duration"));
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Título de la lista (null si la línea no lo es).</summary>
+    public static string? TryParsePlaylistTitle(string line)
+    {
+        if (!line.StartsWith(PlaylistPrefix, StringComparison.Ordinal))
+            return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(line[PlaylistPrefix.Length..]);
+            return GetString(doc.RootElement, "title") ?? GetString(doc.RootElement, "id");
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    // Así aparecen en las listas los vídeos que ya no se pueden ver.
+    private static readonly HashSet<string> UnavailableTitles = ["[Private video]", "[Deleted video]", "[Unavailable video]"];
 
     /// <summary>Línea de progreso → fracción 0..1 (null si no es de progreso o no se conoce el total).</summary>
     public static double? TryParseProgress(string line)

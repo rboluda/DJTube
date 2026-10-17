@@ -105,7 +105,10 @@ public partial class MainViewModel : ObservableObject
         Update = new UpdateViewModel(() => DeckA.IsPlaying || DeckB.IsPlaying || Recording.IsActive);
         _checkForUpdates = settings.CheckForUpdates;
 
-        Library = new LibraryViewModel(youTube, analyzer, DeckA, DeckB);
+        string playlistsFile = System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJTube", "playlists.json");
+        Library = new LibraryViewModel(youTube, analyzer, new Core.Library.PlaylistStore(playlistsFile),
+            DeckA, DeckB, settings, SaveSettings);
         _showLibrary = settings.ShowLibrary;
         _libraryHeight = Math.Clamp(settings.LibraryHeight, MinLibraryHeight, 2000);
 

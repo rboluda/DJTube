@@ -59,6 +59,45 @@ public static partial class YouTubeUrl
     /// <summary>Enlace canónico para un ID.</summary>
     public static string ToWatchUrl(string videoId) => $"https://www.youtube.com/watch?v={videoId}";
 
+    [GeneratedRegex("^[A-Za-z0-9_-]{2,80}$")]
+    private static partial Regex PlaylistIdPattern();
+
+    /// <summary>
+    /// ID de la lista de un enlace de YouTube: youtube.com/playlist?list=… o un vídeo dentro de una
+    /// lista (watch?v=…&amp;list=…, también los «Mix» automáticos, que empiezan por RD).
+    /// </summary>
+    public static bool TryGetPlaylistId(string? text, out string playlistId)
+    {
+        playlistId = "";
+        if (string.IsNullOrWhiteSpace(text))
+            return false;
+        string candidate = text.Trim();
+        if (!candidate.Contains("://", StringComparison.Ordinal))
+            candidate = "https://" + candidate;
+        if (!Uri.TryCreate(candidate, UriKind.Absolute, out var uri)
+            || (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp)
+            || !WatchHosts.Contains(uri.Host.ToLowerInvariant()))
+            return false;
+
+        string[] segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments is not (["playlist"] or ["watch"]))
+            return false;
+        string? id = GetQueryValue(uri.Query, "list");
+        if (id is null || !PlaylistIdPattern().IsMatch(id))
+            return false;
+        playlistId = id;
+        return true;
+    }
+
+    /// <summary>
+    /// Enlace para pedir la lista entera. Los «Mix» (RD…) solo existen a partir de un vídeo, así que
+    /// conservan el vídeo de partida.
+    /// </summary>
+    public static string ToPlaylistUrl(string playlistId, string? videoId = null) =>
+        playlistId.StartsWith("RD", StringComparison.Ordinal) && IsValidVideoId(videoId)
+            ? $"https://www.youtube.com/watch?v={videoId}&list={playlistId}"
+            : $"https://www.youtube.com/playlist?list={playlistId}";
+
     private static string? GetQueryValue(string query, string key)
     {
         foreach (string pair in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))

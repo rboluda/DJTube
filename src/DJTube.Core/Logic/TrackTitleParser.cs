@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace DJTube.Core.Logic;
 
@@ -15,7 +15,7 @@ public static partial class TrackTitleParser
 
     // Coletillas entre paréntesis o corchetes que no son parte del título.
     [GeneratedRegex(
-        @"\s*[\(\[]\s*(?:official|oficial|video\s*oficial|videoclip|lyric|lyrics|letra|audio|visualizer|visualiser|" +
+        @"\s*[\(\[]\s*(?:official|offical|oficial|video\s*oficial|videoclip|lyric|lyrics|letra|audio|visualizer|visualiser|" +
         @"music\s*video|full\s*hd|hd|hq|4k|8k|1080p|720p|explicit|clean|remastered\s*\d*|\d+\s*kbps|free\s*download|" +
         @"out\s*now|premiere|estreno|en\s*vivo\s*oficial|clip\s*officiel|M/?V)[^\)\]]*[\)\]]",
         RegexOptions.IgnoreCase)]

@@ -18,7 +18,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="10,6">
+    <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,6">
         <DockPanel>
             <!-- Grabar / pausa / detener -->
             <Button DockPanel.Dock="Left" Style="{StaticResource TransportButton}" Command="{Binding RecordCommand}"
