@@ -144,8 +144,25 @@ public partial class LibraryView : UserControl
         if (e.Key == Key.Escape)
         {
             SearchBox.Text = "";
+            ViewModel?.CloseResultsCommand.Execute(null);
             e.Handled = true;
         }
+        else if (e.Key == Key.Enter)
+        {
+            // Intro: buscar en YouTube (la biblioteca ya se filtra mientras se escribe).
+            ViewModel?.SearchYouTubeCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
+
+    private void OnResultDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left || sender is not DataGridRow { Item: SearchResult result })
+            return;
+        if (FindAncestor<Button>(e.OriginalSource as DependencyObject) is not null)
+            return;
+        ViewModel?.ResultLoadFreeCommand.Execute(result);
+        e.Handled = true;
     }
 
     private void OnImportKeyDown(object sender, KeyEventArgs e)
@@ -200,11 +217,18 @@ public partial class LibraryView : UserControl
             return;
 
         _dragStart = null;
-        if (LibraryGrid.SelectedItem is LibraryEntry entry && !IsEditing)
+        var grid = sender as DataGrid ?? LibraryGrid;
+        string? link = grid.SelectedItem switch
         {
-            var data = new DataObject(DataFormats.UnicodeText, entry.Track.Link);
-            data.SetData(typeof(LibraryEntry), entry); // para no importarla al soltarla en la propia biblioteca
-            DragDrop.DoDragDrop(LibraryGrid, data, DragDropEffects.Copy);
+            LibraryEntry entry when !IsEditing => entry.Track.Link,
+            SearchResult result => result.Link,
+            _ => null,
+        };
+        if (link is not null)
+        {
+            var data = new DataObject(DataFormats.UnicodeText, link);
+            data.SetData(typeof(LibraryEntry), grid.SelectedItem); // para no importarla al soltarla en la biblioteca
+            DragDrop.DoDragDrop(grid, data, DragDropEffects.Copy);
         }
     }
 

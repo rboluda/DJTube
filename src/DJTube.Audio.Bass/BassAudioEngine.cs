@@ -119,6 +119,7 @@ public sealed class BassAudioEngine : IAudioEngine
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(config);
 
+        StopPreview();
         StopOutput();
         switch (config)
         {
@@ -212,6 +213,46 @@ public sealed class BassAudioEngine : IAudioEngine
     {
         if (_peakLimiter is { } limiter && buffer != IntPtr.Zero && length > 0)
             limiter.Process(new Span<float>((void*)buffer, length / sizeof(float)));
+    }
+
+    private int _preview;
+
+    public bool HasCueOutput => _cue.Handle != 0 && CueActive;
+
+    public bool IsPreviewing => _preview != 0 && Bass.ChannelIsActive(_preview) != PlaybackState.Stopped;
+
+    public bool StartPreview(string filePath, double startFraction)
+    {
+        StopPreview();
+        if (!HasCueOutput)
+            return false;
+        int stream = Bass.CreateStream(filePath, 0, 0, BassFlags.Decode | BassFlags.Float | BassFlags.AsyncFile);
+        if (stream == 0)
+            return false;
+        long length = Bass.ChannelGetLength(stream, PositionFlags.Bytes);
+        if (length > 0)
+        {
+            double seconds = Bass.ChannelBytes2Seconds(stream, length) * Math.Clamp(startFraction, 0, 0.95);
+            Bass.ChannelSetPosition(stream, Bass.ChannelSeconds2Bytes(stream, seconds), PositionFlags.Bytes);
+        }
+        Bass.ChannelSetAttribute(stream, ChannelAttribute.Volume, _headphoneVolume);
+        // AutoFree: se libera sola al terminar o al quitarla del mezclador.
+        if (!BassMix.MixerAddChannel(_cue.Handle, stream, BassFlags.AutoFree))
+        {
+            Bass.StreamFree(stream);
+            return false;
+        }
+        _preview = stream;
+        return true;
+    }
+
+    public void StopPreview()
+    {
+        if (_preview == 0)
+            return;
+        BassMix.MixerRemoveChannel(_preview);
+        Bass.StreamFree(_preview);
+        _preview = 0;
     }
 
     public IAudioTap OpenMasterTap()
@@ -380,6 +421,8 @@ public sealed class BassAudioEngine : IAudioEngine
 
     private void ApplyCueParameters()
     {
+        if (_preview != 0)
+            Bass.ChannelSetAttribute(_preview, ChannelAttribute.Volume, _headphoneVolume);
         foreach (var deck in _decks)
             deck.SetCueParameters(_cueMix, _headphoneVolume);
     }

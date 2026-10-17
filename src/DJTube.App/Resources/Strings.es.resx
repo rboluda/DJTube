@@ -242,4 +242,18 @@ No: añadir solo esta canción</value></data>
   <data name="MasterVuTip" xml:space="preserve"><value>Nivel de la salida master: en rojo, cerca de saturar</value></data>
   <data name="Col_Key" xml:space="preserve"><value>Tono</value></data>
   <data name="Col_KeyTip" xml:space="preserve"><value>Tonalidad en notación Camelot. En verde: encaja con lo que suena (mismo número, ±1, o la otra letra).</value></data>
+  <data name="Search_Tip" xml:space="preserve"><value>Buscar en YouTube lo escrito en el buscador (Intro)</value></data>
+  <data name="Search_BoxTip" xml:space="preserve"><value>Al escribir se filtra la biblioteca · Intro: buscar en YouTube · Esc: borrar</value></data>
+  <data name="Search_Searching" xml:space="preserve"><value>Buscando «{0}» en YouTube…</value></data>
+  <data name="Search_Results" xml:space="preserve"><value>YouTube: {1} resultados para «{0}» · doble clic o arrastrar a un plato</value></data>
+  <data name="Search_Error" xml:space="preserve"><value>No se ha podido buscar en YouTube: {0}</value></data>
+  <data name="Search_Back" xml:space="preserve"><value>Biblioteca</value></data>
+  <data name="Search_AddTip" xml:space="preserve"><value>Descargar a la biblioteca</value></data>
+  <data name="Search_InLibrary" xml:space="preserve"><value>Ya está en la biblioteca</value></data>
+  <data name="Col_Channel" xml:space="preserve"><value>Canal</value></data>
+  <data name="Preview_Tip" xml:space="preserve"><value>Pre-escuchar por los auriculares (sin cargarla en un plato)</value></data>
+  <data name="Preview_Stop" xml:space="preserve"><value>Parar la pre-escucha</value></data>
+  <data name="Preview_Playing" xml:space="preserve"><value>Pre-escucha por los auriculares: {0}</value></data>
+  <data name="Preview_NeedsHeadphones" xml:space="preserve"><value>Para pre-escuchar, elige una salida de auriculares arriba (o un par ASIO).</value></data>
+  <data name="Preview_Failed" xml:space="preserve"><value>No se ha podido pre-escuchar esta canción.</value></data>
 </root>

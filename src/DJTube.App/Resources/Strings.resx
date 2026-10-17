@@ -242,4 +242,18 @@ No: add only this song</value></data>
   <data name="MasterVuTip" xml:space="preserve"><value>Master output level: red means it is close to saturating</value></data>
   <data name="Col_Key" xml:space="preserve"><value>Key</value></data>
   <data name="Col_KeyTip" xml:space="preserve"><value>Key in Camelot notation. Green: it mixes well with what is playing (same number, ±1, or the other letter).</value></data>
+  <data name="Search_Tip" xml:space="preserve"><value>Search YouTube for what is written in the search box (Enter)</value></data>
+  <data name="Search_BoxTip" xml:space="preserve"><value>Typing filters the library · Enter: search YouTube · Esc: clear</value></data>
+  <data name="Search_Searching" xml:space="preserve"><value>Searching YouTube for “{0}”…</value></data>
+  <data name="Search_Results" xml:space="preserve"><value>YouTube: {1} results for “{0}” · double-click or drag to a deck</value></data>
+  <data name="Search_Error" xml:space="preserve"><value>Could not search YouTube: {0}</value></data>
+  <data name="Search_Back" xml:space="preserve"><value>Library</value></data>
+  <data name="Search_AddTip" xml:space="preserve"><value>Download into the library</value></data>
+  <data name="Search_InLibrary" xml:space="preserve"><value>Already in the library</value></data>
+  <data name="Col_Channel" xml:space="preserve"><value>Channel</value></data>
+  <data name="Preview_Tip" xml:space="preserve"><value>Pre-listen on the headphones (without loading it on a deck)</value></data>
+  <data name="Preview_Stop" xml:space="preserve"><value>Stop the pre-listen</value></data>
+  <data name="Preview_Playing" xml:space="preserve"><value>Pre-listening on the headphones: {0}</value></data>
+  <data name="Preview_NeedsHeadphones" xml:space="preserve"><value>To pre-listen, choose a headphones output at the top (or an ASIO pair).</value></data>
+  <data name="Preview_Failed" xml:space="preserve"><value>Could not pre-listen to this song.</value></data>
 </root>

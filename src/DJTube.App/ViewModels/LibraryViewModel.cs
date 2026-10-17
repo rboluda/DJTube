@@ -47,6 +47,10 @@ public partial class LibraryItem : ObservableObject
     [ObservableProperty]
     private bool _isHarmonic;
 
+    /// <summary>Se está pre-escuchando por los auriculares.</summary>
+    [ObservableProperty]
+    private bool _isPreviewing;
+
     public LibraryItem(TrackInfo track, Action<LibraryItem> save)
     {
         Id = track.Id;
@@ -153,6 +157,52 @@ public sealed class LibraryEntry(LibraryItem track, LibraryGroup group, int posi
     public int Position { get; set; } = position;
 }
 
+/// <summary>Un resultado de la búsqueda en YouTube (aún no descargado).</summary>
+public partial class SearchResult : ObservableObject
+{
+    [ObservableProperty]
+    private bool _isInLibrary;
+
+    [ObservableProperty]
+    private bool _isBusy;
+
+    [ObservableProperty]
+    private bool _isPreviewing;
+
+    public SearchResult(YouTubePlaylistEntry entry, bool inLibrary)
+    {
+        Entry = entry;
+        _isInLibrary = inLibrary;
+        var image = new BitmapImage();
+        image.BeginInit();
+        image.UriSource = new Uri(entry.ThumbnailUrl);
+        image.DecodePixelWidth = 160;
+        image.CacheOption = BitmapCacheOption.OnLoad;
+        image.EndInit();
+        Thumbnail = image;
+    }
+
+    public YouTubePlaylistEntry Entry { get; }
+
+    public string Id => Entry.Id;
+
+    public string? Artist => Entry.Artist;
+
+    public string Title => Entry.Title;
+
+    public string? Channel => Entry.Channel;
+
+    public string FullTitle => Entry.OriginalTitle ?? Entry.Title;
+
+    public double Duration => Entry.DurationSeconds ?? 0;
+
+    public string DurationText => Entry.DurationSeconds is { } s ? $"{(int)(s / 60)}:{(int)(s % 60):00}" : "";
+
+    public string Link => YouTubeUrl.ToWatchUrl(Id);
+
+    public ImageSource Thumbnail { get; }
+}
+
 /// <summary>
 /// Biblioteca: las canciones ya descargadas (caché de YouTube) en forma de árbol, una rama por lista
 /// importada y otra con las sueltas. Permite importar canciones o listas enteras, buscar, cargar en los
@@ -172,6 +222,9 @@ public partial class LibraryViewModel : ObservableObject
     private readonly PlaylistStore _playlists;
     private readonly DeckViewModel _deckA;
     private readonly DeckViewModel _deckB;
+    private readonly IAudioEngine _engine;
+    private string? _previewId;
+    private CancellationTokenSource? _searchCts;
     private readonly AppSettings _settings;
     private readonly Action _saveSettings;
     private readonly Dictionary<string, LibraryItem> _tracks = [];
@@ -212,8 +265,9 @@ public partial class LibraryViewModel : ObservableObject
 
     public LibraryViewModel(
         YouTubeTrackSource source, ITrackAnalyzer analyzer, PlaylistStore playlists,
-        DeckViewModel deckA, DeckViewModel deckB, AppSettings settings, Action saveSettings)
+        DeckViewModel deckA, DeckViewModel deckB, IAudioEngine engine, AppSettings settings, Action saveSettings)
     {
+        _engine = engine;
         _source = source;
         _analyzer = analyzer;
         _playlists = playlists;
@@ -254,11 +308,218 @@ public partial class LibraryViewModel : ObservableObject
 
     public ObservableCollection<LibraryEntry> Entries { get; } = [];
 
+    // ---------- Búsqueda en YouTube ----------
+
+    public ObservableCollection<SearchResult> Results { get; } = [];
+
+    /// <summary>Se ven los resultados de YouTube en lugar de la biblioteca.</summary>
+    [ObservableProperty]
+    private bool _isShowingResults;
+
+    [ObservableProperty]
+    private bool _isSearching;
+
+    [ObservableProperty]
+    private string _resultsTitle = "";
+
+    /// <summary>Busca en YouTube lo escrito en el buscador.</summary>
+    [RelayCommand]
+    private async Task SearchYouTube()
+    {
+        string query = SearchText.Trim();
+        if (query.Length == 0)
+            return;
+        _searchCts?.Cancel();
+        var cts = new CancellationTokenSource();
+        _searchCts = cts;
+        IsShowingResults = true;
+        IsSearching = true;
+        ResultsTitle = Loc.F("Search_Searching", query);
+        Results.Clear();
+        try
+        {
+            var found = await _source.SearchAsync(query, cts.Token);
+            if (_searchCts != cts)
+                return;
+            foreach (var entry in found)
+                Results.Add(new SearchResult(entry, _tracks.ContainsKey(entry.Id)));
+            ResultsTitle = Loc.F("Search_Results", query, found.Count);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            if (_searchCts == cts)
+                ResultsTitle = Loc.F("Search_Error", ex.Message);
+        }
+        finally
+        {
+            if (_searchCts == cts)
+                IsSearching = false;
+        }
+    }
+
+    [RelayCommand]
+    private void CloseResults()
+    {
+        _searchCts?.Cancel();
+        IsShowingResults = false;
+        IsSearching = false;
+    }
+
+    [RelayCommand]
+    private Task ResultLoadA(SearchResult? result) => LoadResult(_deckA, result);
+
+    [RelayCommand]
+    private Task ResultLoadB(SearchResult? result) => LoadResult(_deckB, result);
+
+    /// <summary>Doble clic en un resultado: al plato que no está sonando.</summary>
+    [RelayCommand]
+    private Task ResultLoadFree(SearchResult? result) =>
+        LoadResult(_deckA.IsPlaying && !_deckB.IsPlaying ? _deckB : _deckA, result);
+
+    private async Task LoadResult(DeckViewModel deck, SearchResult? result)
+    {
+        if (result is null)
+            return;
+        result.IsBusy = true;
+        try
+        {
+            await deck.LoadTrackAsync(_source, _source.CreateTrackInfo(result.Id));
+            result.IsInLibrary = _source.IsCached(result.Id);
+        }
+        finally
+        {
+            result.IsBusy = false;
+        }
+    }
+
+    /// <summary>Descarga el resultado a la biblioteca (sin cargarlo).</summary>
+    [RelayCommand]
+    private async Task ResultAdd(SearchResult? result)
+    {
+        if (result is null || result.IsInLibrary)
+            return;
+        result.IsBusy = true;
+        try
+        {
+            await _source.EnsureDownloadedAsync(result.Id);
+            result.IsInLibrary = true;
+        }
+        catch (Exception ex)
+        {
+            ShowImportResult(Loc.F("Library_ImportError", ex.Message), error: true);
+        }
+        finally
+        {
+            result.IsBusy = false;
+        }
+    }
+
+    /// <summary>Pre-escucha de un resultado (se descarga primero, y queda en la biblioteca).</summary>
+    [RelayCommand]
+    private async Task ResultPreview(SearchResult? result)
+    {
+        if (result is null)
+            return;
+        if (_previewId == result.Id)
+        {
+            StopPreview();
+            return;
+        }
+        if (!CanPreview())
+            return;
+        result.IsBusy = true;
+        try
+        {
+            await _source.EnsureDownloadedAsync(result.Id);
+            result.IsInLibrary = true;
+            StartPreview(result.Id);
+        }
+        catch (Exception ex)
+        {
+            ShowImportResult(Loc.F("Library_ImportError", ex.Message), error: true);
+        }
+        finally
+        {
+            result.IsBusy = false;
+        }
+    }
+
+    // ---------- Pre-escucha ----------
+
+    /// <summary>🎧: escucha la canción por los auriculares desde un tercio (sin cargarla en un plato).</summary>
+    [RelayCommand]
+    private void Preview(LibraryEntry? entry)
+    {
+        if ((entry ?? Selected)?.Track is not { } track)
+            return;
+        if (_previewId == track.Id)
+        {
+            StopPreview();
+            return;
+        }
+        if (CanPreview())
+            StartPreview(track.Id);
+    }
+
+    [RelayCommand]
+    private void StopPreview()
+    {
+        _engine.StopPreview();
+        SetPreviewing(null);
+    }
+
+    private bool CanPreview()
+    {
+        if (_engine.HasCueOutput)
+            return true;
+        ShowImportResult(Loc.T("Preview_NeedsHeadphones"), error: true);
+        return false;
+    }
+
+    private void StartPreview(string id)
+    {
+        if (_engine.StartPreview(_source.GetAudioPath(id), 0.33))
+            SetPreviewing(id);
+        else
+            ShowImportResult(Loc.T("Preview_Failed"), error: true);
+    }
+
+    private void SetPreviewing(string? id)
+    {
+        _previewId = id;
+        foreach (var item in _tracks.Values)
+            item.IsPreviewing = item.Id == id;
+        foreach (var result in Results)
+            result.IsPreviewing = result.Id == id;
+        OnPropertyChanged(nameof(IsPreviewing));
+        OnPropertyChanged(nameof(PreviewText));
+    }
+
+    public bool IsPreviewing => _previewId is not null;
+
+    public string PreviewText => _previewId is { } id && _tracks.TryGetValue(id, out var t)
+        ? Loc.F("Preview_Playing", t.DisplayName)
+        : "";
+
+    /// <summary>Se llama en cada fotograma: la pre-escucha puede terminar sola.</summary>
+    public void Refresh()
+    {
+        if (_previewId is not null && !_engine.IsPreviewing)
+            SetPreviewing(null);
+    }
+
     public ICollectionView View { get; }
 
     public string CountText => Loc.F("Library_Count", _tracks.Count);
 
     public bool IsEmpty => _tracks.Count == 0;
+
+    public bool IsEmptyAndNoResults => IsEmpty && !IsShowingResults;
+
+    partial void OnIsShowingResultsChanged(bool value) => OnPropertyChanged(nameof(IsEmptyAndNoResults));
 
     /// <summary>Hay listas: la biblioteca se muestra como árbol.</summary>
     public bool IsGrouped => View.GroupDescriptions.Count > 0;

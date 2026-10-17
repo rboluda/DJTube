@@ -167,6 +167,37 @@ public sealed class YouTubeTrackSource : ITrackSource
         }
     }
 
+    /// <summary>Busca en YouTube (como el buscador de la web) y devuelve los primeros vídeos.</summary>
+    public async Task<IReadOnlyList<YouTubePlaylistEntry>> SearchAsync(string query, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return [];
+        string exe = _findExecutable()
+            ?? throw new YouTubeSourceException(Messages.YtDlpNotFound);
+
+        var entries = new List<YouTubePlaylistEntry>();
+        string? lastError = null;
+        void OnLine(string line)
+        {
+            if (YtDlpOutput.TryParsePlaylistItem(line) is { } entry)
+            {
+                lock (entries)
+                    entries.Add(entry);
+            }
+            else if (YtDlpOutput.TryParseError(line) is { } error)
+                lastError = error;
+        }
+
+        var result = await YtDlp.RunAsync(exe, YtDlpOutput.SearchArguments(query), OnLine, ct).ConfigureAwait(false);
+        if (entries.Count == 0 && (result.ExitCode != 0 || lastError is not null))
+        {
+            throw new YouTubeSourceException(lastError is not null
+                ? Messages.DownloadFailed(lastError)
+                : Messages.DownloadFailedExitCode(result.ExitCode));
+        }
+        return entries;
+    }
+
     /// <summary>Lee el contenido de una lista de reproducción (sin descargar nada).</summary>
     public async Task<YouTubePlaylist> GetPlaylistAsync(string url, CancellationToken ct = default)
     {

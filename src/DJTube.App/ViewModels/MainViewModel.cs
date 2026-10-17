@@ -113,7 +113,7 @@ public partial class MainViewModel : ObservableObject
         string playlistsFile = System.IO.Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJTube", "playlists.json");
         Library = new LibraryViewModel(youTube, analyzer, new Core.Library.PlaylistStore(playlistsFile),
-            DeckA, DeckB, settings, SaveSettings);
+            DeckA, DeckB, engine, settings, SaveSettings);
         _showLibrary = settings.ShowLibrary;
         _libraryHeight = Math.Clamp(settings.LibraryHeight, MinLibraryHeight, 2000);
 
@@ -287,6 +287,7 @@ public partial class MainViewModel : ObservableObject
         DeckB.Refresh();
         Mixer.Refresh();
         Recording.Refresh();
+        Library.Refresh();
     }
 
     [RelayCommand]

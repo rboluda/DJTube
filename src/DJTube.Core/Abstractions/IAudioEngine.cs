@@ -44,6 +44,20 @@ public interface IAudioEngine : IDisposable
     /// <summary>Nivel de pico (0..1) de lo que sale por el master ahora mismo.</summary>
     (float Left, float Right) GetMasterLevel();
 
+    /// <summary>
+    /// Pre-escucha: reproduce un archivo solo por los auriculares (sin ocupar un plato), desde una fracción de
+    /// la pista. false si no hay salida de auriculares o no se puede abrir.
+    /// </summary>
+    bool StartPreview(string filePath, double startFraction);
+
+    void StopPreview();
+
+    /// <summary>Hay una pre-escucha sonando.</summary>
+    bool IsPreviewing { get; }
+
+    /// <summary>Hay salida de auriculares (necesaria para pre-escuchar).</summary>
+    bool HasCueOutput { get; }
+
     /// <summary>Abre una copia de la salida master para grabar la sesión (sigue al cambiar de salida).</summary>
     IAudioTap OpenMasterTap();
 

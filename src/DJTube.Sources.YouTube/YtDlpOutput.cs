@@ -56,6 +56,12 @@ public static class YtDlpOutput
         url,
     ];
 
+    public const int SearchResults = 25;
+
+    /// <summary>Búsqueda en YouTube (los primeros resultados, sin descargar nada).</summary>
+    public static IReadOnlyList<string> SearchArguments(string query, int count = SearchResults) =>
+        PlaylistArguments($"ytsearch{count}:{query.Replace('\n', ' ').Replace('\r', ' ').Trim()}", count);
+
     /// <summary>Un vídeo de la lista (null si no lo es, o si es privado o se ha borrado).</summary>
     public static YouTubePlaylistEntry? TryParsePlaylistItem(string line)
     {
@@ -69,8 +75,9 @@ public static class YtDlpOutput
             string? title = GetString(root, "title");
             if (!YouTubeUrl.IsValidVideoId(id) || title is null || UnavailableTitles.Contains(title))
                 return null;
-            var (artist, parsedTitle) = TrackTitleParser.Parse(title, GetString(root, "channel") ?? GetString(root, "uploader"));
-            return new YouTubePlaylistEntry(id!, parsedTitle, artist, GetNumber(root, "duration"));
+            string? channel = GetString(root, "channel") ?? GetString(root, "uploader");
+            var (artist, parsedTitle) = TrackTitleParser.Parse(title, channel);
+            return new YouTubePlaylistEntry(id!, parsedTitle, artist, GetNumber(root, "duration"), channel, title);
         }
         catch (JsonException)
         {

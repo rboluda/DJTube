@@ -65,9 +65,16 @@
                         Command="{Binding FontLargerCommand}" ToolTip="{loc:Tr Library_FontLarger}" />
                 <Button DockPanel.Dock="Right" Content="A−" Style="{StaticResource SmallButton}" Margin="10,0,0,0"
                         Command="{Binding FontSmallerCommand}" ToolTip="{loc:Tr Library_FontSmaller}" />
+                <Button DockPanel.Dock="Right" Style="{StaticResource SmallButton}" Margin="4,0,0,0"
+                        Command="{Binding SearchYouTubeCommand}" ToolTip="{loc:Tr Search_Tip}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,5,0" />
+                        <TextBlock Text="YouTube" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
                 <TextBox DockPanel.Dock="Right" x:Name="SearchBox" Width="210" Margin="10,0,0,0"
                          Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         Tag="{loc:Tr Library_Search}" KeyDown="OnSearchKeyDown" />
+                         Tag="{loc:Tr Library_Search}" KeyDown="OnSearchKeyDown" ToolTip="{loc:Tr Search_BoxTip}" />
                 <Button DockPanel.Dock="Right" Content="{loc:Tr Library_ImportButton}" Style="{StaticResource SmallButton}"
                         Margin="6,0,0,0" Command="{Binding ImportCommand}" ToolTip="{loc:Tr Library_ImportTip}" />
                 <TextBox DockPanel.Dock="Right" x:Name="ImportBox" Width="300"
@@ -82,6 +89,17 @@
                            Foreground="{StaticResource CueBrush}" Margin="10,0,0,0" />
                 <TextBlock Text="{loc:Tr Library_Hint}" Style="{StaticResource CaptionText}" VerticalAlignment="Center"
                            Margin="14,0,8,0" TextTrimming="CharacterEllipsis" ToolTip="{loc:Tr Library_Hint}" />
+            </DockPanel>
+
+            <!-- Pre-escucha en curso -->
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6"
+                       Visibility="{Binding IsPreviewing, Converter={StaticResource BoolToVisibility}}">
+                <Button DockPanel.Dock="Right" Content="■" Style="{StaticResource SmallButton}" Margin="8,0,0,0"
+                        Command="{Binding StopPreviewCommand}" ToolTip="{loc:Tr Preview_Stop}" />
+                <TextBlock Text="&#xE7F6;" FontFamily="Segoe MDL2 Assets" Foreground="{StaticResource CueBrush}"
+                           VerticalAlignment="Center" Margin="0,0,8,0" />
+                <TextBlock Text="{Binding PreviewText}" FontSize="11" VerticalAlignment="Center"
+                           Foreground="{StaticResource CueBrush}" TextTrimming="CharacterEllipsis" />
             </DockPanel>
 
             <!-- Progreso de la importación -->
@@ -229,7 +247,7 @@
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <!-- Cargar en A / B -->
-                        <DataGridTemplateColumn Width="68" CanUserResize="False" CanUserSort="False">
+                        <DataGridTemplateColumn Width="96" CanUserResize="False" CanUserSort="False">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
@@ -241,6 +259,22 @@
                                                 Background="{StaticResource DeckBBrush}"
                                                 Command="{Binding DataContext.LoadToBCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}" ToolTip="{loc:Tr Library_LoadB}" />
+                                        <Button Content="&#xE7F6;" FontFamily="Segoe MDL2 Assets" Margin="4,0,0,0"
+                                                Command="{Binding DataContext.PreviewCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}" ToolTip="{loc:Tr Preview_Tip}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource DeckLoadButton}">
+                                                    <Setter Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                                                    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Track.IsPreviewing}" Value="True">
+                                                            <Setter Property="Background" Value="{StaticResource CueBrush}" />
+                                                            <Setter Property="Foreground" Value="Black" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -312,10 +346,120 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
+                <!-- Resultados de la búsqueda en YouTube (tapan la biblioteca mientras se ven) -->
+                <DockPanel Background="{StaticResource PanelBrush}"
+                           Visibility="{Binding IsShowingResults, Converter={StaticResource BoolToVisibility}}">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                        <Button DockPanel.Dock="Left" Style="{StaticResource SmallButton}" Margin="0,0,10,0"
+                                Command="{Binding CloseResultsCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE72B;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBlock Text="{loc:Tr Search_Back}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <ProgressBar DockPanel.Dock="Right" Width="120" IsIndeterminate="True" VerticalAlignment="Center"
+                                     Foreground="{StaticResource DeckABrush}"
+                                     Visibility="{Binding IsSearching, Converter={StaticResource BoolToVisibility}}" />
+                        <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"
+                                   Foreground="{StaticResource BrandRedBrush}" />
+                        <TextBlock Text="{Binding ResultsTitle}" VerticalAlignment="Center" FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis" />
+                    </DockPanel>
+                    <DataGrid x:Name="ResultsGrid" ItemsSource="{Binding Results}" IsReadOnly="True"
+                              RowHeight="{Binding RowHeight}" FontSize="{Binding FontSize}" ColumnHeaderHeight="26"
+                              HorizontalScrollBarVisibility="Disabled"
+                              PreviewMouseLeftButtonDown="OnGridMouseDown" MouseMove="OnGridMouseMove">
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                                <EventSetter Event="MouseDoubleClick" Handler="OnResultDoubleClick" />
+                                <Setter Property="ToolTip" Value="{Binding FullTitle}" />
+                            </Style>
+                        </DataGrid.RowStyle>
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Width="122" CanUserResize="False">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="A" Style="{StaticResource DeckLoadButton}" Background="{StaticResource DeckABrush}"
+                                                    Command="{Binding DataContext.ResultLoadACommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}" ToolTip="{loc:Tr Library_LoadA}" />
+                                            <Button Content="B" Style="{StaticResource DeckLoadButton}" Margin="4,0,0,0" Background="{StaticResource DeckBBrush}"
+                                                    Command="{Binding DataContext.ResultLoadBCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}" ToolTip="{loc:Tr Library_LoadB}" />
+                                            <Button Margin="4,0,0,0"
+                                                    Command="{Binding DataContext.ResultAddCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource DeckLoadButton}">
+                                                        <Setter Property="Content" Value="+" />
+                                                        <Setter Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                                                        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                                        <Setter Property="ToolTip" Value="{loc:Tr Search_AddTip}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsInLibrary}" Value="True">
+                                                                <Setter Property="Content" Value="✓" />
+                                                                <Setter Property="Background" Value="{StaticResource PlayBrush}" />
+                                                                <Setter Property="Foreground" Value="Black" />
+                                                                <Setter Property="ToolTip" Value="{loc:Tr Search_InLibrary}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                            <Button Content="&#xE7F6;" FontFamily="Segoe MDL2 Assets" Margin="4,0,0,0"
+                                                    Command="{Binding DataContext.ResultPreviewCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}" ToolTip="{loc:Tr Preview_Tip}">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource DeckLoadButton}">
+                                                        <Setter Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                                                        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsPreviewing}" Value="True">
+                                                                <Setter Property="Background" Value="{StaticResource CueBrush}" />
+                                                                <Setter Property="Foreground" Value="Black" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                            <ProgressBar Width="14" Height="4" Margin="4,0,0,0" IsIndeterminate="True"
+                                                         Foreground="{StaticResource DeckABrush}"
+                                                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Width="Auto" CanUserResize="False">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="3" Background="{StaticResource ControlBrush}"
+                                                Width="{Binding DataContext.ArtworkWidth, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                Height="{Binding DataContext.ArtworkHeight, RelativeSource={RelativeSource AncestorType=DataGrid}}">
+                                            <Border CornerRadius="3">
+                                                <Border.Background>
+                                                    <ImageBrush ImageSource="{Binding Thumbnail}" Stretch="UniformToFill" />
+                                                </Border.Background>
+                                            </Border>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="{loc:Tr Col_Artist}" Width="*" Binding="{Binding Artist}"
+                                                ElementStyle="{StaticResource TrimmedCell}" />
+                            <DataGridTextColumn Header="{loc:Tr Col_Title}" Width="1.6*" Binding="{Binding Title}"
+                                                ElementStyle="{StaticResource TrimmedCell}" />
+                            <DataGridTextColumn Header="{loc:Tr Col_Channel}" Width="0.8*" Binding="{Binding Channel}"
+                                                ElementStyle="{StaticResource TrimmedCell}" />
+                            <DataGridTextColumn Header="{loc:Tr Col_Duration}" Width="70" Binding="{Binding DurationText}"
+                                                SortMemberPath="Duration" ElementStyle="{StaticResource RightCell}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+
                 <!-- Biblioteca vacía -->
                 <TextBlock Text="{loc:Tr Library_Empty}" Style="{StaticResource CaptionText}" FontSize="13"
                            HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"
-                           Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
+                           Visibility="{Binding IsEmptyAndNoResults, Converter={StaticResource BoolToVisibility}}" />
             </Grid>
         </DockPanel>
     </Border>
