@@ -8,7 +8,9 @@ public class WaveformAndGridTests
     private static readonly WaveformData Wave = new(
         binsPerSecond: 10,
         peak: [0.1f, 0.5f, 0.3f, 0.9f, 0.2f],
-        low: [0.0f, 0.4f, 0.1f, 0.2f, 0.8f]);
+        low: [0.0f, 0.4f, 0.1f, 0.2f, 0.8f],
+        mid: [0.1f, 0.1f, 0.3f, 0.6f, 0.1f],
+        high: [0.0f, 0.2f, 0.0f, 0.1f, 0.05f]);
 
     [Fact]
     public void Waveform_DurationFromBins()
@@ -25,16 +27,26 @@ public class WaveformAndGridTests
     [InlineData(2, 3, 0f, 0f)]              // después del final
     public void Waveform_MaxInRange(double from, double to, float peak, float low)
     {
-        var (p, l) = Wave.MaxInRange(from, to);
+        var sample = Wave.MaxInRange(from, to);
 
-        Assert.Equal(peak, p);
-        Assert.Equal(low, l);
+        Assert.Equal(peak, sample.Peak);
+        Assert.Equal(low, sample.Low);
+    }
+
+    [Fact]
+    public void Waveform_MaxInRangeIncludesMidAndHigh()
+    {
+        var sample = Wave.MaxInRange(0.0, 0.5);
+
+        Assert.Equal(0.6f, sample.Mid);
+        Assert.Equal(0.2f, sample.High);
     }
 
     [Fact]
     public void Waveform_RejectsMismatchedArrays()
     {
-        Assert.Throws<ArgumentException>(() => new WaveformData(10, [1f], [1f, 2f]));
+        Assert.Throws<ArgumentException>(() => new WaveformData(10, [1f], [1f, 2f], [1f], [1f]));
+        Assert.Throws<ArgumentException>(() => new WaveformData(10, [1f], [1f], [1f], []));
     }
 
     [Fact]

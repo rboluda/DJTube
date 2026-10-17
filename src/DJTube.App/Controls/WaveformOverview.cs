@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using DJTube.Core.Logic;
 using DJTube.Core.Models;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
@@ -115,7 +116,7 @@ public sealed class WaveformOverview : SKElement
         using var canvas = new SKCanvas(_cache);
         canvas.Clear(WaveformPaint.Background);
         double secondsPerPixel = waveform.DurationSeconds / w;
-        WaveformPaint.DrawColumns(canvas, waveform, w, h, Accent, x => x * secondsPerPixel, secondsPerPixel);
+        WaveformPaint.DrawColumns(canvas, waveform, w, h, x => x * secondsPerPixel, secondsPerPixel);
         return _cache;
     }
 
@@ -159,29 +160,36 @@ internal static class WaveformPaint
     public static SKColor ToSk(Color c) => new(c.R, c.G, c.B, c.A);
 
     /// <summary>
-    /// Dibuja una columna por píxel: la señal completa en el color del plato atenuado
-    /// y los graves por encima en un tono más claro (así se distinguen los bombos).
+    /// Dibuja una columna por píxel con la altura del pico y el color de sus frecuencias
+    /// (graves rojo, medios verde, agudos azul); los graves se marcan además con un núcleo
+    /// más intenso para que los bombos destaquen.
     /// </summary>
     public static void DrawColumns(
-        SKCanvas canvas, WaveformData waveform, int width, int height, Color accent,
+        SKCanvas canvas, WaveformData waveform, int width, int height,
         Func<int, double> timeAtPixel, double secondsPerPixel)
     {
-        SKColor baseColor = ToSk(accent);
-        using var fullPaint = new SKPaint { Color = baseColor.WithAlpha(150), StrokeWidth = 1 };
-        using var lowPaint = new SKPaint { Color = Lighten(baseColor, 0.55f), StrokeWidth = 1 };
-        float mid = height / 2f, half = height / 2f - 1;
+        using var paint = new SKPaint { StrokeWidth = 1 };
+        float center = height / 2f, half = height / 2f - 1;
+        var (lr, lg, lb) = WaveformColors.LowColor;
+        var lowCore = new SKColor(lr, lg, lb, 110);
 
         for (int x = 0; x < width; x++)
         {
             double t = timeAtPixel(x);
             if (t + secondsPerPixel < 0 || t > waveform.DurationSeconds)
                 continue;
-            var (peak, low) = waveform.MaxInRange(t, t + secondsPerPixel);
+            var s = waveform.MaxInRange(t, t + secondsPerPixel);
+            if (s.Peak <= 0)
+                continue;
             float px = x + 0.5f;
-            if (peak > 0)
-                canvas.DrawLine(px, mid - peak * half, px, mid + peak * half, fullPaint);
-            if (low > 0)
-                canvas.DrawLine(px, mid - low * half, px, mid + low * half, lowPaint);
+            var (r, g, b) = WaveformColors.Mix(s.Low, s.Mid, s.High);
+            paint.Color = new SKColor(r, g, b, 235);
+            canvas.DrawLine(px, center - s.Peak * half, px, center + s.Peak * half, paint);
+            if (s.Low > 0)
+            {
+                paint.Color = lowCore;
+                canvas.DrawLine(px, center - s.Low * half * 0.6f, px, center + s.Low * half * 0.6f, paint);
+            }
         }
     }
 
@@ -200,9 +208,4 @@ internal static class WaveformPaint
         using var line = new SKPaint { Color = Cue.WithAlpha(140), StrokeWidth = 1 * scale };
         canvas.DrawLine(x, 0, x, height, line);
     }
-
-    private static SKColor Lighten(SKColor c, float amount) => new(
-        (byte)(c.Red + (255 - c.Red) * amount),
-        (byte)(c.Green + (255 - c.Green) * amount),
-        (byte)(c.Blue + (255 - c.Blue) * amount));
 }

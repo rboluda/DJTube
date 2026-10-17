@@ -9,7 +9,7 @@
         xmlns:loc="clr-namespace:DJTube.App.Localization"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-        Title="{Binding WindowTitle}" Height="820" Width="1280" MinWidth="1000" MinHeight="700"
+        Title="{Binding WindowTitle}" Height="1000" Width="1360" MinWidth="1000" MinHeight="700"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BackgroundBrush}"
         Foreground="{StaticResource TextBrush}"
@@ -46,6 +46,9 @@
                 <MenuItem Header="{loc:Tr Menu_View}">
                     <MenuItem Header="{loc:Tr Menu_ZoomIn}" InputGestureText="Ctrl++" Command="{Binding ZoomInCommand}" />
                     <MenuItem Header="{loc:Tr Menu_ZoomOut}" InputGestureText="Ctrl+-" Command="{Binding ZoomOutCommand}" />
+                    <Separator />
+                    <MenuItem Header="{loc:Tr Menu_Library}" InputGestureText="Ctrl+L"
+                              IsChecked="{Binding ShowLibrary, Mode=OneWay}" Command="{Binding ToggleLibraryCommand}" />
                 </MenuItem>
                 <MenuItem Header="{loc:Tr Menu_Help}">
                     <MenuItem Header="{loc:Tr Menu_Shortcuts}" InputGestureText="F1" Click="OnShortcutsClick" />
@@ -175,6 +178,9 @@
 
             <!-- Barra inferior: atajos y estado de yt-dlp -->
             <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+                <ToggleButton DockPanel.Dock="Right" Content="{loc:Tr LibraryButton}" Padding="8,3" FontSize="11" Margin="6,0,0,0"
+                              Focusable="False" IsChecked="{Binding ShowLibrary}" Tag="{StaticResource DeckABrush}"
+                              ToolTip="{loc:Tr Library_ToggleTip}" />
                 <Button DockPanel.Dock="Right" Content="{loc:Tr OpenCache}" Padding="8,3" FontSize="11" Margin="6,0,0,0"
                         Command="{Binding OpenCacheCommand}" ToolTip="{Binding CacheFolder}" />
                 <Button DockPanel.Dock="Right" Content="{loc:Tr UpdateYtDlp}" Padding="8,3" FontSize="11" Margin="6,0,0,0"
@@ -200,7 +206,7 @@
             <Border DockPanel.Dock="Top" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="8"
                     Margin="0,0,0,12">
                 <StackPanel>
-                    <controls:ZoomWaveform Height="78" Label="A" ToolTip="{loc:Tr ZoomTip}"
+                    <controls:ZoomWaveform Height="64" Label="A" ToolTip="{loc:Tr ZoomTip}"
                                            Waveform="{Binding DeckA.Waveform}"
                                            Position="{Binding DeckA.PositionSeconds}"
                                            Rate="{Binding DeckA.PlaybackRate}"
@@ -209,7 +215,7 @@
                                            Accent="{StaticResource DeckAColor}"
                                            SecondsVisible="{Binding ZoomSeconds}"
                                            SeekCommand="{Binding DeckA.SeekSecondsCommand}" />
-                    <controls:ZoomWaveform Height="78" Label="B" Margin="0,6,0,0" ToolTip="{loc:Tr ZoomTip}"
+                    <controls:ZoomWaveform Height="64" Label="B" Margin="0,6,0,0" ToolTip="{loc:Tr ZoomTip}"
                                            Waveform="{Binding DeckB.Waveform}"
                                            Position="{Binding DeckB.PositionSeconds}"
                                            Rate="{Binding DeckB.PlaybackRate}"
@@ -221,15 +227,27 @@
                 </StackPanel>
             </Border>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="230" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <views:DeckView Grid.Column="0" DataContext="{Binding DeckA}" AccentColor="{StaticResource DeckAColor}" />
-                <views:MixerView Grid.Column="1" DataContext="{Binding Mixer}" Margin="12,0" />
-                <views:DeckView Grid.Column="2" DataContext="{Binding DeckB}" AccentColor="{StaticResource DeckBColor}" />
+            <!-- Platos y mezclador; debajo, la biblioteca (el divisor ajusta su alto) -->
+            <Grid x:Name="BodyGrid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" MinHeight="330" />
+                    <RowDefinition x:Name="SplitterRow" Height="10" />
+                    <RowDefinition x:Name="LibraryRow" Height="220" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="230" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <views:DeckView Grid.Column="0" DataContext="{Binding DeckA}" AccentColor="{StaticResource DeckAColor}" />
+                    <views:MixerView Grid.Column="1" DataContext="{Binding Mixer}" Margin="12,0" />
+                    <views:DeckView Grid.Column="2" DataContext="{Binding DeckB}" AccentColor="{StaticResource DeckBColor}" />
+                </Grid>
+                <GridSplitter x:Name="LibrarySplitter" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                              ResizeDirection="Rows" Background="Transparent" Focusable="False"
+                              DragCompleted="OnLibrarySplitterDragCompleted" />
+                <views:LibraryView x:Name="LibraryPanel" Grid.Row="2" DataContext="{Binding Library}" />
             </Grid>
         </DockPanel>
     </DockPanel>

@@ -89,7 +89,7 @@ public sealed class ZoomWaveform : SKElement
             canvas.DrawLine(0, h / 2f, w, h / 2f, axis);
 
         if (Waveform is { } waveform)
-            WaveformPaint.DrawColumns(canvas, waveform, w, h, Accent, TimeAt, spp);
+            WaveformPaint.DrawColumns(canvas, waveform, w, h, TimeAt, spp);
 
         if (Grid is { } grid && Waveform is { } wf)
         {

@@ -17,9 +17,48 @@ public partial class MainWindow : Window
         // La posición se lee del motor en cada fotograma; el audio no depende de esto.
         CompositionTarget.Rendering += OnRendering;
         Closed += (_, _) => CompositionTarget.Rendering -= OnRendering;
+
+        // Que quepa en pantallas pequeñas (1366×768, 1080p con escala…).
+        var area = SystemParameters.WorkArea;
+        Width = Math.Min(Width, area.Width);
+        Height = Math.Min(Height, area.Height);
+
+        DataContextChanged += (_, e) =>
+        {
+            if (e.OldValue is MainViewModel old)
+                old.PropertyChanged -= OnViewModelChanged;
+            if (e.NewValue is MainViewModel vm)
+                vm.PropertyChanged += OnViewModelChanged;
+            ApplyLibraryLayout();
+        };
     }
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;
+
+    private void OnViewModelChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.ShowLibrary))
+            ApplyLibraryLayout();
+    }
+
+    /// <summary>Muestra u oculta la biblioteca con el alto guardado (el divisor la redimensiona).</summary>
+    private void ApplyLibraryLayout()
+    {
+        bool show = ViewModel?.ShowLibrary ?? false;
+        LibraryPanel.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        LibrarySplitter.Visibility = LibraryPanel.Visibility;
+        SplitterRow.Height = new GridLength(show ? 10 : 0);
+        LibraryRow.MinHeight = show ? MainViewModel.MinLibraryHeight : 0;
+        LibraryRow.Height = show ? new GridLength(ViewModel!.LibraryHeight) : new GridLength(0);
+    }
+
+    private void OnLibrarySplitterDragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+    {
+        if (ViewModel is not { } vm)
+            return;
+        vm.LibraryHeight = LibraryRow.ActualHeight;
+        vm.SaveSettings();
+    }
 
     private void OnRendering(object? sender, EventArgs e) => ViewModel?.Refresh();
 
@@ -103,6 +142,9 @@ public partial class MainWindow : Window
                 return true;
             case Key.OemMinus or Key.Subtract:
                 vm.ZoomOutCommand.Execute(null);
+                return true;
+            case Key.L:
+                vm.ToggleLibraryCommand.Execute(null);
                 return true;
             default:
                 return false;

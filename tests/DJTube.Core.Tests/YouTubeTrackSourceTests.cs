@@ -122,6 +122,54 @@ public sealed class YouTubeTrackSourceTests : IDisposable
         Assert.Null(await _source.GetArtworkAsync(new TrackInfo("Archivos locales", @"C:\x.mp3", "x")));
     }
 
+    [Fact]
+    public void OldCacheEntries_GetArtistAndTitleSplitOnce()
+    {
+        Seed("abcdefghijk", new YouTubeDownloadInfo("abcdefghijk", "Apollo - Dance (Official Video)", null, 228));
+
+        var track = _source.CreateTrackInfo("abcdefghijk");
+
+        Assert.Equal("Apollo", track.Artist);
+        Assert.Equal("Dance", track.Title);
+        string json = File.ReadAllText(Path.Combine(_cache, "abcdefghijk.json"));
+        Assert.Contains("Apollo - Dance (Official Video)", json); // título original guardado
+    }
+
+    [Fact]
+    public void UpdateMetadata_ChangesArtistAndTitleAndSurvivesReload()
+    {
+        Seed("abcdefghijk", new YouTubeDownloadInfo("abcdefghijk", "Dance", "Apollo", 228, "Apollo - Dance"));
+
+        var updated = _source.UpdateMetadata("abcdefghijk", "Apollo 440", "Dance (Remix)");
+
+        Assert.NotNull(updated);
+        var reloaded = new YouTubeTrackSource(_cache, () => null).CreateTrackInfo("abcdefghijk");
+        Assert.Equal("Apollo 440", reloaded.Artist);
+        Assert.Equal("Dance (Remix)", reloaded.Title);
+    }
+
+    [Fact]
+    public void UpdateMetadata_RejectsEmptyTitle()
+    {
+        Seed("abcdefghijk", new YouTubeDownloadInfo("abcdefghijk", "Dance", "Apollo", 228, "Apollo - Dance"));
+
+        Assert.Null(_source.UpdateMetadata("abcdefghijk", "Apollo", "  "));
+    }
+
+    [Fact]
+    public void Delete_RemovesAllFilesOfTheTrack()
+    {
+        Seed("abcdefghijk", new YouTubeDownloadInfo("abcdefghijk", "Dance", "Apollo", 228, "Apollo - Dance"));
+        File.WriteAllBytes(Path.Combine(_cache, "abcdefghijk.jpg"), [1]);
+        Seed("zyxwvutsrqp", new YouTubeDownloadInfo("zyxwvutsrqp", "Otra", null, 100, "Otra"));
+
+        _source.Delete("abcdefghijk");
+
+        Assert.False(_source.IsCached("abcdefghijk"));
+        Assert.Empty(Directory.EnumerateFiles(_cache, "abcdefghijk.*"));
+        Assert.True(_source.IsCached("zyxwvutsrqp"));
+    }
+
     private void Seed(string id, YouTubeDownloadInfo info)
     {
         Directory.CreateDirectory(_cache);

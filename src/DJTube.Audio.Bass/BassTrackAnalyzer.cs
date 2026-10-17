@@ -23,6 +23,9 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
     /// <summary>Corte del filtro de graves (bombo y bajo).</summary>
     private const double LowCutoffHz = 150;
 
+    /// <summary>Por encima de este corte se consideran agudos (para colorear la onda).</summary>
+    private const double HighCutoffHz = 2500;
+
     public BassTrackAnalyzer()
     {
         BassRuntime.EnsureInitialized();
@@ -54,14 +57,18 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
 
             var peaks = new List<float>(expectedBins);
             var lows = new List<float>(expectedBins);
+            var mids = new List<float>(expectedBins);
+            var highs = new List<float>(expectedBins);
             var lowEnergy = new List<float>(expectedHops);
             var fullEnergy = new List<float>(expectedHops);
 
-            // Dos filtros paso bajo de un polo en cascada (12 dB/oct) para quedarse con los graves.
+            // Filtros paso bajo de un polo en cascada (12 dB/oct): graves (< 150 Hz) y "no agudos" (< 2,5 kHz).
+            // Medios = no agudos − graves; agudos = señal − no agudos.
             double a = 1 - Math.Exp(-2 * Math.PI * LowCutoffHz / sampleRate);
-            double lp1 = 0, lp2 = 0;
+            double b = 1 - Math.Exp(-2 * Math.PI * HighCutoffHz / sampleRate);
+            double lp1 = 0, lp2 = 0, hp1 = 0, hp2 = 0;
 
-            float binPeak = 0, binLow = 0;
+            float binPeak = 0, binLow = 0, binMid = 0, binHigh = 0;
             int binCount = 0;
             double hopLow = 0, hopFull = 0;
             int hopCount = 0;
@@ -87,16 +94,24 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
 
                     lp1 += a * (mono - lp1);
                     lp2 += a * (lp1 - lp2);
+                    hp1 += b * (mono - hp1);
+                    hp2 += b * (hp1 - hp2);
 
                     float absMono = (float)Math.Abs(mono);
                     float absLow = (float)Math.Abs(lp2);
+                    float absMid = (float)Math.Abs(hp2 - lp2);
+                    float absHigh = (float)Math.Abs(mono - hp2);
                     if (absMono > binPeak) binPeak = absMono;
                     if (absLow > binLow) binLow = absLow;
+                    if (absMid > binMid) binMid = absMid;
+                    if (absHigh > binHigh) binHigh = absHigh;
                     if (++binCount == binFrames)
                     {
                         peaks.Add(binPeak);
                         lows.Add(binLow);
-                        binPeak = binLow = 0;
+                        mids.Add(binMid);
+                        highs.Add(binHigh);
+                        binPeak = binLow = binMid = binHigh = 0;
                         binCount = 0;
                     }
 
@@ -124,19 +139,14 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
             {
                 peaks.Add(binPeak);
                 lows.Add(binLow);
+                mids.Add(binMid);
+                highs.Add(binHigh);
             }
 
-            float[] peakArray = Normalize(peaks);
-            float[] lowArray = lows.ToArray();
-            // Los graves se escalan con el mismo factor que los picos para que se vean en proporción.
+            // Todas las bandas se escalan con el mismo factor que los picos, para que se vean en proporción.
             float scale = peaks.Count > 0 ? peaks.Max() : 0;
-            if (scale > 0)
-            {
-                for (int i = 0; i < lowArray.Length; i++)
-                    lowArray[i] = Math.Min(1, lowArray[i] / scale);
-            }
-
-            var waveform = new WaveformData(sampleRate / (double)binFrames, peakArray, lowArray);
+            var waveform = new WaveformData(
+                sampleRate / (double)binFrames, Scale(peaks, scale), Scale(lows, scale), Scale(mids, scale), Scale(highs, scale));
             float[] onset = OnsetStrength.FromBandEnergies(lowEnergy.ToArray(), fullEnergy.ToArray());
             var grid = BeatDetector.Detect(onset, sampleRate / (double)hopFrames);
 
@@ -149,14 +159,13 @@ public sealed class BassTrackAnalyzer : ITrackAnalyzer
         }
     }
 
-    private static float[] Normalize(List<float> values)
+    private static float[] Scale(List<float> values, float max)
     {
-        float max = values.Count > 0 ? values.Max() : 0;
         var result = values.ToArray();
         if (max > 0)
         {
             for (int i = 0; i < result.Length; i++)
-                result[i] /= max;
+                result[i] = Math.Min(1, result[i] / max);
         }
         return result;
     }

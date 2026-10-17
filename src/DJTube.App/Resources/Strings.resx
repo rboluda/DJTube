@@ -19,6 +19,27 @@
   <data name="Menu_Shortcuts" xml:space="preserve"><value>_Keyboard shortcuts</value></data>
   <data name="Menu_About" xml:space="preserve"><value>_About DJTube</value></data>
   <data name="Menu_CheckUpdates" xml:space="preserve"><value>Check for _updates…</value></data>
+  <data name="Library" xml:space="preserve"><value>LIBRARY</value></data>
+  <data name="Library_Count" xml:space="preserve"><value>{0} tracks</value></data>
+  <data name="Library_Search" xml:space="preserve"><value>Search artist or title</value></data>
+  <data name="Col_Artist" xml:space="preserve"><value>Artist</value></data>
+  <data name="Col_Title" xml:space="preserve"><value>Title</value></data>
+  <data name="Col_Duration" xml:space="preserve"><value>Time</value></data>
+  <data name="Col_Bpm" xml:space="preserve"><value>BPM</value></data>
+  <data name="Library_LoadA" xml:space="preserve"><value>Load into deck A</value></data>
+  <data name="Library_LoadB" xml:space="preserve"><value>Load into deck B</value></data>
+  <data name="Library_Edit" xml:space="preserve"><value>Edit artist and title (F2)</value></data>
+  <data name="Library_Delete" xml:space="preserve"><value>Remove from library…</value></data>
+  <data name="Library_DeleteConfirm" xml:space="preserve"><value>Remove “{0}” from the library? The downloaded audio will be deleted.</value></data>
+  <data name="Library_InUse" xml:space="preserve"><value>“{0}” is loaded on a deck: unload it or load another track first.</value></data>
+  <data name="Library_Empty" xml:space="preserve"><value>Tracks you load from YouTube links will appear here.</value></data>
+  <data name="Library_Hint" xml:space="preserve"><value>Double-click: load into the deck that is not playing · drag onto a deck · F2: edit</value></data>
+  <data name="Library_ToggleTip" xml:space="preserve"><value>Show or hide the library</value></data>
+  <data name="Menu_Library" xml:space="preserve"><value>_Library</value></data>
+  <data name="LibraryButton" xml:space="preserve"><value>Library</value></data>
+  <data name="Sc_Library" xml:space="preserve"><value>Show or hide the library</value></data>
+  <data name="Key_F2Delete" xml:space="preserve"><value>F2 / Del</value></data>
+  <data name="Sc_LibraryKeys" xml:space="preserve"><value>Library: edit artist and title / remove the selected track</value></data>
   <data name="Update_Available" xml:space="preserve"><value>DJTube {0} is available (you have {1}).</value></data>
   <data name="Update_Notes" xml:space="preserve"><value>What&apos;s new</value></data>
   <data name="Update_Install" xml:space="preserve"><value>Update now</value></data>

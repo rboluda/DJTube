@@ -3,6 +3,7 @@ using DJTube.App.Localization;
 using DJTube.App.Services;
 using DJTube.App.ViewModels;
 using DJTube.Audio.Bass;
+using DJTube.Core.Analysis;
 using DJTube.Sources.Local;
 using DJTube.Sources.YouTube;
 
@@ -41,11 +42,14 @@ public partial class App : Application
             return;
         }
 
+        // El análisis (onda y BPM) se guarda para que volver a cargar una canción sea instantáneo.
+        string analysisCache = System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJTube", "Cache", "Analysis");
         _viewModel = new MainViewModel(
             _engine,
             new LocalFileTrackSource(),
             new YouTubeTrackSource(),
-            new BassTrackAnalyzer(),
+            new CachingTrackAnalyzer(new BassTrackAnalyzer(), analysisCache),
             new FileDialogService(),
             settingsService,
             settings);

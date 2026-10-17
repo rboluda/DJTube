@@ -86,6 +86,33 @@ public sealed class YouTubeTrackSource : ITrackSource
 
     public bool IsCached(string videoId) => TryReadCached(videoId, out _);
 
+    /// <summary>Se ha descargado una pista nueva (para refrescar la biblioteca). Llega desde un hilo de fondo.</summary>
+    public event EventHandler<TrackInfo>? TrackAdded;
+
+    /// <summary>Archivo de audio en la caché (exista o no).</summary>
+    public string GetAudioPath(string videoId) => AudioPath(videoId);
+
+    /// <summary>Cambia artista y título de una pista de la caché (edición desde la biblioteca).</summary>
+    public TrackInfo? UpdateMetadata(string videoId, string? artist, string title)
+    {
+        if (!YouTubeUrl.IsValidVideoId(videoId) || !TryReadCached(videoId, out var info) || string.IsNullOrWhiteSpace(title))
+            return null;
+        var updated = info with
+        {
+            Artist = string.IsNullOrWhiteSpace(artist) ? null : artist.Trim(),
+            Title = title.Trim(),
+        };
+        WriteMeta(updated);
+        return ToTrackInfo(updated);
+    }
+
+    /// <summary>Quita una pista de la caché (audio, datos y miniatura).</summary>
+    public void Delete(string videoId)
+    {
+        if (YouTubeUrl.IsValidVideoId(videoId))
+            DeletePartialFiles(videoId);
+    }
+
     /// <summary>Pistas ya descargadas.</summary>
     public async IAsyncEnumerable<TrackInfo> BrowseAsync(
         string? location, [EnumeratorCancellation] CancellationToken ct = default)
@@ -173,11 +200,16 @@ public sealed class YouTubeTrackSource : ITrackSource
         }
 
         // El .json marca la descarga como completa: se escribe de forma atómica y al final.
-        string tmp = MetaPath(id) + ".tmp";
-        await File.WriteAllTextAsync(tmp, JsonSerializer.Serialize(info, JsonOptions), CancellationToken.None)
-            .ConfigureAwait(false);
-        File.Move(tmp, MetaPath(id), overwrite: true);
+        WriteMeta(info);
+        TrackAdded?.Invoke(this, ToTrackInfo(info));
         return info;
+    }
+
+    private void WriteMeta(YouTubeDownloadInfo info)
+    {
+        string tmp = MetaPath(info.Id) + ".tmp";
+        File.WriteAllText(tmp, JsonSerializer.Serialize(info, JsonOptions));
+        File.Move(tmp, MetaPath(info.Id), overwrite: true);
     }
 
     private bool TryReadCached(string id, out YouTubeDownloadInfo info)
@@ -190,6 +222,23 @@ public sealed class YouTubeTrackSource : ITrackSource
             var read = JsonSerializer.Deserialize<YouTubeDownloadInfo>(File.ReadAllText(MetaPath(id)), JsonOptions);
             if (read is null || read.Id != id)
                 return false;
+
+            // Cachés anteriores a 0.8: guardaban el título del vídeo tal cual. Se separan artista y
+            // título una sola vez (después, OriginalTitle ya existe y se respetan las ediciones).
+            if (read.OriginalTitle is null)
+            {
+                var (artist, title) = TrackTitleParser.Parse(read.Title);
+                read = read with { OriginalTitle = read.Title, Title = title, Artist = read.Artist ?? artist };
+                try
+                {
+                    WriteMeta(read);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Se volverá a intentar la próxima vez.
+                }
+            }
+
             info = read;
             return true;
         }

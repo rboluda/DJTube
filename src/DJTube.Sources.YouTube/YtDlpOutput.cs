@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using DJTube.Core.Logic;
 
 namespace DJTube.Sources.YouTube;
 
@@ -69,14 +70,12 @@ public static class YtDlpOutput
 
             // Vídeos de YouTube Music: "track" y "artist" vienen separados.
             if (track is not null && artist is not null)
-                return new YouTubeDownloadInfo(id, track, artist, GetNumber(root, "duration"));
+                return new YouTubeDownloadInfo(id, track, artist, GetNumber(root, "duration"), title);
 
-            // Canales automáticos "Artista - Topic": el canal es el artista.
-            const string topicSuffix = " - Topic";
-            string? topicArtist = channel is not null && channel.EndsWith(topicSuffix, StringComparison.Ordinal)
-                ? channel[..^topicSuffix.Length]
-                : null;
-            return new YouTubeDownloadInfo(id, title, artist ?? topicArtist, GetNumber(root, "duration"));
+            // Resto: "Artista - Canción (Official Video)" → artista y canción; un canal "Artista - Topic"
+            // también da el artista.
+            var (parsedArtist, parsedTitle) = TrackTitleParser.Parse(title, channel);
+            return new YouTubeDownloadInfo(id, parsedTitle, artist ?? parsedArtist, GetNumber(root, "duration"), title);
         }
         catch (JsonException)
         {

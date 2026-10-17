@@ -28,6 +28,7 @@ public partial class DeckViewModel : ObservableObject
     private readonly PlayheadSmoother _smoother = new();
     private CancellationTokenSource? _loadCts;
     private CancellationTokenSource? _analysisCts;
+    private string? _analysisPath;
     private int _artworkGeneration;
 
     [ObservableProperty]
@@ -186,6 +187,9 @@ public partial class DeckViewModel : ObservableObject
 
     internal bool IsDeckPlaying => _deck.IsPlaying;
 
+    /// <summary>Pista cargada en el plato (para no borrarla de la biblioteca mientras se usa).</summary>
+    public TrackInfo? LoadedTrack => _deck.Track;
+
     partial void OnPitchPercentChanged(double value)
     {
         double clamped = PitchMath.Clamp(value, PitchRange);
@@ -308,7 +312,7 @@ public partial class DeckViewModel : ObservableObject
     private void HalveBpm()
     {
         if (Grid is { } g && g.Bpm / 2 >= 40)
-            Grid = new BeatGrid(g.Bpm / 2, g.FirstBeatSeconds);
+            SetCorrectedGrid(new BeatGrid(g.Bpm / 2, g.FirstBeatSeconds));
     }
 
     /// <summary>Corrige un BPM detectado a la mitad (p. ej. 70 → 140).</summary>
@@ -316,8 +320,23 @@ public partial class DeckViewModel : ObservableObject
     private void DoubleBpm()
     {
         if (Grid is { } g && g.Bpm * 2 <= 300)
-            Grid = new BeatGrid(g.Bpm * 2, g.FirstBeatSeconds);
+            SetCorrectedGrid(new BeatGrid(g.Bpm * 2, g.FirstBeatSeconds));
     }
+
+    /// <summary>La corrección se guarda con el análisis: la próxima vez la pista ya sale con este BPM.</summary>
+    private void SetCorrectedGrid(BeatGrid grid)
+    {
+        Grid = grid;
+        if (_analysisPath is { } path)
+            _analyzer.SaveGrid(path, grid);
+        GridChanged?.Invoke(this, _analysisPath);
+    }
+
+    /// <summary>
+    /// La pista del plato tiene BPM nuevo (al terminar el análisis o al corregirlo con ½ / ×2);
+    /// lleva la ruta del archivo. La biblioteca lo usa para mostrar el BPM.
+    /// </summary>
+    public event EventHandler<string?>? GridChanged;
 
     [RelayCommand]
     private async Task LoadFile()
@@ -437,6 +456,7 @@ public partial class DeckViewModel : ObservableObject
         _analysisCts?.Cancel();
         var cts = new CancellationTokenSource();
         _analysisCts = cts;
+        _analysisPath = path;
 
         Waveform = null;
         Grid = null;
@@ -455,6 +475,7 @@ public partial class DeckViewModel : ObservableObject
                 return;
             Waveform = analysis.Waveform;
             Grid = analysis.Grid;
+            GridChanged?.Invoke(this, path);
         }
         catch (OperationCanceledException)
         {

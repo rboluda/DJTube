@@ -36,6 +36,11 @@ public sealed class AppSettings
 
     /// <summary>Buscar una versión nueva en GitHub al arrancar.</summary>
     public bool CheckForUpdates { get; set; } = true;
+
+    /// <summary>Biblioteca visible bajo los platos.</summary>
+    public bool ShowLibrary { get; set; } = true;
+
+    public double LibraryHeight { get; set; } = 220;
 }
 
 /// <summary>Lee y guarda <see cref="AppSettings"/> en %APPDATA%\DJTube\settings.json.</summary>

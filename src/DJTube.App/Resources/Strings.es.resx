@@ -19,6 +19,27 @@
   <data name="Menu_Shortcuts" xml:space="preserve"><value>_Atajos de teclado</value></data>
   <data name="Menu_About" xml:space="preserve"><value>Acerca _de DJTube</value></data>
   <data name="Menu_CheckUpdates" xml:space="preserve"><value>Buscar a_ctualizaciones…</value></data>
+  <data name="Library" xml:space="preserve"><value>BIBLIOTECA</value></data>
+  <data name="Library_Count" xml:space="preserve"><value>{0} canciones</value></data>
+  <data name="Library_Search" xml:space="preserve"><value>Buscar artista o título</value></data>
+  <data name="Col_Artist" xml:space="preserve"><value>Artista</value></data>
+  <data name="Col_Title" xml:space="preserve"><value>Título</value></data>
+  <data name="Col_Duration" xml:space="preserve"><value>Duración</value></data>
+  <data name="Col_Bpm" xml:space="preserve"><value>BPM</value></data>
+  <data name="Library_LoadA" xml:space="preserve"><value>Cargar en el plato A</value></data>
+  <data name="Library_LoadB" xml:space="preserve"><value>Cargar en el plato B</value></data>
+  <data name="Library_Edit" xml:space="preserve"><value>Editar artista y título (F2)</value></data>
+  <data name="Library_Delete" xml:space="preserve"><value>Quitar de la biblioteca…</value></data>
+  <data name="Library_DeleteConfirm" xml:space="preserve"><value>¿Quitar «{0}» de la biblioteca? Se borrará el audio descargado.</value></data>
+  <data name="Library_InUse" xml:space="preserve"><value>«{0}» está cargada en un plato: carga otra canción en ese plato antes de quitarla.</value></data>
+  <data name="Library_Empty" xml:space="preserve"><value>Aquí aparecerán las canciones que cargues desde enlaces de YouTube.</value></data>
+  <data name="Library_Hint" xml:space="preserve"><value>Doble clic: cargar en el plato que no suena · arrastrar a un plato · F2: editar</value></data>
+  <data name="Library_ToggleTip" xml:space="preserve"><value>Mostrar u ocultar la biblioteca</value></data>
+  <data name="Menu_Library" xml:space="preserve"><value>_Biblioteca</value></data>
+  <data name="LibraryButton" xml:space="preserve"><value>Biblioteca</value></data>
+  <data name="Sc_Library" xml:space="preserve"><value>Mostrar u ocultar la biblioteca</value></data>
+  <data name="Key_F2Delete" xml:space="preserve"><value>F2 / Supr</value></data>
+  <data name="Sc_LibraryKeys" xml:space="preserve"><value>Biblioteca: editar artista y título / quitar la canción seleccionada</value></data>
   <data name="Update_Available" xml:space="preserve"><value>Hay una nueva versión de DJTube: {0} (tienes la {1}).</value></data>
   <data name="Update_Notes" xml:space="preserve"><value>Novedades</value></data>
   <data name="Update_Install" xml:space="preserve"><value>Actualizar ahora</value></data>

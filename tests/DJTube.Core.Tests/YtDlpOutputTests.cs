@@ -35,7 +35,8 @@ public class YtDlpOutputTests
 
         Assert.NotNull(info);
         Assert.Equal("aqz-KE-bpKQ", info.Id);
-        Assert.Equal("Big Buck Bunny 60fps 4K", info.Title);
+        Assert.Equal("Big Buck Bunny 60fps", info.Title);
+        Assert.Equal("Big Buck Bunny 60fps 4K", info.OriginalTitle);
         Assert.Null(info.Artist);
         Assert.Equal(635, info.DurationSeconds);
     }
