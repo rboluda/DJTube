@@ -4,11 +4,39 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:DJTube.App.ViewModels"
+        xmlns:views="clr-namespace:DJTube.App.Views"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-        Title="DJTube" Height="450" Width="800">
-    <StackPanel Margin="16">
-        <TextBlock Text="Librerías de audio cargadas" FontWeight="Bold" Margin="0,0,0,8" />
-        <ItemsControl ItemsSource="{Binding Libraries}" FontFamily="Consolas" />
-    </StackPanel>
+        Title="DJTube" Height="420" Width="760" MinWidth="520" MinHeight="360"
+        Background="{StaticResource BackgroundBrush}"
+        Foreground="{StaticResource TextBrush}"
+        FontFamily="Segoe UI"
+        PreviewKeyDown="OnPreviewKeyDown" PreviewKeyUp="OnPreviewKeyUp">
+    <DockPanel Margin="16">
+        <!-- Salida de audio -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <TextBlock DockPanel.Dock="Left" Text="Salida" VerticalAlignment="Center" Margin="0,0,10,0"
+                       Foreground="{StaticResource TextDimBrush}" />
+            <ComboBox DockPanel.Dock="Left" Width="280" Focusable="False"
+                      ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}" />
+            <TextBlock Text="{Binding OutputStatus}" VerticalAlignment="Center" Margin="12,0,0,0"
+                       TextTrimming="CharacterEllipsis" ToolTip="{Binding Libraries}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasOutputError}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </DockPanel>
+
+        <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource CaptionText}" Margin="0,10,0,0"
+                   Text="Atajos: Espacio = play/pausa · C = cue · arrastra un archivo al plato para cargarlo" />
+
+        <views:DeckView DataContext="{Binding DeckA}" VerticalAlignment="Top" />
+    </DockPanel>
 </Window>

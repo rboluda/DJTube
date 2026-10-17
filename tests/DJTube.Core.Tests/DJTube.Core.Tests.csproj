@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DJTube.Core\DJTube.Core.csproj" />
+    <ProjectReference Include="..\..\src\DJTube.Sources.Local\DJTube.Sources.Local.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,17 +1,82 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using DJTube.App.Services;
 using DJTube.Audio.Bass;
+using DJTube.Core.Abstractions;
+using DJTube.Core.Models;
 
 namespace DJTube.App.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    public MainViewModel()
+    private readonly IAudioEngine _engine;
+    private bool _initializing;
+
+    [ObservableProperty]
+    private AudioDevice? _selectedDevice;
+
+    [ObservableProperty]
+    private string _outputStatus = "Salida detenida";
+
+    [ObservableProperty]
+    private bool _hasOutputError;
+
+    public MainViewModel(IAudioEngine engine, ITrackSource localSource, IFileDialogService dialogs)
     {
-        Libraries = BassLibraryInfo.GetVersions()
-            .Select(l => $"{l.Library}  {l.Version}")
-            .ToList();
+        _engine = engine;
+        DeckA = new DeckViewModel("A", engine.Decks[0], localSource, dialogs);
+        Libraries = string.Join(Environment.NewLine,
+            BassLibraryInfo.GetVersions().Select(l => $"{l.Library} {l.Version}"));
     }
 
-    /// <summary>Versiones de las DLL de BASS cargadas (comprobación de la fase 0).</summary>
-    public IReadOnlyList<string> Libraries { get; }
+    public DeckViewModel DeckA { get; }
+
+    public ObservableCollection<AudioDevice> Devices { get; } = [];
+
+    /// <summary>Versiones de las DLL de BASS (para diagnóstico).</summary>
+    public string Libraries { get; }
+
+    /// <summary>Enumera los dispositivos y arranca la salida en el predeterminado.</summary>
+    public void Initialize()
+    {
+        _initializing = true;
+        try
+        {
+            Devices.Clear();
+            foreach (var device in _engine.GetOutputDevices())
+                Devices.Add(device);
+            SelectedDevice = Devices.FirstOrDefault(d => d.IsDefault) ?? Devices.FirstOrDefault();
+        }
+        finally
+        {
+            _initializing = false;
+        }
+        StartOutput();
+    }
+
+    /// <summary>Se llama en cada fotograma.</summary>
+    public void Refresh() => DeckA.Refresh();
+
+    partial void OnSelectedDeviceChanged(AudioDevice? value)
+    {
+        if (!_initializing)
+            StartOutput();
+    }
+
+    private void StartOutput()
+    {
+        try
+        {
+            _engine.StartOutput(new AudioOutputSettings(SelectedDevice?.Id));
+            var status = _engine.OutputStatus!;
+            OutputStatus = $"WASAPI · {status.DeviceName} · {status.SampleRate} Hz · " +
+                           $"{status.Channels} canales · buffer {status.LatencyMilliseconds:0.0} ms";
+            HasOutputError = false;
+        }
+        catch (Exception ex)
+        {
+            OutputStatus = $"Error de salida: {ex.Message}";
+            HasOutputError = true;
+        }
+    }
 }
