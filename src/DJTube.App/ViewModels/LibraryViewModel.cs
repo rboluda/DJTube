@@ -778,6 +778,21 @@ public partial class LibraryViewModel : ObservableObject
             ImportStatus = "";
     }
 
+    /// <summary>Mueve la selección (rueda de navegación de una controladora): positivo = hacia abajo.</summary>
+    public void MoveSelection(int delta)
+    {
+        if (delta == 0)
+            return;
+        var visible = View.Cast<LibraryEntry>().ToList();
+        if (visible.Count == 0)
+            return;
+        int index = Selected is { } current ? visible.IndexOf(current) : -1;
+        int next = Math.Clamp(index < 0 ? 0 : index + Math.Sign(delta) * Math.Max(1, Math.Abs(delta)), 0, visible.Count - 1);
+        var entry = visible[next];
+        entry.Group.IsExpanded = true;
+        Selected = entry;
+    }
+
     // ---------- Automix ----------
 
     public AutomixViewModel? Automix { get; init; }

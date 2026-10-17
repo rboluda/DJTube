@@ -327,6 +327,38 @@ public partial class DeckViewModel : ObservableObject
     /// <summary>Pista cargada en el plato (para no borrarla de la biblioteca mientras se usa).</summary>
     public TrackInfo? LoadedTrack => _deck.Track;
 
+    private double _jogBend;
+
+    /// <summary>
+    /// Jog de una controladora: sonando, frena o acelera un instante (pitch bend) para cuadrar de oído;
+    /// en pausa, avanza o retrocede por la pista.
+    /// </summary>
+    public void Jog(int delta)
+    {
+        if (!_deck.IsLoaded || delta == 0)
+            return;
+        if (_deck.IsPlaying)
+        {
+            _jogBend = Math.Clamp(_jogBend + delta * 0.5, -20, 20);
+            _deck.PitchPercent = PitchPercent + _jogBend;
+        }
+        else
+        {
+            _deck.Seek(Math.Max(0, _deck.PositionSeconds + delta * 0.02));
+        }
+    }
+
+    /// <summary>El pitch bend del jog se va soltando solo (se llama en cada fotograma).</summary>
+    private void DecayJog()
+    {
+        if (_jogBend == 0)
+            return;
+        _jogBend *= 0.8;
+        if (Math.Abs(_jogBend) < 0.05)
+            _jogBend = 0;
+        _deck.PitchPercent = PitchPercent + _jogBend;
+    }
+
     /// <summary>Duración de la pista cargada (segundos).</summary>
     public double DurationSeconds => _deck.DurationSeconds;
 
@@ -397,6 +429,8 @@ public partial class DeckViewModel : ObservableObject
         CueFraction = duration > 0 ? _cue.CuePoint / duration : 0;
         IsCueLit = loaded && (_cue.IsPreviewing
             || (!playing && Math.Abs(reported - _cue.CuePoint) <= CueController.OnCueTolerance));
+
+        DecayJog();
 
         // El loop puede desaparecer en el motor (al saltar fuera de él o cargar otra pista).
         var loop = _deck.Loop;

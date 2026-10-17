@@ -146,6 +146,11 @@ public partial class MainViewModel : ObservableObject
     /// <summary>Aviso de actualizaciones.</summary>
     public UpdateViewModel Update { get; }
 
+    /// <summary>Controladoras MIDI.</summary>
+    public MidiViewModel Midi => _midi ??= new MidiViewModel(this);
+
+    private MidiViewModel? _midi;
+
     /// <summary>Pincha solo una cola de canciones.</summary>
     public AutomixViewModel Automix { get; }
 
@@ -285,6 +290,7 @@ public partial class MainViewModel : ObservableObject
         }
         StartOutput();
         _ = Library.LoadAsync();
+        Midi.Connect();
         Recording.RecoverInterrupted();
         _ = RefreshYtDlpStatusAsync();
         if (CheckForUpdates)

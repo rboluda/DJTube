@@ -186,6 +186,14 @@ public partial class MainWindow : Window
 
     private void OnExitClick(object sender, RoutedEventArgs e) => Close();
 
+    private void OnMidiClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel is not { } vm)
+            return;
+        ShowDialog(new MidiWindow { DataContext = vm.Midi });
+        vm.Midi.StopLearning();
+    }
+
     private HistoryWindow? _historyWindow;
 
     /// <summary>El historial es una ventana sin bloquear: se puede dejar abierta mientras se pincha.</summary>

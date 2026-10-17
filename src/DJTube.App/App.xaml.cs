@@ -111,6 +111,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         StopRecordingQuietly();
+        _viewModel?.Midi.Dispose();
         _viewModel?.SaveSettings();
         _engine?.Dispose();
         base.OnExit(e);

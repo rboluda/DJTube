@@ -42,6 +42,7 @@
                 </MenuItem>
                 <MenuItem Header="{loc:Tr Menu_Settings}">
                     <MenuItem Header="{loc:Tr Menu_Preferences}" InputGestureText="Ctrl+," Click="OnPreferencesClick" />
+                    <MenuItem Header="{loc:Tr Menu_Midi}" Click="OnMidiClick" />
                     <MenuItem Header="{loc:Tr Menu_Language}">
                         <MenuItem Header="Español" IsChecked="{Binding IsSpanish, Mode=OneWay}"
                                   Command="{Binding SetLanguageCommand}" CommandParameter="es" />

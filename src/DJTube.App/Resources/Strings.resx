@@ -285,4 +285,46 @@ No: add only this song</value></data>
   <data name="Automix_Queued" xml:space="preserve"><value>{0} songs in the queue: press AUTOMIX to start</value></data>
   <data name="Automix_SkipTip" xml:space="preserve"><value>Go to the next song now</value></data>
   <data name="Automix_Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Menu_Midi" xml:space="preserve"><value>_MIDI controller…</value></data>
+  <data name="Midi_Title" xml:space="preserve"><value>MIDI controller</value></data>
+  <data name="Midi_Hint" xml:space="preserve"><value>Connect the controller by USB. To assign a control: press «Learn» next to the action and move the knob, fader or button on the controller. It works with any brand.</value></data>
+  <data name="Midi_NoDevices" xml:space="preserve"><value>No MIDI controller detected.</value></data>
+  <data name="Midi_Devices" xml:space="preserve"><value>Connected: {0}</value></data>
+  <data name="Midi_Rescan" xml:space="preserve"><value>Search again</value></data>
+  <data name="Midi_LastMessage" xml:space="preserve"><value>Last message:</value></data>
+  <data name="Midi_ClearAll" xml:space="preserve"><value>Clear all</value></data>
+  <data name="Midi_Action" xml:space="preserve"><value>Action</value></data>
+  <data name="Midi_Control" xml:space="preserve"><value>Control</value></data>
+  <data name="Midi_MoveControl" xml:space="preserve"><value>Move a control…</value></data>
+  <data name="Midi_Learn" xml:space="preserve"><value>Learn</value></data>
+  <data name="Midi_Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="MidiAct_PlayPause" xml:space="preserve"><value>Play / pause</value></data>
+  <data name="MidiAct_Cue" xml:space="preserve"><value>CUE</value></data>
+  <data name="MidiAct_Sync" xml:space="preserve"><value>SYNC</value></data>
+  <data name="MidiAct_Load" xml:space="preserve"><value>Load the selected song</value></data>
+  <data name="MidiAct_KeyLock" xml:space="preserve"><value>Key lock</value></data>
+  <data name="MidiAct_Headphones" xml:space="preserve"><value>Headphones (CUE)</value></data>
+  <data name="MidiAct_Pitch" xml:space="preserve"><value>Pitch fader</value></data>
+  <data name="MidiAct_Jog" xml:space="preserve"><value>Jog wheel</value></data>
+  <data name="MidiAct_Volume" xml:space="preserve"><value>Channel fader</value></data>
+  <data name="MidiAct_Gain" xml:space="preserve"><value>Gain</value></data>
+  <data name="MidiAct_High" xml:space="preserve"><value>EQ high</value></data>
+  <data name="MidiAct_Mid" xml:space="preserve"><value>EQ mid</value></data>
+  <data name="MidiAct_Low" xml:space="preserve"><value>EQ low</value></data>
+  <data name="MidiAct_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="MidiAct_Loop" xml:space="preserve"><value>Loop</value></data>
+  <data name="MidiAct_LoopHalve" xml:space="preserve"><value>Loop ½</value></data>
+  <data name="MidiAct_LoopDouble" xml:space="preserve"><value>Loop ×2</value></data>
+  <data name="MidiAct_Reloop" xml:space="preserve"><value>Reloop / exit</value></data>
+  <data name="MidiAct_Roll" xml:space="preserve"><value>Loop roll</value></data>
+  <data name="MidiAct_FxOn" xml:space="preserve"><value>Effect on/off</value></data>
+  <data name="MidiAct_FxAmount" xml:space="preserve"><value>Effect amount</value></data>
+  <data name="MidiAct_HotCue" xml:space="preserve"><value>Hot cue {0}</value></data>
+  <data name="MidiAct_Mixer_Crossfader" xml:space="preserve"><value>Crossfader</value></data>
+  <data name="MidiAct_Mixer_Master" xml:space="preserve"><value>Master volume</value></data>
+  <data name="MidiAct_Mixer_PhonesMix" xml:space="preserve"><value>Headphones mix</value></data>
+  <data name="MidiAct_Mixer_PhonesVolume" xml:space="preserve"><value>Headphones volume</value></data>
+  <data name="MidiAct_Library_Browse" xml:space="preserve"><value>Library: browse</value></data>
+  <data name="MidiAct_App_Record" xml:space="preserve"><value>Record / stop</value></data>
+  <data name="MidiAct_App_Automix" xml:space="preserve"><value>Automix on/off</value></data>
 </root>

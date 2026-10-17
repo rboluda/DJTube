@@ -285,4 +285,46 @@ No: añadir solo esta canción</value></data>
   <data name="Automix_Queued" xml:space="preserve"><value>{0} canciones en la cola: pulsa AUTOMIX para empezar</value></data>
   <data name="Automix_SkipTip" xml:space="preserve"><value>Pasar ya a la siguiente</value></data>
   <data name="Automix_Clear" xml:space="preserve"><value>Vaciar</value></data>
+  <data name="Menu_Midi" xml:space="preserve"><value>Controladora _MIDI…</value></data>
+  <data name="Midi_Title" xml:space="preserve"><value>Controladora MIDI</value></data>
+  <data name="Midi_Hint" xml:space="preserve"><value>Conecta la controladora por USB. Para asignar un control: pulsa «Aprender» junto a la acción y mueve el mando, fader o botón de la controladora. Sirve para cualquier marca.</value></data>
+  <data name="Midi_NoDevices" xml:space="preserve"><value>No se ha detectado ninguna controladora MIDI.</value></data>
+  <data name="Midi_Devices" xml:space="preserve"><value>Conectadas: {0}</value></data>
+  <data name="Midi_Rescan" xml:space="preserve"><value>Buscar de nuevo</value></data>
+  <data name="Midi_LastMessage" xml:space="preserve"><value>Último mensaje:</value></data>
+  <data name="Midi_ClearAll" xml:space="preserve"><value>Borrar todo</value></data>
+  <data name="Midi_Action" xml:space="preserve"><value>Acción</value></data>
+  <data name="Midi_Control" xml:space="preserve"><value>Control</value></data>
+  <data name="Midi_MoveControl" xml:space="preserve"><value>Mueve un control…</value></data>
+  <data name="Midi_Learn" xml:space="preserve"><value>Aprender</value></data>
+  <data name="Midi_Clear" xml:space="preserve"><value>Borrar</value></data>
+  <data name="MidiAct_PlayPause" xml:space="preserve"><value>Play / pausa</value></data>
+  <data name="MidiAct_Cue" xml:space="preserve"><value>CUE</value></data>
+  <data name="MidiAct_Sync" xml:space="preserve"><value>SYNC</value></data>
+  <data name="MidiAct_Load" xml:space="preserve"><value>Cargar la canción seleccionada</value></data>
+  <data name="MidiAct_KeyLock" xml:space="preserve"><value>Key lock</value></data>
+  <data name="MidiAct_Headphones" xml:space="preserve"><value>Auriculares (CUE)</value></data>
+  <data name="MidiAct_Pitch" xml:space="preserve"><value>Fader de pitch</value></data>
+  <data name="MidiAct_Jog" xml:space="preserve"><value>Jog</value></data>
+  <data name="MidiAct_Volume" xml:space="preserve"><value>Fader de canal</value></data>
+  <data name="MidiAct_Gain" xml:space="preserve"><value>Ganancia</value></data>
+  <data name="MidiAct_High" xml:space="preserve"><value>EQ agudos</value></data>
+  <data name="MidiAct_Mid" xml:space="preserve"><value>EQ medios</value></data>
+  <data name="MidiAct_Low" xml:space="preserve"><value>EQ graves</value></data>
+  <data name="MidiAct_Filter" xml:space="preserve"><value>Filtro</value></data>
+  <data name="MidiAct_Loop" xml:space="preserve"><value>Loop</value></data>
+  <data name="MidiAct_LoopHalve" xml:space="preserve"><value>Loop ½</value></data>
+  <data name="MidiAct_LoopDouble" xml:space="preserve"><value>Loop ×2</value></data>
+  <data name="MidiAct_Reloop" xml:space="preserve"><value>Reloop / salir</value></data>
+  <data name="MidiAct_Roll" xml:space="preserve"><value>Loop roll</value></data>
+  <data name="MidiAct_FxOn" xml:space="preserve"><value>Efecto on/off</value></data>
+  <data name="MidiAct_FxAmount" xml:space="preserve"><value>Cantidad de efecto</value></data>
+  <data name="MidiAct_HotCue" xml:space="preserve"><value>Hot cue {0}</value></data>
+  <data name="MidiAct_Mixer_Crossfader" xml:space="preserve"><value>Crossfader</value></data>
+  <data name="MidiAct_Mixer_Master" xml:space="preserve"><value>Volumen master</value></data>
+  <data name="MidiAct_Mixer_PhonesMix" xml:space="preserve"><value>Mezcla de auriculares</value></data>
+  <data name="MidiAct_Mixer_PhonesVolume" xml:space="preserve"><value>Volumen de auriculares</value></data>
+  <data name="MidiAct_Library_Browse" xml:space="preserve"><value>Biblioteca: navegar</value></data>
+  <data name="MidiAct_App_Record" xml:space="preserve"><value>Grabar / detener</value></data>
+  <data name="MidiAct_App_Automix" xml:space="preserve"><value>Automix on/off</value></data>
 </root>
