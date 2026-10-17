@@ -1,4 +1,4 @@
-using DJTube.Audio.Bass.Output;
+﻿using DJTube.Audio.Bass.Output;
 using DJTube.Core.Abstractions;
 using DJTube.Core.Localization;
 using DJTube.Core.Models;
@@ -27,6 +27,7 @@ public sealed class BassAudioEngine : IAudioEngine
     private double _cueMix;
     private double _headphoneVolume = 1;
     private bool _disposed;
+    private readonly List<BassMasterTap> _taps = [];
 
     public BassAudioEngine(int deckCount = 2)
     {
@@ -35,8 +36,11 @@ public sealed class BassAudioEngine : IAudioEngine
         _decks = Enumerable.Range(0, deckCount).Select(_ => new BassDeck(GetOutputDelayBytes)).ToArray();
     }
 
-    /// <summary>Mezclador decode y su formato.</summary>
-    private readonly record struct Mixer(int Handle, int Rate, int Channels)
+    /// <summary>
+    /// Mezclador decode y su formato. <paramref name="Output"/> es lo que lee el dispositivo: en el master,
+    /// un splitter del mezclador (así la grabación puede sacar una copia exacta); en auriculares, el propio mezclador.
+    /// </summary>
+    private readonly record struct Mixer(int Handle, int Output, int Rate, int Channels)
     {
         public bool Matches(int rate, int channels) => Handle != 0 && Rate == rate && Channels == channels;
     }
@@ -126,6 +130,16 @@ public sealed class BassAudioEngine : IAudioEngine
         CueOutputError = null;
     }
 
+    public IAudioTap OpenMasterTap()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var tap = new BassMasterTap(t => { lock (_taps) _taps.Remove(t); });
+        lock (_taps)
+            _taps.Add(tap);
+        tap.Attach(_master.Handle, _master.Rate, _master.Channels);
+        return tap;
+    }
+
     public void Maintain()
     {
         bool active = CueActive;
@@ -147,7 +161,7 @@ public sealed class BassAudioEngine : IAudioEngine
             deck.Detach();
             deck.Dispose();
         }
-        FreeMixer(ref _master);
+        FreeMaster();
         FreeMixer(ref _cue);
     }
 
@@ -162,14 +176,14 @@ public sealed class BassAudioEngine : IAudioEngine
             (cueRate, cueChannels, _) = WasapiOutput.GetMixFormat(c);
 
         ConfigureMixers(rate, channels, cueRate, cueChannels);
-        _wasapiMaster = WasapiOutput.Start(masterDevice, _master.Handle, rate, channels, config.BufferMilliseconds);
+        _wasapiMaster = WasapiOutput.Start(masterDevice, _master.Output, rate, channels, config.BufferMilliseconds);
 
         if (cueDevice is { } cue)
         {
             // Si falla la salida de auriculares, el master sigue sonando.
             try
             {
-                _wasapiCue = WasapiOutput.Start(cue, _cue.Handle, cueRate, cueChannels, config.BufferMilliseconds);
+                _wasapiCue = WasapiOutput.Start(cue, _cue.Output, cueRate, cueChannels, config.BufferMilliseconds);
             }
             catch (BassException ex)
             {
@@ -191,7 +205,7 @@ public sealed class BassAudioEngine : IAudioEngine
                 withCue = false;
             }
             ConfigureMixers(asio.SampleRate, 2, withCue ? asio.SampleRate : 0, 2);
-            asio.Start(_master.Handle, config.MasterChannel, withCue ? _cue.Handle : 0, config.CueChannel);
+            asio.Start(_master.Output, config.MasterChannel, withCue ? _cue.Output : 0, config.CueChannel);
             _asio = asio;
         }
         catch
@@ -212,9 +226,14 @@ public sealed class BassAudioEngine : IAudioEngine
 
         if (!_master.Matches(rate, channels))
         {
-            FreeMixer(ref _master);
+            FreeMaster();
             // PositionEx: guarda historial de posiciones para compensar la latencia de salida.
-            _master = CreateMixer(rate, channels, BassFlags.MixerPositionEx);
+            _master = CreateMixer(rate, channels, BassFlags.MixerPositionEx, withOutputSplit: true);
+            lock (_taps)
+            {
+                foreach (var tap in _taps)
+                    tap.Attach(_master.Handle, rate, channels);
+            }
         }
 
         if (cueRate == 0)
@@ -222,7 +241,7 @@ public sealed class BassAudioEngine : IAudioEngine
         else if (!_cue.Matches(cueRate, cueChannels))
         {
             FreeMixer(ref _cue);
-            _cue = CreateMixer(cueRate, cueChannels, BassFlags.Default);
+            _cue = CreateMixer(cueRate, cueChannels, BassFlags.Default, withOutputSplit: false);
         }
 
         foreach (var deck in _decks)
@@ -230,18 +249,43 @@ public sealed class BassAudioEngine : IAudioEngine
         ApplyCueParameters();
     }
 
-    private static Mixer CreateMixer(int rate, int channels, BassFlags extra)
+    private static Mixer CreateMixer(int rate, int channels, BassFlags extra, bool withOutputSplit)
     {
         // NonStop: sigue entregando silencio sin fuentes activas (sin cortes en el dispositivo).
         int handle = BassMix.CreateMixerStream(
             rate, channels, BassFlags.Decode | BassFlags.Float | BassFlags.MixerNonStop | extra);
         if (handle == 0)
             throw new BassException(Messages.MixerCreateFailed);
-        return new Mixer(handle, rate, channels);
+        if (!withOutputSplit)
+            return new Mixer(handle, handle, rate, channels);
+
+        // El dispositivo lee este splitter (que pide al mezclador justo lo que necesita: misma latencia
+        // y misma posición); los splitters esclavos de la grabación reciben una copia de lo mismo.
+        int output = BassMix.CreateSplitStream(handle, BassFlags.Decode, null);
+        if (output == 0)
+        {
+            var error = Bass.LastError;
+            Bass.StreamFree(handle);
+            throw new BassException(Messages.MixerCreateFailed, error);
+        }
+        return new Mixer(handle, output, rate, channels);
+    }
+
+    /// <summary>Libera el mezclador master soltando antes las copias de grabación.</summary>
+    private void FreeMaster()
+    {
+        lock (_taps)
+        {
+            foreach (var tap in _taps)
+                tap.Detach();
+        }
+        FreeMixer(ref _master);
     }
 
     private static void FreeMixer(ref Mixer mixer)
     {
+        if (mixer.Output != 0 && mixer.Output != mixer.Handle)
+            Bass.StreamFree(mixer.Output);
         if (mixer.Handle != 0)
             Bass.StreamFree(mixer.Handle);
         mixer = default;

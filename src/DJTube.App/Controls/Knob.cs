@@ -119,7 +119,12 @@ public sealed class Knob : RangeBase
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
-        Value = Math.Clamp(Value + Math.Sign(e.Delta) * SmallChange, Minimum, Maximum);
+        double fine = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? 0.2 : 1;
+        double before = Value;
+        Value = Math.Clamp(Value + Math.Sign(e.Delta) * SmallChange * fine, Minimum, Maximum);
+        // Con el clic pulsado (arrastrando), el giro de la rueda se suma al arrastre en vez de perderse.
+        if (IsMouseCaptured)
+            _valueAtDragStart += Value - before;
         e.Handled = true;
     }
 

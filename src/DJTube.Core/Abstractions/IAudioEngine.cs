@@ -35,6 +35,9 @@ public interface IAudioEngine : IDisposable
 
     void StopOutput();
 
+    /// <summary>Abre una copia de la salida master para grabar la sesión (sigue al cambiar de salida).</summary>
+    IAudioTap OpenMasterTap();
+
     /// <summary>
     /// Mantenimiento periódico (unas decenas de veces por segundo, desde la interfaz): mantiene la
     /// ruta de auriculares sincronizada con el master cuando cada uno tiene su propio reloj.

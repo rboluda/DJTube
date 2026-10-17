@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DJTube.App.Localization;
@@ -26,6 +26,7 @@ public partial class PreferencesViewModel : ObservableObject
         _selectedLanguage = Languages.First(l => l.Code == Loc.Instance.Language);
         _selectedOutputMode = main.OutputModes.First(m => m.Value == main.OutputMode);
         _checkForUpdates = main.CheckForUpdates;
+        _recordingsFolder = main.Recording.Folder;
     }
 
     public IReadOnlyList<LanguageOption> Languages => Loc.Languages;
@@ -36,8 +37,25 @@ public partial class PreferencesViewModel : ObservableObject
 
     public IRelayCommand OpenCacheCommand => _main.OpenCacheCommand;
 
+    [ObservableProperty]
+    private string _recordingsFolder = "";
+
+    [RelayCommand]
+    private void BrowseRecordingsFolder()
+    {
+        var dialog = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = Loc.T("Pref_RecordingsFolder"),
+            InitialDirectory = System.IO.Directory.Exists(RecordingsFolder) ? RecordingsFolder : null,
+        };
+        if (dialog.ShowDialog() == true)
+            RecordingsFolder = dialog.FolderName;
+    }
+
     public void Apply()
     {
+        if (!string.Equals(RecordingsFolder, _main.Recording.Folder, StringComparison.OrdinalIgnoreCase))
+            _main.Recording.Folder = RecordingsFolder;
         if (SelectedLanguage.Code != Loc.Instance.Language)
             _main.SetLanguageCommand.Execute(SelectedLanguage.Code);
         if (SelectedOutputMode.Value != _main.OutputMode)

@@ -41,6 +41,9 @@ public sealed class AppSettings
     public bool ShowLibrary { get; set; } = true;
 
     public double LibraryHeight { get; set; } = 220;
+
+    /// <summary>Carpeta de las grabaciones (null = Música\DJTube).</summary>
+    public string? RecordingsFolder { get; set; }
 }
 
 /// <summary>Lee y guarda <see cref="AppSettings"/> en %APPDATA%\DJTube\settings.json.</summary>

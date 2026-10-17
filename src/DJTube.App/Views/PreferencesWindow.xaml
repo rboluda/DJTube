@@ -35,6 +35,13 @@
             <TextBox Text="{Binding CacheFolder, Mode=OneWay}" IsReadOnly="True" />
         </DockPanel>
 
+        <TextBlock Text="{loc:Tr Pref_RecordingsFolder}" Style="{StaticResource CaptionText}" Margin="0,16,0,4" />
+        <DockPanel>
+            <Button DockPanel.Dock="Right" Content="{loc:Tr Pref_Browse}" Margin="8,0,0,0" Padding="10,4"
+                    Command="{Binding BrowseRecordingsFolderCommand}" />
+            <TextBox Text="{Binding RecordingsFolder, Mode=OneWay}" IsReadOnly="True" />
+        </DockPanel>
+
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
             <Button Content="{loc:Tr OK}" IsDefault="True" MinWidth="96" Click="OnOkClick" />
             <Button Content="{loc:Tr Cancel}" IsCancel="True" MinWidth="96" Margin="8,0,0,0" />

@@ -14,9 +14,20 @@ public partial class App : Application
     private BassAudioEngine? _engine;
     private MainViewModel? _viewModel;
 
+    /// <summary>Se cierra para instalar una actualización (sin preguntar por la grabación: ya se avisó).</summary>
+    public static bool ExitingForUpdate { get; set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        // Pase lo que pase, la grabación en curso se cierra bien (la cabecera del WAV queda completa).
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            if (args.ExceptionObject is Exception ex)
+                ErrorLog.Write(ex);
+            StopRecordingQuietly();
+        };
+        SessionEnding += (_, _) => StopRecordingQuietly();
         // Un error en la interfaz no debe cerrar el programa (ni cortar la música): se registra y se avisa.
         DispatcherUnhandledException += (_, args) =>
         {
@@ -24,6 +35,8 @@ public partial class App : Application
             MessageBox.Show(args.Exception.Message, "DJTube", MessageBoxButton.OK, MessageBoxImage.Warning);
             args.Handled = true;
         };
+
+        Controls.SliderWheel.Register();
 
         var settingsService = new SettingsService();
         var settings = settingsService.Load();
@@ -59,8 +72,21 @@ public partial class App : Application
         _viewModel.Initialize();
     }
 
+    private void StopRecordingQuietly()
+    {
+        try
+        {
+            _viewModel?.Recording.StopForExit();
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.Write(ex);
+        }
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
+        StopRecordingQuietly();
         _viewModel?.SaveSettings();
         _engine?.Dispose();
         base.OnExit(e);

@@ -115,6 +115,7 @@ public partial class UpdateViewModel : ObservableObject
             string path = await _service.DownloadAsync(installer, progress);
             Show("Update_Installing");
             UpdateService.LaunchInstaller(path);
+            App.ExitingForUpdate = true;
             Application.Current.Shutdown();
         }
         catch (Exception ex)

@@ -14,4 +14,11 @@ public static class TimeFormat
         long tenth = tenths % 10;
         return $"{minutes}:{secs:00}.{tenth}";
     }
+
+    /// <summary>Formatea una duración como "hh:mm:ss" (segundos truncados), para la grabación.</summary>
+    public static string Clock(TimeSpan time)
+    {
+        long total = time > TimeSpan.Zero ? (long)Math.Floor(time.TotalSeconds + 1e-9) : 0;
+        return $"{total / 3600:00}:{total / 60 % 60:00}:{total % 60:00}";
+    }
 }

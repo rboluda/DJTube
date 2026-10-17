@@ -1,0 +1,146 @@
+﻿<UserControl x:Class="DJTube.App.Views.RecordingBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:DJTube.App.ViewModels"
+             xmlns:loc="clr-namespace:DJTube.App.Localization"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:RecordingViewModel}"
+             d:DesignWidth="1200" d:DesignHeight="44">
+    <UserControl.Resources>
+        <Style x:Key="TransportButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+            <Setter Property="Focusable" Value="False" />
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="10,6">
+        <DockPanel>
+            <!-- Grabar / pausa / detener -->
+            <Button DockPanel.Dock="Left" Style="{StaticResource TransportButton}" Command="{Binding RecordCommand}"
+                    AutomationProperties.Name="{loc:Tr Rec_Title}">
+                <Button.ToolTip>
+                    <StackPanel>
+                        <TextBlock Text="{loc:Tr Rec_Record}" />
+                        <TextBlock Text="{loc:Tr Rec_Hint}" Style="{StaticResource CaptionText}" />
+                    </StackPanel>
+                </Button.ToolTip>
+                <Ellipse x:Name="RecDot" Width="14" Height="14" Fill="{StaticResource ErrorBrush}">
+                    <Ellipse.Style>
+                        <Style TargetType="Ellipse">
+                            <Style.Triggers>
+                                <!-- Parpadea mientras graba -->
+                                <DataTrigger Binding="{Binding IsRecording}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard x:Name="Blink">
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.25"
+                                                                 Duration="0:0:0.6" AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <StopStoryboard BeginStoryboardName="Blink" />
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Ellipse.Style>
+                </Ellipse>
+            </Button>
+            <Button DockPanel.Dock="Left" Content="❚❚" FontSize="12" Command="{Binding TogglePauseCommand}"
+                    IsEnabled="{Binding IsActive}" ToolTip="{loc:Tr Rec_Pause}" AutomationProperties.Name="{loc:Tr Rec_Pause}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource TransportButton}">
+                        <Style.Triggers>
+                            <!-- En pausa: resaltado -->
+                            <DataTrigger Binding="{Binding IsPaused}" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource CueBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource CueBrush}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button DockPanel.Dock="Left" Style="{StaticResource TransportButton}" Content="■" FontSize="14"
+                    Command="{Binding StopCommand}" IsEnabled="{Binding IsActive}" ToolTip="{loc:Tr Rec_Stop}"
+                    AutomationProperties.Name="{loc:Tr Rec_Stop}" />
+
+            <!-- Tiempo grabado y estado -->
+            <TextBlock DockPanel.Dock="Left" Text="{Binding ElapsedText}" FontFamily="Consolas" FontSize="20"
+                       VerticalAlignment="Center" Margin="8,0,12,0">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsRecording}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <TextBlock DockPanel.Dock="Left" Text="{Binding StatusText}" VerticalAlignment="Center" FontSize="12"
+                       FontWeight="SemiBold" Margin="0,0,12,0">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsRecording}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsPaused}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource CueBrush}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding HasError}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <!-- Carpeta, tamaño y nivel (a la derecha) -->
+            <Button DockPanel.Dock="Right" Padding="8,3" FontSize="11" Margin="10,0,0,0" Focusable="False"
+                    Command="{Binding OpenFolderCommand}" ToolTip="{Binding Folder}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBlock Text="{loc:Tr Rec_OpenFolder}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <ProgressBar DockPanel.Dock="Right" Width="120" Height="6" Minimum="0" Maximum="1" Margin="10,0,0,0"
+                         VerticalAlignment="Center" Value="{Binding Level, Mode=OneWay}"
+                         Foreground="{StaticResource PlayBrush}" />
+            <TextBlock DockPanel.Dock="Right" Text="{Binding SizeText}" FontSize="11" VerticalAlignment="Center">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLowSpace}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                <Setter Property="ToolTip" Value="{loc:Tr Rec_LowSpace}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <!-- Archivo, o el aviso de una grabación recuperada -->
+            <Grid VerticalAlignment="Center">
+                <TextBlock Text="{Binding FileName}" Style="{StaticResource CaptionText}" TextTrimming="CharacterEllipsis"
+                           ToolTip="{Binding FileName}" />
+                <DockPanel Visibility="{Binding HasNotice, Converter={StaticResource BoolToVisibility}}"
+                           Background="{StaticResource PanelBrush}">
+                    <Button DockPanel.Dock="Right" Content="✕" Padding="6,0" FontSize="10" Margin="6,0,0,0"
+                            Command="{Binding DismissNoticeCommand}" Focusable="False" />
+                    <TextBlock Text="{Binding NoticeText}" Foreground="{StaticResource CueBrush}" FontSize="11"
+                               TextTrimming="CharacterEllipsis" ToolTip="{Binding NoticeText}" VerticalAlignment="Center" />
+                </DockPanel>
+            </Grid>
+        </DockPanel>
+    </Border>
+</UserControl>

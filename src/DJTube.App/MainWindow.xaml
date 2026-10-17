@@ -30,6 +30,13 @@
                     <Separator />
                     <MenuItem Header="{loc:Tr Menu_OpenCache}" Command="{Binding OpenCacheCommand}" />
                     <Separator />
+                    <MenuItem Header="{loc:Tr Menu_Record}" Command="{Binding Recording.RecordCommand}" />
+                    <MenuItem Header="{loc:Tr Menu_PauseRecording}" Command="{Binding Recording.TogglePauseCommand}"
+                              IsEnabled="{Binding Recording.IsRecording}" />
+                    <MenuItem Header="{loc:Tr Menu_StopRecording}" Command="{Binding Recording.StopCommand}"
+                              IsEnabled="{Binding Recording.IsActive}" />
+                    <MenuItem Header="{loc:Tr Rec_OpenFolder}" Command="{Binding Recording.OpenFolderCommand}" />
+                    <Separator />
                     <MenuItem Header="{loc:Tr Menu_Exit}" InputGestureText="Alt+F4" Click="OnExitClick" />
                 </MenuItem>
                 <MenuItem Header="{loc:Tr Menu_Settings}">
@@ -202,6 +209,9 @@
                            Text="{loc:Tr ShortcutsHint}" />
             </DockPanel>
 
+            <!-- Barra de grabación (bajo la biblioteca) -->
+            <views:RecordingBar DockPanel.Dock="Bottom" Margin="0,10,0,0" DataContext="{Binding Recording}" />
+
             <!-- Vista ampliada de los dos platos (estilo AtomixMP3): cabezal fijo en el centro -->
             <Border DockPanel.Dock="Top" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="8"
                     Margin="0,0,0,12">
@@ -228,9 +238,9 @@
             </Border>
 
             <!-- Platos y mezclador; debajo, la biblioteca (el divisor ajusta su alto) -->
-            <Grid x:Name="BodyGrid">
+            <Grid x:Name="BodyGrid" SizeChanged="OnBodySizeChanged">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" MinHeight="330" />
+                    <RowDefinition Height="*" MinHeight="300" />
                     <RowDefinition x:Name="SplitterRow" Height="10" />
                     <RowDefinition x:Name="LibraryRow" Height="220" />
                 </Grid.RowDefinitions>

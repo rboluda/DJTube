@@ -35,6 +35,20 @@ public partial class MainWindow : Window
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;
 
+    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        if (ViewModel?.Recording is not { IsActive: true } recording || App.ExitingForUpdate)
+            return;
+        if (MessageBox.Show(this, Localization.Loc.T("Rec_ConfirmExit"), "DJTube",
+                MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+        {
+            e.Cancel = true;
+            return;
+        }
+        recording.StopForExit();
+    }
+
     private void OnViewModelChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(MainViewModel.ShowLibrary))
@@ -49,7 +63,23 @@ public partial class MainWindow : Window
         LibrarySplitter.Visibility = LibraryPanel.Visibility;
         SplitterRow.Height = new GridLength(show ? 10 : 0);
         LibraryRow.MinHeight = show ? MainViewModel.MinLibraryHeight : 0;
-        LibraryRow.Height = show ? new GridLength(ViewModel!.LibraryHeight) : new GridLength(0);
+        LibraryRow.Height = show ? new GridLength(FitLibraryHeight(ViewModel!.LibraryHeight)) : new GridLength(0);
+    }
+
+    /// <summary>Alto mínimo que necesitan platos y mezclador para verse enteros.</summary>
+    private const double DecksMinHeight = 360;
+
+    /// <summary>La biblioteca cede sitio a los platos si la ventana es baja (sin cambiar el alto guardado).</summary>
+    private double FitLibraryHeight(double wanted)
+    {
+        double available = BodyGrid.ActualHeight - DecksMinHeight - SplitterRow.Height.Value;
+        return available > 0 ? Math.Clamp(wanted, MainViewModel.MinLibraryHeight, Math.Max(MainViewModel.MinLibraryHeight, available)) : wanted;
+    }
+
+    private void OnBodySizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (e.HeightChanged)
+            ApplyLibraryLayout();
     }
 
     private void OnLibrarySplitterDragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)

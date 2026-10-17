@@ -2,9 +2,19 @@
 
 # DJTube
 
+**Pincha directamente con YouTube.** Pega el enlace de un vídeo (o de una lista de reproducción)
+en una pletina y mezcla: DJTube baja solo el audio, sin anuncios, lo analiza (BPM y forma de onda)
+y lo guarda en su biblioteca para la próxima vez. No hace falta tener la música en archivos ni
+convertirla antes con otros programas: eso es lo que lo diferencia de otros programas de DJ.
+
+> *English:* **DJ straight from YouTube.** Paste a video or playlist link onto a deck and mix: DJTube
+> fetches the audio only (no ads), analyses BPM and waveform, and keeps it in its library. Two decks,
+> 3-band EQ with kills, filter, sync, headphone cue and session recording. Interface in English and Spanish.
+
 Aplicación de DJ de escritorio para Windows, sencilla y ligera, con dos platos, mezclador con
 EQ de 3 bandas, filtro y VU, crossfader, pitch con key lock, SYNC, forma de onda coloreada por
-frecuencias, biblioteca de canciones descargadas y pre-escucha por auriculares.
+frecuencias, biblioteca de canciones descargadas, grabación de la sesión y pre-escucha por auriculares.
+También carga archivos locales (MP3, FLAC, WAV, AAC, M4A).
 
 Interfaz en español e inglés (Configuración → Idioma). Cambios por versión en
 [CHANGELOG.md](CHANGELOG.md).

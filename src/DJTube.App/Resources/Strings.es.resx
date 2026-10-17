@@ -52,7 +52,7 @@
   <data name="Update_Error" xml:space="preserve"><value>No se pudo buscar actualizaciones: {0}</value></data>
   <data name="Update_DownloadError" xml:space="preserve"><value>No se pudo descargar la actualización: {0}</value></data>
   <data name="Update_ChecksumError" xml:space="preserve"><value>El archivo descargado está dañado (su huella no coincide).</value></data>
-  <data name="Update_ConfirmPlaying" xml:space="preserve"><value>DJTube se cerrará para instalar la actualización y se cortará la música. ¿Continuar?</value></data>
+  <data name="Update_ConfirmPlaying" xml:space="preserve"><value>DJTube se cerrará para instalar la actualización: se cortará la música y, si estás grabando, la grabación se guardará y se cerrará. ¿Continuar?</value></data>
   <data name="Pref_CheckUpdates" xml:space="preserve"><value>Buscar actualizaciones al iniciar</value></data>
   <data name="Output" xml:space="preserve"><value>Salida</value></data>
   <data name="OutputStopped" xml:space="preserve"><value>Salida detenida</value></data>
@@ -125,7 +125,7 @@
   <data name="Curve_Linear" xml:space="preserve"><value>Lineal</value></data>
   <data name="Curve_FastCut" xml:space="preserve"><value>Corte rápido</value></data>
   <data name="Curve_ConstantPower" xml:space="preserve"><value>Suave (potencia constante)</value></data>
-  <data name="CrossfaderTip" xml:space="preserve"><value>Crossfader (doble clic: centrar)</value></data>
+  <data name="CrossfaderTip" xml:space="preserve"><value>Crossfader (rueda: mover · doble clic: centrar)</value></data>
   <data name="VolumeATip" xml:space="preserve"><value>Volumen del plato A</value></data>
   <data name="VolumeBTip" xml:space="preserve"><value>Volumen del plato B</value></data>
   <data name="Eq_GainTip" xml:space="preserve"><value>Ganancia de entrada (±12 dB)</value></data>
@@ -133,7 +133,7 @@
   <data name="Eq_MidTip" xml:space="preserve"><value>Medios (a la izquierda del todo: corte total)</value></data>
   <data name="Eq_LowTip" xml:space="preserve"><value>Graves (a la izquierda del todo: corte total)</value></data>
   <data name="Eq_FilterTip" xml:space="preserve"><value>Filtro: a la izquierda paso bajo, a la derecha paso alto, en el centro apagado</value></data>
-  <data name="Eq_KnobHint" xml:space="preserve"><value>Arrastra arriba/abajo o usa la rueda (Mayús: fino) · doble clic: al centro</value></data>
+  <data name="Eq_KnobHint" xml:space="preserve"><value>Arrastra arriba/abajo o usa la rueda, también arrastrando (Mayús: fino) · doble clic: al centro</value></data>
   <data name="Eq_ResetTip" xml:space="preserve"><value>Poner a cero ganancia, EQ y filtro del plato {0}</value></data>
   <data name="Mix_Short" xml:space="preserve"><value>MEZCLA</value></data>
   <data name="Vol_Short" xml:space="preserve"><value>VOL</value></data>
@@ -170,7 +170,31 @@
   <data name="Sc_Preferences" xml:space="preserve"><value>Preferencias</value></data>
   <data name="Sc_Escape" xml:space="preserve"><value>Salir del campo de enlace</value></data>
   <data name="Sc_Help" xml:space="preserve"><value>Esta lista</value></data>
-  <data name="Sc_Wheel" xml:space="preserve"><value>Rueda sobre el pitch: ajuste fino · doble clic: 0 %</value></data>
+  <data name="Sc_Wheel" xml:space="preserve"><value>Rueda del ratón sobre cualquier fader o mando (también con el clic pulsado) lo mueve; Mayús: fino. Pitch: pasos de 0,02 %, doble clic: 0 %</value></data>
   <data name="Key_Space" xml:space="preserve"><value>Espacio</value></data>
   <data name="Key_Enter" xml:space="preserve"><value>Intro</value></data>
+  <data name="Rec_Title" xml:space="preserve"><value>GRABAR</value></data>
+  <data name="Rec_Record" xml:space="preserve"><value>Grabar la sesión (lo que suena por el master)</value></data>
+  <data name="Rec_Resume" xml:space="preserve"><value>Seguir grabando</value></data>
+  <data name="Rec_Pause" xml:space="preserve"><value>Pausar la grabación (lo que suene mientras no se graba)</value></data>
+  <data name="Rec_Stop" xml:space="preserve"><value>Detener y guardar la grabación</value></data>
+  <data name="Rec_OpenFolder" xml:space="preserve"><value>Carpeta de grabaciones</value></data>
+  <data name="Rec_Ready" xml:space="preserve"><value>Lista para grabar el master (WAV, calidad CD)</value></data>
+  <data name="Rec_Recording" xml:space="preserve"><value>GRABANDO</value></data>
+  <data name="Rec_Paused" xml:space="preserve"><value>EN PAUSA</value></data>
+  <data name="Rec_Saved" xml:space="preserve"><value>Guardada</value></data>
+  <data name="Rec_Error" xml:space="preserve"><value>Grabación detenida: {0}</value></data>
+  <data name="Rec_StartError" xml:space="preserve"><value>No se puede grabar en «{0}»: {1}</value></data>
+  <data name="Rec_SizeFree" xml:space="preserve"><value>{0} · quedan {1} libres</value></data>
+  <data name="Rec_Free" xml:space="preserve"><value>{0} libres</value></data>
+  <data name="Rec_LowSpace" xml:space="preserve"><value>Queda poco espacio libre en el disco</value></data>
+  <data name="Rec_Recovered" xml:space="preserve"><value>Recuperada «{0}»: se estaba grabando cuando DJTube se cerró de forma inesperada.</value></data>
+  <data name="Rec_RecoveredMany" xml:space="preserve"><value>Recuperadas {0} grabaciones que se cortaron al cerrarse DJTube de forma inesperada.</value></data>
+  <data name="Rec_ConfirmExit" xml:space="preserve"><value>Hay una grabación en curso. ¿Detenerla, guardarla y salir?</value></data>
+  <data name="Rec_Hint" xml:space="preserve"><value>Se guarda en disco cada segundo: un cierre inesperado pierde como mucho el último segundo</value></data>
+  <data name="Pref_RecordingsFolder" xml:space="preserve"><value>Carpeta de grabaciones</value></data>
+  <data name="Pref_Browse" xml:space="preserve"><value>Cambiar…</value></data>
+  <data name="Menu_Record" xml:space="preserve"><value>_Grabar / seguir grabando</value></data>
+  <data name="Menu_PauseRecording" xml:space="preserve"><value>_Pausar grabación</value></data>
+  <data name="Menu_StopRecording" xml:space="preserve"><value>_Detener grabación</value></data>
 </root>

@@ -101,7 +101,8 @@ public partial class MainViewModel : ObservableObject
                 SaveSettings();
         };
 
-        Update = new UpdateViewModel(() => DeckA.IsPlaying || DeckB.IsPlaying);
+        Recording = new RecordingViewModel(engine, settings, SaveSettings);
+        Update = new UpdateViewModel(() => DeckA.IsPlaying || DeckB.IsPlaying || Recording.IsActive);
         _checkForUpdates = settings.CheckForUpdates;
 
         Library = new LibraryViewModel(youTube, analyzer, DeckA, DeckB);
@@ -133,6 +134,9 @@ public partial class MainViewModel : ObservableObject
 
     /// <summary>Aviso de actualizaciones.</summary>
     public UpdateViewModel Update { get; }
+
+    /// <summary>Grabación de la sesión.</summary>
+    public RecordingViewModel Recording { get; }
 
     /// <summary>Canciones ya descargadas.</summary>
     public LibraryViewModel Library { get; }
@@ -254,6 +258,7 @@ public partial class MainViewModel : ObservableObject
         }
         StartOutput();
         _ = Library.LoadAsync();
+        Recording.RecoverInterrupted();
         _ = RefreshYtDlpStatusAsync();
         if (CheckForUpdates)
             _ = CheckUpdatesOnStartupAsync();
@@ -273,6 +278,7 @@ public partial class MainViewModel : ObservableObject
         DeckA.Refresh();
         DeckB.Refresh();
         Mixer.Refresh();
+        Recording.Refresh();
     }
 
     [RelayCommand]

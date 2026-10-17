@@ -26,4 +26,15 @@ public class TimeFormatTests
     {
         Assert.Equal("0:00.0", TimeFormat.Format(seconds));
     }
+
+    [Theory]
+    [InlineData(0, "00:00:00")]
+    [InlineData(59.9, "00:00:59")]
+    [InlineData(61, "00:01:01")]
+    [InlineData(3600 + 23 * 60 + 5.5, "01:23:05")]
+    [InlineData(-3, "00:00:00")]
+    public void Clock_ShowsHoursMinutesSeconds(double seconds, string expected)
+    {
+        Assert.Equal(expected, TimeFormat.Clock(TimeSpan.FromSeconds(seconds)));
+    }
 }

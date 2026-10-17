@@ -52,7 +52,7 @@
   <data name="Update_Error" xml:space="preserve"><value>Could not check for updates: {0}</value></data>
   <data name="Update_DownloadError" xml:space="preserve"><value>The update could not be downloaded: {0}</value></data>
   <data name="Update_ChecksumError" xml:space="preserve"><value>The downloaded file is damaged (its checksum does not match).</value></data>
-  <data name="Update_ConfirmPlaying" xml:space="preserve"><value>DJTube will close to install the update and the music will stop. Continue?</value></data>
+  <data name="Update_ConfirmPlaying" xml:space="preserve"><value>DJTube will close to install the update: the music will stop and any recording will be saved and closed. Continue?</value></data>
   <data name="Pref_CheckUpdates" xml:space="preserve"><value>Check for updates on startup</value></data>
   <data name="Output" xml:space="preserve"><value>Output</value></data>
   <data name="OutputStopped" xml:space="preserve"><value>Output stopped</value></data>
@@ -125,7 +125,7 @@
   <data name="Curve_Linear" xml:space="preserve"><value>Linear</value></data>
   <data name="Curve_FastCut" xml:space="preserve"><value>Fast cut</value></data>
   <data name="Curve_ConstantPower" xml:space="preserve"><value>Smooth (constant power)</value></data>
-  <data name="CrossfaderTip" xml:space="preserve"><value>Crossfader (double-click: centre)</value></data>
+  <data name="CrossfaderTip" xml:space="preserve"><value>Crossfader (wheel: move · double-click: centre)</value></data>
   <data name="VolumeATip" xml:space="preserve"><value>Deck A volume</value></data>
   <data name="VolumeBTip" xml:space="preserve"><value>Deck B volume</value></data>
   <data name="Eq_GainTip" xml:space="preserve"><value>Input gain (±12 dB)</value></data>
@@ -133,7 +133,7 @@
   <data name="Eq_MidTip" xml:space="preserve"><value>Mids (fully left: kill)</value></data>
   <data name="Eq_LowTip" xml:space="preserve"><value>Bass (fully left: kill)</value></data>
   <data name="Eq_FilterTip" xml:space="preserve"><value>Filter: left low-pass, right high-pass, centre off</value></data>
-  <data name="Eq_KnobHint" xml:space="preserve"><value>Drag up/down or use the wheel (Shift: fine) · double-click: centre</value></data>
+  <data name="Eq_KnobHint" xml:space="preserve"><value>Drag up/down or use the wheel, also while dragging (Shift: fine) · double-click: centre</value></data>
   <data name="Eq_ResetTip" xml:space="preserve"><value>Reset gain, EQ and filter of deck {0}</value></data>
   <data name="Mix_Short" xml:space="preserve"><value>MIX</value></data>
   <data name="Vol_Short" xml:space="preserve"><value>VOL</value></data>
@@ -170,7 +170,31 @@
   <data name="Sc_Preferences" xml:space="preserve"><value>Preferences</value></data>
   <data name="Sc_Escape" xml:space="preserve"><value>Leave the link field</value></data>
   <data name="Sc_Help" xml:space="preserve"><value>This list</value></data>
-  <data name="Sc_Wheel" xml:space="preserve"><value>Wheel over pitch fader: fine adjustment · double-click: 0 %</value></data>
+  <data name="Sc_Wheel" xml:space="preserve"><value>Mouse wheel over any fader or knob (also while holding the click) moves it; Shift: fine. Pitch: 0.02 % steps, double-click: 0 %</value></data>
   <data name="Key_Space" xml:space="preserve"><value>Space</value></data>
   <data name="Key_Enter" xml:space="preserve"><value>Enter</value></data>
+  <data name="Rec_Title" xml:space="preserve"><value>REC</value></data>
+  <data name="Rec_Record" xml:space="preserve"><value>Record the session (what plays on the master)</value></data>
+  <data name="Rec_Resume" xml:space="preserve"><value>Resume recording</value></data>
+  <data name="Rec_Pause" xml:space="preserve"><value>Pause recording (what plays meanwhile is not recorded)</value></data>
+  <data name="Rec_Stop" xml:space="preserve"><value>Stop and save the recording</value></data>
+  <data name="Rec_OpenFolder" xml:space="preserve"><value>Recordings folder</value></data>
+  <data name="Rec_Ready" xml:space="preserve"><value>Ready to record the master (WAV, CD quality)</value></data>
+  <data name="Rec_Recording" xml:space="preserve"><value>RECORDING</value></data>
+  <data name="Rec_Paused" xml:space="preserve"><value>PAUSED</value></data>
+  <data name="Rec_Saved" xml:space="preserve"><value>Saved</value></data>
+  <data name="Rec_Error" xml:space="preserve"><value>Recording stopped: {0}</value></data>
+  <data name="Rec_StartError" xml:space="preserve"><value>Cannot record in “{0}”: {1}</value></data>
+  <data name="Rec_SizeFree" xml:space="preserve"><value>{0} · {1} free</value></data>
+  <data name="Rec_Free" xml:space="preserve"><value>{0} free</value></data>
+  <data name="Rec_LowSpace" xml:space="preserve"><value>Little free space left on the disk</value></data>
+  <data name="Rec_Recovered" xml:space="preserve"><value>Recovered “{0}”: it was being recorded when DJTube closed unexpectedly.</value></data>
+  <data name="Rec_RecoveredMany" xml:space="preserve"><value>Recovered {0} recordings that were interrupted when DJTube closed unexpectedly.</value></data>
+  <data name="Rec_ConfirmExit" xml:space="preserve"><value>A recording is in progress. Stop it, save it and exit?</value></data>
+  <data name="Rec_Hint" xml:space="preserve"><value>Recorded every second to disk: an unexpected close loses at most the last second</value></data>
+  <data name="Pref_RecordingsFolder" xml:space="preserve"><value>Recordings folder</value></data>
+  <data name="Pref_Browse" xml:space="preserve"><value>Change…</value></data>
+  <data name="Menu_Record" xml:space="preserve"><value>Start / resume _recording</value></data>
+  <data name="Menu_PauseRecording" xml:space="preserve"><value>_Pause recording</value></data>
+  <data name="Menu_StopRecording" xml:space="preserve"><value>S_top recording</value></data>
 </root>
