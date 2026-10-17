@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -34,6 +34,27 @@ public partial class RecordingViewModel : ObservableObject
 
     [ObservableProperty]
     private string _sizeText = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StatusText))]
+    private bool _isExporting;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(StatusText))]
+    private double _exportProgress;
+
+    private RecorderState _lastState;
+    private CancellationTokenSource? _exportCts;
+    private string? _exportResult; // texto tras convertir (o el error)
+
+    /// <summary>Historial de la sesión: su lista de temas se guarda junto a cada grabación.</summary>
+    public SessionHistory? History { get; set; }
+
+    /// <summary>Tiempo grabado (para colocar los temas en la grabación).</summary>
+    public TimeSpan RecordedTime => _recorder.Recorded;
+
+    public RecordingFormat Format =>
+        Enum.TryParse(_settings.RecordingFormat, out RecordingFormat f) ? f : RecordingFormat.Mp3;
 
     public RecordingViewModel(IAudioEngine engine, AppSettings settings, Action saveSettings)
     {
@@ -81,9 +102,72 @@ public partial class RecordingViewModel : ObservableObject
         RecorderState.Recording => Loc.T("Rec_Recording"),
         RecorderState.Paused => Loc.T("Rec_Paused"),
         _ when _recorder.Error is { } error => Loc.F("Rec_Error", error),
+        _ when IsExporting => Loc.F("Rec_Exporting", AudioExporter.Extension(Format).TrimStart('.').ToUpperInvariant(), ExportProgress * 100),
+        _ when _exportResult is { } result => result,
         _ when _recorder.CurrentFile is not null => Loc.T("Rec_Saved"),
         _ => Loc.T("Rec_Ready"),
     };
+
+    [RelayCommand]
+    private void CancelExport() => _exportCts?.Cancel();
+
+    /// <summary>
+    /// Al terminar una grabación: guarda la lista de temas (.txt y .cue) y la convierte al formato elegido.
+    /// </summary>
+    private async Task FinishRecordingAsync(IReadOnlyList<string> files)
+    {
+        _exportResult = null;
+        WriteTracklist(files[0]);
+        var format = Format;
+        if (format == RecordingFormat.Wav)
+            return;
+
+        _exportCts = new CancellationTokenSource();
+        IsExporting = true;
+        ExportProgress = 0;
+        try
+        {
+            for (int i = 0; i < files.Count; i++)
+            {
+                int index = i;
+                await AudioExporter.ExportAsync(files[i], format,
+                    new Progress<double>(p => ExportProgress = (index + p) / files.Count), _exportCts.Token);
+            }
+            _exportResult = Loc.F("Rec_SavedAs", AudioExporter.Extension(format).TrimStart('.').ToUpperInvariant());
+        }
+        catch (OperationCanceledException)
+        {
+            _exportResult = Loc.T("Rec_ExportCancelled");
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.Write(ex);
+            _exportResult = Loc.F("Rec_ExportError", ex.Message);
+        }
+        finally
+        {
+            IsExporting = false;
+            OnPropertyChanged(nameof(StatusText));
+        }
+    }
+
+    private void WriteTracklist(string recording)
+    {
+        if (History?.RecordingEntries is not { Count: > 0 } entries)
+            return;
+        try
+        {
+            string name = Path.GetFileNameWithoutExtension(recording);
+            File.WriteAllText(Path.ChangeExtension(recording, ".txt"),
+                name + Environment.NewLine + Environment.NewLine + SessionHistory.ToText(entries, useRecordingTime: true));
+            File.WriteAllText(Path.ChangeExtension(recording, ".cue"),
+                SessionHistory.ToCueSheet(Path.GetFileName(recording), name, entries));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            ErrorLog.Write(ex);
+        }
+    }
 
     public bool HasError => !IsActive && _recorder.Error is not null;
 
@@ -119,7 +203,9 @@ public partial class RecordingViewModel : ObservableObject
         try
         {
             DismissNotice();
+            _exportResult = null;
             _recorder.Start(Folder);
+            History?.OnRecordingStarted();
             UpdateSize(force: true);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -202,6 +288,10 @@ public partial class RecordingViewModel : ObservableObject
         _elapsedText = TimeFormat.Clock(_recorder.Recorded);
         OnPropertyChanged(nameof(ElapsedText));
         UpdateSize(force: true);
+
+        if (_lastState != RecorderState.Stopped && State == RecorderState.Stopped && _recorder.Files.Count > 0)
+            _ = FinishRecordingAsync(_recorder.Files);
+        _lastState = State;
     }
 
     private void UpdateSize(bool force)

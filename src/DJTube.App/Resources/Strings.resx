@@ -264,4 +264,17 @@ No: add only this song</value></data>
   <data name="Fx_OnTip" xml:space="preserve"><value>Effect on/off (it sounds on the master and on the headphones)</value></data>
   <data name="Fx_AmountTip" xml:space="preserve"><value>Amount of effect</value></data>
   <data name="Fx_BeatsTip" xml:space="preserve"><value>Beats: echo delay or sweep length, in time with the BPM</value></data>
+  <data name="Rec_Exporting" xml:space="preserve"><value>Converting to {0}… {1:0} %</value></data>
+  <data name="Rec_SavedAs" xml:space="preserve"><value>Saved (WAV + {0}) with the tracklist</value></data>
+  <data name="Rec_ExportCancelled" xml:space="preserve"><value>Saved as WAV (conversion cancelled)</value></data>
+  <data name="Rec_ExportError" xml:space="preserve"><value>Saved as WAV; could not convert: {0}</value></data>
+  <data name="Rec_CancelExport" xml:space="preserve"><value>Cancel the conversion (the WAV is kept)</value></data>
+  <data name="Menu_History" xml:space="preserve"><value>Session _history…</value></data>
+  <data name="History_Title" xml:space="preserve"><value>Session history</value></data>
+  <data name="History_Hint" xml:space="preserve"><value>Songs that have played on the master for at least 10 seconds. When you record, the tracklist (.txt and .cue) is saved next to the recording.</value></data>
+  <data name="History_Empty" xml:space="preserve"><value>Nothing has played yet in this session.</value></data>
+  <data name="History_Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="History_Save" xml:space="preserve"><value>Save…</value></data>
+  <data name="History_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Col_Deck" xml:space="preserve"><value>Deck</value></data>
 </root>

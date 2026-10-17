@@ -36,6 +36,7 @@
                     <MenuItem Header="{loc:Tr Menu_StopRecording}" Command="{Binding Recording.StopCommand}"
                               IsEnabled="{Binding Recording.IsActive}" />
                     <MenuItem Header="{loc:Tr Rec_OpenFolder}" Command="{Binding Recording.OpenFolderCommand}" />
+                    <MenuItem Header="{loc:Tr Menu_History}" InputGestureText="Ctrl+H" Click="OnHistoryClick" />
                     <Separator />
                     <MenuItem Header="{loc:Tr Menu_Exit}" InputGestureText="Alt+F4" Click="OnExitClick" />
                 </MenuItem>

@@ -327,6 +327,9 @@ public partial class DeckViewModel : ObservableObject
     /// <summary>Pista cargada en el plato (para no borrarla de la biblioteca mientras se usa).</summary>
     public TrackInfo? LoadedTrack => _deck.Track;
 
+    /// <summary>Cuenta las cargas: volver a cargar la misma canción cuenta como otra vez (historial).</summary>
+    public int LoadGeneration { get; private set; }
+
     partial void OnPitchPercentChanged(double value)
     {
         double clamped = PitchMath.Clamp(value, PitchRange);
@@ -757,6 +760,7 @@ public partial class DeckViewModel : ObservableObject
             _roll = null;
             HasLoopIn = false;
             LoadHotCues(media.Track);
+            LoadGeneration++;
             Title = FormatTitle(media.Track);
             loaded = true;
             if (media.FilePath is { } path)

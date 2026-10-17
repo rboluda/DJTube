@@ -60,6 +60,9 @@ public sealed class AppSettings
     /// <summary>Hot cues y loops caen en el golpe más cercano.</summary>
     public bool Quantize { get; set; } = true;
 
+    /// <summary>Formato de la grabación además del WAV: Wav (solo WAV), Mp3 o M4a.</summary>
+    public string RecordingFormat { get; set; } = "Mp3";
+
     /// <summary>Carpeta de las grabaciones (null = Música\DJTube).</summary>
     public string? RecordingsFolder { get; set; }
 }

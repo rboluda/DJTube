@@ -104,6 +104,15 @@
                 </TextBlock.Style>
             </TextBlock>
 
+            <!-- Conversión al formato elegido (al terminar de grabar) -->
+            <Button DockPanel.Dock="Right" Content="✕" Padding="6,1" FontSize="10" Margin="6,0,0,0" Focusable="False"
+                    Command="{Binding CancelExportCommand}" ToolTip="{loc:Tr Rec_CancelExport}"
+                    Visibility="{Binding IsExporting, Converter={StaticResource BoolToVisibility}}" />
+            <ProgressBar DockPanel.Dock="Right" Width="90" Height="6" Minimum="0" Maximum="1" Margin="10,0,0,0"
+                         VerticalAlignment="Center" Value="{Binding ExportProgress, Mode=OneWay}"
+                         Foreground="{StaticResource DeckABrush}"
+                         Visibility="{Binding IsExporting, Converter={StaticResource BoolToVisibility}}" />
+
             <!-- Carpeta, tamaño y nivel (a la derecha) -->
             <Button DockPanel.Dock="Right" Padding="8,3" FontSize="11" Margin="10,0,0,0" Focusable="False"
                     Command="{Binding OpenFolderCommand}" ToolTip="{Binding Folder}">

@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
     <PackageReference Include="SkiaSharp.Views.WPF" Version="4.153.1" />
   </ItemGroup>
 

@@ -176,12 +176,34 @@ public partial class MainWindow : Window
             case Key.L:
                 vm.ToggleLibraryCommand.Execute(null);
                 return true;
+            case Key.H:
+                ShowHistory();
+                return true;
             default:
                 return false;
         }
     }
 
     private void OnExitClick(object sender, RoutedEventArgs e) => Close();
+
+    private HistoryWindow? _historyWindow;
+
+    /// <summary>El historial es una ventana sin bloquear: se puede dejar abierta mientras se pincha.</summary>
+    private void OnHistoryClick(object sender, RoutedEventArgs e) => ShowHistory();
+
+    private void ShowHistory()
+    {
+        if (ViewModel is not { } vm)
+            return;
+        if (_historyWindow is { IsLoaded: true })
+        {
+            _historyWindow.Activate();
+            return;
+        }
+        _historyWindow = new HistoryWindow { DataContext = new HistoryViewModel(vm.History), Owner = this, Icon = Icon };
+        DarkTitleBar.Attach(_historyWindow);
+        _historyWindow.Show();
+    }
 
     private void OnPreferencesClick(object sender, RoutedEventArgs e) => ShowPreferences();
 

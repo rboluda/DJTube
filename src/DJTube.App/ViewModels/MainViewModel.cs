@@ -107,6 +107,8 @@ public partial class MainViewModel : ObservableObject
         };
 
         Recording = new RecordingViewModel(engine, settings, SaveSettings);
+        History = new Core.Recording.SessionHistory(() => Recording.IsActive ? Recording.RecordedTime : null);
+        Recording.History = History;
         Update = new UpdateViewModel(() => DeckA.IsPlaying || DeckB.IsPlaying || Recording.IsActive);
         _checkForUpdates = settings.CheckForUpdates;
 
@@ -142,6 +144,19 @@ public partial class MainViewModel : ObservableObject
 
     /// <summary>Aviso de actualizaciones.</summary>
     public UpdateViewModel Update { get; }
+
+    /// <summary>Canciones que han sonado en la sesión.</summary>
+    public Core.Recording.SessionHistory History { get; }
+
+    private DateTime _lastHistoryUpdate;
+
+    private Core.Recording.DeckSnapshot Snapshot(DeckViewModel deck, int index)
+    {
+        var track = deck.LoadedTrack;
+        string? link = track is { SourceName: YouTubeTrackSource.SourceName } ? YouTubeUrl.ToWatchUrl(track.Id) : null;
+        return new(deck.Name, track is null ? null : $"{deck.LoadGeneration}:{track.SourceName}:{track.Id}",
+            track?.Artist, track?.Title, link, deck.IsPlaying, Mixer.IsAudible(index));
+    }
 
     /// <summary>Grabación de la sesión.</summary>
     public RecordingViewModel Recording { get; }
@@ -288,6 +303,12 @@ public partial class MainViewModel : ObservableObject
         Mixer.Refresh();
         Recording.Refresh();
         Library.Refresh();
+        var now = DateTime.Now;
+        if ((now - _lastHistoryUpdate).TotalSeconds >= 0.5)
+        {
+            _lastHistoryUpdate = now;
+            History.Update(now, [Snapshot(DeckA, 0), Snapshot(DeckB, 1)]);
+        }
     }
 
     [RelayCommand]

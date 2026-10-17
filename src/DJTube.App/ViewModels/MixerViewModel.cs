@@ -137,4 +137,7 @@ public partial class MixerViewModel : ObservableObject
         _deckA.MasterGain = FaderTaper.ToGain(VolumeA) * gains.A;
         _deckB.MasterGain = FaderTaper.ToGain(VolumeB) * gains.B;
     }
+
+    /// <summary>¿Se oye el plato por el master? (fader y crossfader abiertos.)</summary>
+    public bool IsAudible(int deck) => (deck == 0 ? _deckA : _deckB).MasterGain > 0.05;
 }

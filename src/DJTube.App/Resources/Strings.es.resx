@@ -264,4 +264,17 @@ No: añadir solo esta canción</value></data>
   <data name="Fx_OnTip" xml:space="preserve"><value>Efecto encendido/apagado (suena en el master y en los auriculares)</value></data>
   <data name="Fx_AmountTip" xml:space="preserve"><value>Cantidad de efecto</value></data>
   <data name="Fx_BeatsTip" xml:space="preserve"><value>Tiempos: retardo del eco o duración del barrido, a tempo con el BPM</value></data>
+  <data name="Rec_Exporting" xml:space="preserve"><value>Convirtiendo a {0}… {1:0} %</value></data>
+  <data name="Rec_SavedAs" xml:space="preserve"><value>Guardada (WAV + {0}) con la lista de temas</value></data>
+  <data name="Rec_ExportCancelled" xml:space="preserve"><value>Guardada en WAV (conversión cancelada)</value></data>
+  <data name="Rec_ExportError" xml:space="preserve"><value>Guardada en WAV; no se pudo convertir: {0}</value></data>
+  <data name="Rec_CancelExport" xml:space="preserve"><value>Cancelar la conversión (el WAV se conserva)</value></data>
+  <data name="Menu_History" xml:space="preserve"><value>_Historial de la sesión…</value></data>
+  <data name="History_Title" xml:space="preserve"><value>Historial de la sesión</value></data>
+  <data name="History_Hint" xml:space="preserve"><value>Canciones que han sonado por el master al menos 10 segundos. Al grabar, la lista de temas (.txt y .cue) se guarda junto a la grabación.</value></data>
+  <data name="History_Empty" xml:space="preserve"><value>Todavía no ha sonado nada en esta sesión.</value></data>
+  <data name="History_Copy" xml:space="preserve"><value>Copiar</value></data>
+  <data name="History_Save" xml:space="preserve"><value>Guardar…</value></data>
+  <data name="History_Time" xml:space="preserve"><value>Hora</value></data>
+  <data name="Col_Deck" xml:space="preserve"><value>Plato</value></data>
 </root>
