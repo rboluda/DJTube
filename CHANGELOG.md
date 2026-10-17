@@ -4,6 +4,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [versionado semántico](https://semver.org/lang/es/). La versión se define en
 `Directory.Build.props`.
 
+## [0.6.1] - 2026-10-17
+
+### Añadido
+- Instalador (`DJTube-Setup-<versión>.exe`, Inno Setup) y ZIP portable que no necesitan instalar
+  nada más: llevan .NET, las librerías de audio, yt-dlp y Deno. El instalador no pide permisos de
+  administrador, crea el acceso directo y se desinstala desde «Aplicaciones».
+- `build/publish.ps1`: genera los dos paquetes en `artifacts/`.
+- `THIRD-PARTY-NOTICES.txt` con las licencias de los componentes incluidos.
+
+### Cambiado
+- El ejecutable se llama `DJTube.exe`.
+- DJTube usa primero el yt-dlp y el Deno de su carpeta `tools`.
+
 ## [0.6.0] - 2026-10-17
 
 ### Añadido

@@ -1,0 +1,33 @@
+DJTube - Avisos de terceros / Third-party notices
+=================================================
+
+DJTube incluye o usa los siguientes componentes. Cada uno se distribuye con su propia licencia.
+DJTube includes or uses the following components, each under its own license.
+
+BASS, BASS_FX, BASSmix, BASSWASAPI, BASSASIO, BASSFLAC
+  © Un4seen Developments Ltd. https://www.un4seen.com
+  Gratuito solo para uso no comercial. Free for non-commercial use only.
+  Un uso comercial requiere una licencia de Un4seen. Commercial use requires a license from Un4seen.
+
+ManagedBass
+  © ManagedBass contributors. MIT License. https://github.com/ManagedBass/ManagedBass
+
+SkiaSharp
+  © Microsoft Corporation. MIT License. https://github.com/mono/SkiaSharp
+  Incluye Skia (© Google Inc., licencia BSD de 3 cláusulas). Includes Skia (BSD 3-Clause).
+
+CommunityToolkit.Mvvm
+  © .NET Foundation and Contributors. MIT License. https://github.com/CommunityToolkit/dotnet
+
+.NET Runtime y Windows Desktop Runtime (WPF)
+  © .NET Foundation and Contributors. MIT License. https://github.com/dotnet
+
+yt-dlp
+  The Unlicense (dominio público). https://github.com/yt-dlp/yt-dlp
+  Descargar contenido de YouTube va en contra de sus condiciones de uso: úsalo bajo tu
+  responsabilidad y solo con contenido que tengas derecho a utilizar.
+  Downloading from YouTube is against its terms of service: use it at your own risk and
+  only with content you are entitled to use.
+
+Deno
+  © the Deno authors. MIT License. https://github.com/denoland/deno

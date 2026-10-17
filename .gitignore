@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # DLL nativas de BASS (x64) versionadas en el repositorio
 !lib/native/x64/
+
+# Paquetes generados por build/publish.ps1
+artifacts/

@@ -5,6 +5,9 @@
     <!-- SkiaSharp.Views.WPF 4.x exige Windows 10 2004 (19041) o superior. -->
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
+    <!-- El ejecutable se llama DJTube.exe; el espacio de nombres (y los recursos) siguen siendo DJTube.App. -->
+    <AssemblyName>DJTube</AssemblyName>
+    <RootNamespace>DJTube.App</RootNamespace>
     <!-- Requerido por [LibraryImport] (barra de título oscura). -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Icono del ejecutable (generado con tools/BrandAssets a partir de assets/logo-original.png). -->

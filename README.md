@@ -8,12 +8,32 @@ crossfader, pitch con key lock, SYNC, forma de onda y pre-escucha por auriculare
 Interfaz en español e inglés (Configuración → Idioma). Cambios por versión en
 [CHANGELOG.md](CHANGELOG.md).
 
-## Requisitos
+## Instalación
+
+Descarga la última versión desde [Releases](https://github.com/rboluda/DJTube/releases):
+
+- **`DJTube-Setup-<versión>.exe`** (recomendado): instalador. No pide permisos de administrador,
+  crea el acceso directo en el menú Inicio y se desinstala desde «Aplicaciones» de Windows.
+- **`DJTube-<versión>-win-x64-portable.zip`**: descomprime la carpeta y ejecuta `DJTube.exe`.
+
+No hace falta instalar nada más: el paquete lleva .NET, las librerías de audio, yt-dlp y Deno.
+Requiere Windows 10 2004 o superior (64 bits). Al no estar firmado digitalmente, la primera
+vez Windows SmartScreen puede avisar: «Más información» → «Ejecutar de todas formas».
+
+## Generar los paquetes
+
+```
+powershell -ExecutionPolicy Bypass -File build/publish.ps1
+```
+
+Deja el instalador y el ZIP en `artifacts/` (necesita Inno Setup 6: `winget install JRSoftware.InnoSetup`).
+
+## Requisitos para desarrollar
 
 - Windows 10 2004 o superior (x64).
 - SDK de .NET 10.
-- Para cargar enlaces de YouTube: [yt-dlp](https://github.com/yt-dlp/yt-dlp)
-  (`winget install yt-dlp.yt-dlp`, que instala también Deno y FFmpeg).
+- Para cargar enlaces de YouTube al ejecutar desde el código: [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+  (`winget install yt-dlp.yt-dlp`, que instala también Deno). Los paquetes ya lo incluyen.
 
 ## Compilar y ejecutar
 

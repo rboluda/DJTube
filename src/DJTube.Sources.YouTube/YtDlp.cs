@@ -11,7 +11,7 @@ public static class YtDlp
 {
     private const string ExeName = "yt-dlp.exe";
 
-    /// <summary>Busca yt-dlp: junto a la app, en el PATH y donde lo instala winget.</summary>
+    /// <summary>Busca yt-dlp: el incluido con la app, junto a ella, en el PATH y donde lo instala winget.</summary>
     public static string? Find()
     {
         foreach (string candidate in Candidates())
@@ -66,9 +66,9 @@ public static class YtDlp
         foreach (string argument in arguments)
             psi.ArgumentList.Add(argument);
 
-        // yt-dlp necesita Deno (y a veces FFmpeg) del PATH. Si la app se abrió antes de
-        // instalarlos, su PATH está desactualizado: se toma el actual del sistema.
-        psi.Environment["PATH"] = CurrentSystemPath();
+        // yt-dlp necesita Deno del PATH. Primero el que viene con DJTube (carpeta tools); después el
+        // PATH actual del sistema (si la app se abrió antes de instalar algo, el suyo está desactualizado).
+        psi.Environment["PATH"] = string.Join(';', BundledToolsFolder, CurrentSystemPath());
         psi.Environment["PYTHONIOENCODING"] = "utf-8";
 
         using var process = new Process { StartInfo = psi };
@@ -99,8 +99,12 @@ public static class YtDlp
         return new RunResult(process.ExitCode);
     }
 
+    /// <summary>Carpeta con yt-dlp y Deno que incluye el instalador de DJTube.</summary>
+    public static string BundledToolsFolder => Path.Combine(AppContext.BaseDirectory, "tools");
+
     private static IEnumerable<string> Candidates()
     {
+        yield return Path.Combine(BundledToolsFolder, ExeName);
         yield return Path.Combine(AppContext.BaseDirectory, ExeName);
 
         foreach (string dir in CurrentSystemPath().Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
