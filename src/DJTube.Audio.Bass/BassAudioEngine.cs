@@ -33,6 +33,15 @@ public sealed class BassAudioEngine : IAudioEngine
 
     public AudioOutputStatus? OutputStatus => _output?.Status;
 
+    public double OutputDelaySeconds
+    {
+        get
+        {
+            var output = _output;
+            return output is null || output.SampleRate <= 0 ? 0 : output.BufferedFrames / (double)output.SampleRate;
+        }
+    }
+
     public IReadOnlyList<AudioDevice> GetOutputDevices()
     {
         var devices = new List<AudioDevice>();

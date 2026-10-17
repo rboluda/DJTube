@@ -26,11 +26,53 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!-- Cabecera: letra del plato y título -->
-                <DockPanel Grid.Row="0" LastChildFill="True">
+                <!-- Miniatura del vídeo y BPM -->
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Width="160" Height="90">
+                        <Border Background="{StaticResource ControlBrush}" CornerRadius="6">
+                            <TextBlock Text="♪" FontSize="34" Foreground="{StaticResource TextDimBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <Border CornerRadius="6">
+                            <Border.Background>
+                                <ImageBrush ImageSource="{Binding Artwork}" Stretch="UniformToFill" />
+                            </Border.Background>
+                        </Border>
+                    </Grid>
+
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding BpmText}" FontFamily="Consolas" FontSize="30"
+                                       Foreground="{Binding Accent, ElementName=Root}" />
+                            <TextBlock Text="BPM" Style="{StaticResource CaptionText}" VerticalAlignment="Bottom"
+                                       Margin="6,0,0,6" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding OriginalBpmText}" Style="{StaticResource CaptionText}"
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Text="{Binding AnalysisStatus}" Style="{StaticResource CaptionText}"
+                                   HorizontalAlignment="Right" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,6,0,0">
+                            <Button Content="½" Padding="8,3" FontSize="11" Command="{Binding HalveBpmCommand}"
+                                    ToolTip="El BPM detectado es el doble del real" />
+                            <Button Content="×2" Padding="8,3" FontSize="11" Margin="4,0,0,0"
+                                    Command="{Binding DoubleBpmCommand}" ToolTip="El BPM detectado es la mitad del real" />
+                            <Button Content="SYNC" Padding="12,3" Margin="8,0,0,0" Command="{Binding SyncCommand}"
+                                    ToolTip="Igualar tempo con el otro plato y, si los dos suenan, alinear los golpes" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Letra del plato y título -->
+                <DockPanel Grid.Row="1" LastChildFill="True">
                     <Border DockPanel.Dock="Left" Background="{Binding Accent, ElementName=Root}" CornerRadius="4"
                             Width="28" Height="28" Margin="0,0,12,0">
                         <TextBlock Text="{Binding Name}" Foreground="Black" FontWeight="Bold" FontSize="16"
@@ -41,7 +83,7 @@
                 </DockPanel>
 
                 <!-- Carga: enlace de YouTube o archivo -->
-                <DockPanel Grid.Row="1" Margin="0,10,0,0">
+                <DockPanel Grid.Row="2" Margin="0,10,0,0">
                     <Button DockPanel.Dock="Right" Content="ARCHIVO…" Margin="8,0,0,0"
                             Command="{Binding LoadFileCommand}" ToolTip="Cargar un archivo de audio del disco" />
                     <Button DockPanel.Dock="Right" Content="CARGAR" Margin="8,0,0,0"
@@ -51,7 +93,7 @@
                 </DockPanel>
 
                 <!-- Progreso de carga/descarga -->
-                <DockPanel Grid.Row="2" Margin="0,8,0,0"
+                <DockPanel Grid.Row="3" Margin="0,8,0,0"
                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
                     <Button DockPanel.Dock="Right" Content="✕" Padding="8,2" Margin="8,0,0,0" FontSize="11"
                             Command="{Binding CancelLoadCommand}" ToolTip="Cancelar la descarga" />
@@ -74,7 +116,7 @@
                 </DockPanel>
 
                 <!-- Tiempos -->
-                <Grid Grid.Row="3" Margin="0,12,0,6">
+                <Grid Grid.Row="4" Margin="0,10,0,6">
                     <StackPanel HorizontalAlignment="Left">
                         <TextBlock Text="TRANSCURRIDO" Style="{StaticResource CaptionText}" />
                         <TextBlock Text="{Binding Elapsed}" FontFamily="Consolas" FontSize="26" />
@@ -86,16 +128,17 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Progreso (provisional hasta la forma de onda) -->
-                <controls:TrackProgressBar Grid.Row="4" Height="40"
+                <!-- Forma de onda completa: clic o arrastre para saltar -->
+                <controls:WaveformOverview Grid.Row="5" Height="56"
+                                           Waveform="{Binding Waveform}"
                                            Progress="{Binding Progress}"
                                            CueFraction="{Binding CueFraction}"
-                                           Accent="{Binding Accent, ElementName=Root}"
+                                           Accent="{Binding AccentColor, ElementName=Root}"
                                            SeekCommand="{Binding SeekCommand}"
                                            IsEnabled="{Binding IsLoaded}" />
 
                 <!-- Transporte -->
-                <StackPanel Grid.Row="5" Orientation="Horizontal" Margin="0,14,0,0">
+                <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0,12,0,0">
                     <controls:PressButton Content="CUE" Width="88" Height="48" FontSize="15"
                                           PressCommand="{Binding CueDownCommand}"
                                           ReleaseCommand="{Binding CueUpCommand}"
@@ -130,7 +173,7 @@
                 </StackPanel>
 
                 <!-- Errores -->
-                <TextBlock Grid.Row="6" Text="{Binding Error}" Foreground="{StaticResource ErrorBrush}"
+                <TextBlock Grid.Row="7" Text="{Binding Error}" Foreground="{StaticResource ErrorBrush}"
                            TextWrapping="Wrap" Margin="0,10,0,0" VerticalAlignment="Top">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">

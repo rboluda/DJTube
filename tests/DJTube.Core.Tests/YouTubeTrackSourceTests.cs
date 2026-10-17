@@ -86,6 +86,42 @@ public sealed class YouTubeTrackSourceTests : IDisposable
         Assert.Equal(["Dos", "Uno"], titles.Order());
     }
 
+    [Fact]
+    public async Task GetArtworkAsync_DownloadsThumbnailOnceAndCachesIt()
+    {
+        var requested = new List<string>();
+        var source = new YouTubeTrackSource(_cache, () => null, (url, _) =>
+        {
+            requested.Add(url);
+            return Task.FromResult(new byte[] { 0xFF, 0xD8, 0xFF });
+        });
+        var track = source.CreateTrackInfo("abcdefghijk");
+
+        string? first = await source.GetArtworkAsync(track);
+        string? second = await source.GetArtworkAsync(track);
+
+        Assert.Equal(Path.Combine(_cache, "abcdefghijk.jpg"), first);
+        Assert.Equal(first, second);
+        Assert.Equal(["https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg"], requested);
+        Assert.Equal([0xFF, 0xD8, 0xFF], File.ReadAllBytes(first!));
+    }
+
+    [Fact]
+    public async Task GetArtworkAsync_NetworkErrorGivesNull()
+    {
+        var source = new YouTubeTrackSource(_cache, () => null,
+            (_, _) => throw new HttpRequestException("sin conexión"));
+
+        Assert.Null(await source.GetArtworkAsync(source.CreateTrackInfo("abcdefghijk")));
+        Assert.False(File.Exists(Path.Combine(_cache, "abcdefghijk.jpg")));
+    }
+
+    [Fact]
+    public async Task GetArtworkAsync_OtherSourcesHaveNoArtwork()
+    {
+        Assert.Null(await _source.GetArtworkAsync(new TrackInfo("Archivos locales", @"C:\x.mp3", "x")));
+    }
+
     private void Seed(string id, YouTubeDownloadInfo info)
     {
         Directory.CreateDirectory(_cache);

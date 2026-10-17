@@ -1,3 +1,7 @@
+using System.Diagnostics;
+using System.Globalization;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DJTube.App.Services;
@@ -12,13 +16,19 @@ namespace DJTube.App.ViewModels;
 public partial class DeckViewModel : ObservableObject
 {
     private const string EmptyTitle = "Sin pista";
+    private static readonly Stopwatch Clock = Stopwatch.StartNew();
 
     private readonly IDeck _deck;
     private readonly ITrackSource _localSource;
     private readonly YouTubeTrackSource _youTube;
+    private readonly ITrackAnalyzer _analyzer;
+    private readonly Func<double> _outputDelaySeconds;
     private readonly IFileDialogService _dialogs;
     private readonly CueController _cue;
+    private readonly PlayheadSmoother _smoother = new();
     private CancellationTokenSource? _loadCts;
+    private CancellationTokenSource? _analysisCts;
+    private int _artworkGeneration;
 
     [ObservableProperty]
     private string _title = EmptyTitle;
@@ -34,6 +44,13 @@ public partial class DeckViewModel : ObservableObject
 
     [ObservableProperty]
     private double _cueFraction;
+
+    /// <summary>Posición suavizada para dibujar (segundos de pista).</summary>
+    [ObservableProperty]
+    private double _positionSeconds;
+
+    [ObservableProperty]
+    private double _cuePoint;
 
     [ObservableProperty]
     private bool _isLoaded;
@@ -53,7 +70,7 @@ public partial class DeckViewModel : ObservableObject
 
     /// <summary>Pitch en %; positivo = más rápido.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(PitchText), nameof(KeyText))]
+    [NotifyPropertyChangedFor(nameof(PitchText), nameof(KeyText), nameof(PlaybackRate), nameof(BpmText))]
     private double _pitchPercent;
 
     [ObservableProperty]
@@ -73,18 +90,49 @@ public partial class DeckViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(LoadStatus), nameof(IsLoadProgressKnown))]
     private double? _loadProgress;
 
+    [ObservableProperty]
+    private WaveformData? _waveform;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BpmText), nameof(OriginalBpmText), nameof(HasGrid))]
+    [NotifyCanExecuteChangedFor(nameof(HalveBpmCommand), nameof(DoubleBpmCommand))]
+    private BeatGrid? _grid;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BpmText), nameof(AnalysisStatus))]
+    private bool _isAnalyzing;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AnalysisStatus))]
+    private double _analysisProgress;
+
+    /// <summary>Miniatura del vídeo (o carátula) para reconocer la pista.</summary>
+    [ObservableProperty]
+    private ImageSource? _artwork;
+
     public DeckViewModel(
-        string name, IDeck deck, ITrackSource localSource, YouTubeTrackSource youTube, IFileDialogService dialogs)
+        string name,
+        IDeck deck,
+        ITrackSource localSource,
+        YouTubeTrackSource youTube,
+        ITrackAnalyzer analyzer,
+        Func<double> outputDelaySeconds,
+        IFileDialogService dialogs)
     {
         Name = name;
         _deck = deck;
         _localSource = localSource;
         _youTube = youTube;
+        _analyzer = analyzer;
+        _outputDelaySeconds = outputDelaySeconds;
         _dialogs = dialogs;
         _cue = new CueController(deck);
     }
 
     public string Name { get; }
+
+    /// <summary>Plato con el que se sincroniza este al pulsar SYNC.</summary>
+    public DeckViewModel? SyncTarget { get; set; }
 
     public string LoadStatus => LoadProgress is { } p ? $"Descargando… {p * 100:0} %" : "Preparando…";
 
@@ -93,6 +141,21 @@ public partial class DeckViewModel : ObservableObject
     public string PitchText => PitchMath.Format(PitchPercent);
 
     public string RangeText => $"±{PitchRange:0}%";
+
+    public double PlaybackRate => PitchMath.ToRate(PitchPercent);
+
+    public bool HasGrid => Grid is not null;
+
+    /// <summary>BPM que suena (con el pitch aplicado).</summary>
+    public string BpmText => Grid is { } g
+        ? PitchMath.EffectiveBpm(g.Bpm, PitchPercent).ToString("0.00", CultureInfo.InvariantCulture)
+        : IsAnalyzing ? "···" : "—";
+
+    public string OriginalBpmText => Grid is { } g
+        ? $"original {g.Bpm.ToString("0.00", CultureInfo.InvariantCulture)}"
+        : "";
+
+    public string AnalysisStatus => IsAnalyzing ? $"Analizando… {AnalysisProgress * 100:0} %" : "";
 
     /// <summary>Cambio de tono que provoca el pitch (sin key lock, como en un vinilo).</summary>
     public string KeyText => KeyLock || Math.Abs(PitchPercent) < 0.005
@@ -105,6 +168,11 @@ public partial class DeckViewModel : ObservableObject
         get => PitchRange == PitchMath.WideRange;
         set => PitchRange = value ? PitchMath.WideRange : PitchMath.DefaultRange;
     }
+
+    /// <summary>Posición real (sin suavizar) que se oye; la usa SYNC.</summary>
+    internal double HeardPosition => _deck.PositionSeconds;
+
+    internal bool IsDeckPlaying => _deck.IsPlaying;
 
     partial void OnPitchPercentChanged(double value)
     {
@@ -132,17 +200,20 @@ public partial class DeckViewModel : ObservableObject
     {
         bool loaded = _deck.IsLoaded;
         double duration = _deck.DurationSeconds;
-        double position = loaded ? _deck.PositionSeconds : 0;
         bool playing = _deck.IsPlaying;
+        double reported = loaded ? _deck.PositionSeconds : 0;
+        double position = _smoother.Update(reported, Clock.Elapsed.TotalSeconds, PlaybackRate, playing);
 
         IsLoaded = loaded;
         IsPlaying = playing;
+        PositionSeconds = position;
+        CuePoint = _cue.CuePoint;
         Elapsed = TimeFormat.Format(position);
         Remaining = "-" + TimeFormat.Format(duration - position);
         Progress = duration > 0 ? position / duration : 0;
         CueFraction = duration > 0 ? _cue.CuePoint / duration : 0;
         IsCueLit = loaded && (_cue.IsPreviewing
-            || (!playing && Math.Abs(position - _cue.CuePoint) <= CueController.OnCueTolerance));
+            || (!playing && Math.Abs(reported - _cue.CuePoint) <= CueController.OnCueTolerance));
     }
 
     [RelayCommand]
@@ -163,11 +234,77 @@ public partial class DeckViewModel : ObservableObject
     [RelayCommand]
     private void CueUp() => _cue.CueUp();
 
+    /// <summary>Salto a una fracción de la pista (onda completa).</summary>
     [RelayCommand]
     private void Seek(double fraction)
     {
         if (_deck.IsLoaded)
             _deck.Seek(fraction * _deck.DurationSeconds);
+    }
+
+    /// <summary>Salto a una posición en segundos (arrastrar la vista ampliada).</summary>
+    [RelayCommand]
+    private void SeekSeconds(double seconds)
+    {
+        if (_deck.IsLoaded)
+            _deck.Seek(seconds);
+    }
+
+    /// <summary>
+    /// Iguala el tempo con el otro plato y, si los dos suenan, alinea los golpes.
+    /// Si el pitch necesario no cabe en ±8 %, pasa a ±16 %.
+    /// </summary>
+    [RelayCommand]
+    private void Sync()
+    {
+        if (SyncTarget is not { } master || !_deck.IsLoaded || !master.IsLoaded)
+        {
+            Error = "SYNC necesita una pista cargada en cada plato.";
+            return;
+        }
+        if (Grid is not { } grid || master.Grid is not { } masterGrid)
+        {
+            Error = "SYNC necesita el BPM de las dos pistas.";
+            return;
+        }
+
+        double latency = _outputDelaySeconds();
+        SyncPlan? Plan(double range) => SyncCalculator.Plan(
+            masterGrid, master.HeardPosition, master.PitchPercent, master.IsDeckPlaying,
+            grid, _deck.PositionSeconds, PitchPercent, _deck.IsPlaying, range, latency);
+
+        var plan = Plan(PitchRange);
+        if (plan is null && PitchRange < PitchMath.WideRange && Plan(PitchMath.WideRange) is { } wide)
+        {
+            PitchRange = PitchMath.WideRange;
+            plan = wide;
+        }
+        if (plan is null)
+        {
+            Error = $"El tempo del plato {master.Name} queda fuera del rango de pitch.";
+            return;
+        }
+
+        Error = null;
+        PitchPercent = plan.PitchPercent;
+        if (plan.SeekSeconds is { } seek)
+            _deck.Seek(seek);
+    }
+
+    /// <summary>Corrige un BPM detectado al doble (p. ej. 174 → 87).</summary>
+    [RelayCommand(CanExecute = nameof(HasGrid))]
+    private void HalveBpm()
+    {
+        if (Grid is { } g && g.Bpm / 2 >= 40)
+            Grid = new BeatGrid(g.Bpm / 2, g.FirstBeatSeconds);
+    }
+
+    /// <summary>Corrige un BPM detectado a la mitad (p. ej. 70 → 140).</summary>
+    [RelayCommand(CanExecute = nameof(HasGrid))]
+    private void DoubleBpm()
+    {
+        if (Grid is { } g && g.Bpm * 2 <= 300)
+            Grid = new BeatGrid(g.Bpm * 2, g.FirstBeatSeconds);
     }
 
     [RelayCommand]
@@ -229,12 +366,18 @@ public partial class DeckViewModel : ObservableObject
         LoadProgress = null;
         Error = null;
         Title = FormatTitle(track);
+        var previousArtwork = Artwork;
+        int artworkGeneration = ++_artworkGeneration;
+        Artwork = null;
+        _ = ShowArtworkAsync(source, track, artworkGeneration);
+
         var progress = new Progress<double>(fraction =>
         {
             if (_loadCts == cts)
                 LoadProgress = fraction;
         });
 
+        bool loaded = false;
         try
         {
             using TrackMedia media = await source.OpenAsync(track, progress, cts.Token);
@@ -242,6 +385,9 @@ public partial class DeckViewModel : ObservableObject
             await _deck.LoadAsync(media, cts.Token);
             _cue.Reset();
             Title = FormatTitle(media.Track);
+            loaded = true;
+            if (media.FilePath is { } path)
+                StartAnalysis(path);
         }
         catch (OperationCanceledException)
         {
@@ -261,10 +407,96 @@ public partial class DeckViewModel : ObservableObject
                 IsLoading = false;
                 LoadProgress = null;
                 _loadCts = null;
+                if (!loaded)
+                {
+                    // La pista del plato no ha cambiado: se recupera su imagen.
+                    _artworkGeneration++;
+                    Artwork = previousArtwork;
+                }
             }
             cts.Dispose();
         }
         Refresh();
+    }
+
+    /// <summary>Calcula la forma de onda y el BPM en segundo plano; el audio ya suena mientras tanto.</summary>
+    private async void StartAnalysis(string path)
+    {
+        _analysisCts?.Cancel();
+        var cts = new CancellationTokenSource();
+        _analysisCts = cts;
+
+        Waveform = null;
+        Grid = null;
+        AnalysisProgress = 0;
+        IsAnalyzing = true;
+        var progress = new Progress<double>(p =>
+        {
+            if (_analysisCts == cts)
+                AnalysisProgress = p;
+        });
+
+        try
+        {
+            var analysis = await _analyzer.AnalyzeAsync(path, progress, cts.Token);
+            if (_analysisCts != cts)
+                return;
+            Waveform = analysis.Waveform;
+            Grid = analysis.Grid;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            if (_analysisCts == cts)
+                Error = $"No se pudo analizar la pista: {ex.Message}";
+        }
+        finally
+        {
+            if (_analysisCts == cts)
+            {
+                IsAnalyzing = false;
+                _analysisCts = null;
+            }
+            cts.Dispose();
+        }
+    }
+
+    private async Task ShowArtworkAsync(ITrackSource source, TrackInfo track, int generation)
+    {
+        try
+        {
+            string? path = await source.GetArtworkAsync(track);
+            if (path is null)
+                return;
+            var image = await Task.Run(() => LoadImage(path));
+            if (generation == _artworkGeneration && image is not null)
+                Artwork = image;
+        }
+        catch (Exception)
+        {
+            // La imagen es opcional.
+        }
+    }
+
+    private static ImageSource? LoadImage(string path)
+    {
+        try
+        {
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.DecodePixelWidth = 320;
+            bitmap.UriSource = new Uri(path);
+            bitmap.EndInit();
+            bitmap.Freeze();
+            return bitmap;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private static string FormatTitle(TrackInfo? track) => track switch

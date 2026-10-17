@@ -31,16 +31,27 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasYtDlpError;
 
+    /// <summary>Segundos visibles en la vista ampliada (zoom común a los dos platos).</summary>
+    [ObservableProperty]
+    private double _zoomSeconds = 8;
+
     public MainViewModel(
-        IAudioEngine engine, ITrackSource localSource, YouTubeTrackSource youTube, IFileDialogService dialogs)
+        IAudioEngine engine,
+        ITrackSource localSource,
+        YouTubeTrackSource youTube,
+        ITrackAnalyzer analyzer,
+        IFileDialogService dialogs)
     {
         if (engine.Decks.Count < 2)
             throw new ArgumentException("El motor debe tener dos platos.", nameof(engine));
 
         _engine = engine;
         _youTube = youTube;
-        DeckA = new DeckViewModel("A", engine.Decks[0], localSource, youTube, dialogs);
-        DeckB = new DeckViewModel("B", engine.Decks[1], localSource, youTube, dialogs);
+        Func<double> delay = () => engine.OutputDelaySeconds;
+        DeckA = new DeckViewModel("A", engine.Decks[0], localSource, youTube, analyzer, delay, dialogs);
+        DeckB = new DeckViewModel("B", engine.Decks[1], localSource, youTube, analyzer, delay, dialogs);
+        DeckA.SyncTarget = DeckB;
+        DeckB.SyncTarget = DeckA;
         Mixer = new MixerViewModel(engine.Decks[0], engine.Decks[1]);
         Libraries = string.Join(Environment.NewLine,
             BassLibraryInfo.GetVersions().Select(l => $"{l.Library} {l.Version}"));

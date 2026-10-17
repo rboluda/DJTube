@@ -18,4 +18,7 @@ public interface ITrackSource
     /// </summary>
     /// <param name="progress">Progreso de la preparación (0..1), si la fuente lo conoce.</param>
     Task<TrackMedia> OpenAsync(TrackInfo track, IProgress<double>? progress = null, CancellationToken ct = default);
+
+    /// <summary>Ruta de una imagen para reconocer la pista (miniatura, carátula), o null si no hay.</summary>
+    Task<string?> GetArtworkAsync(TrackInfo track, CancellationToken ct = default) => Task.FromResult<string?>(null);
 }

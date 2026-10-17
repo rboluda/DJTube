@@ -29,7 +29,7 @@ public partial class App : Application
         }
 
         var viewModel = new MainViewModel(
-            _engine, new LocalFileTrackSource(), new YouTubeTrackSource(), new FileDialogService());
+            _engine, new LocalFileTrackSource(), new YouTubeTrackSource(), new BassTrackAnalyzer(), new FileDialogService());
         var window = new MainWindow { DataContext = viewModel };
         MainWindow = window;
         window.Show();

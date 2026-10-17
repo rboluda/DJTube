@@ -8,7 +8,12 @@ namespace DJTube.App.Views;
 
 public partial class DeckView : UserControl
 {
-    /// <summary>Color del plato (cabecera, progreso, interruptores activos).</summary>
+    /// <summary>Color del plato (cabecera, onda, BPM, interruptores activos).</summary>
+    public static readonly DependencyProperty AccentColorProperty = DependencyProperty.Register(
+        nameof(AccentColor), typeof(Color), typeof(DeckView),
+        new PropertyMetadata(Colors.DodgerBlue, (d, e) => ((DeckView)d).Accent = Frozen(new SolidColorBrush((Color)e.NewValue))));
+
+    /// <summary>Pincel de <see cref="AccentColor"/> (para las propiedades que piden Brush).</summary>
     public static readonly DependencyProperty AccentProperty = DependencyProperty.Register(
         nameof(Accent), typeof(Brush), typeof(DeckView), new PropertyMetadata(Brushes.DodgerBlue));
 
@@ -19,10 +24,22 @@ public partial class DeckView : UserControl
         InitializeComponent();
     }
 
+    public Color AccentColor
+    {
+        get => (Color)GetValue(AccentColorProperty);
+        set => SetValue(AccentColorProperty, value);
+    }
+
     public Brush Accent
     {
         get => (Brush)GetValue(AccentProperty);
-        set => SetValue(AccentProperty, value);
+        private set => SetValue(AccentProperty, value);
+    }
+
+    private static Brush Frozen(Brush brush)
+    {
+        brush.Freeze();
+        return brush;
     }
 
     private DeckViewModel? ViewModel => DataContext as DeckViewModel;

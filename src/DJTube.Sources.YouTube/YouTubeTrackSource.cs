@@ -21,14 +21,54 @@ public sealed class YouTubeTrackSource : ITrackSource
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
+
     private readonly Func<string?> _findExecutable;
+    private readonly Func<string, CancellationToken, Task<byte[]>> _downloadBytes;
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
 
-    public YouTubeTrackSource(string? cacheFolder = null, Func<string?>? findExecutable = null)
+    /// <param name="downloadBytes">Descarga de una URL (para las miniaturas); sustituible en los tests.</param>
+    public YouTubeTrackSource(
+        string? cacheFolder = null,
+        Func<string?>? findExecutable = null,
+        Func<string, CancellationToken, Task<byte[]>>? downloadBytes = null)
     {
         CacheFolder = cacheFolder ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJTube", "Cache", "YouTube");
         _findExecutable = findExecutable ?? YtDlp.Find;
+        _downloadBytes = downloadBytes ?? ((url, ct) => Http.GetByteArrayAsync(url, ct));
+    }
+
+    /// <summary>
+    /// Miniatura del vídeo (JPEG 320×180 de YouTube), guardada en la caché junto al audio.
+    /// Si no se puede descargar devuelve null: no es imprescindible para pinchar.
+    /// </summary>
+    public async Task<string?> GetArtworkAsync(TrackInfo track, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(track);
+        if (track.SourceName != SourceName || !YouTubeUrl.IsValidVideoId(track.Id))
+            return null;
+
+        string path = ArtworkPath(track.Id);
+        if (File.Exists(path))
+            return path;
+
+        try
+        {
+            byte[] image = await _downloadBytes($"https://i.ytimg.com/vi/{track.Id}/mqdefault.jpg", ct).ConfigureAwait(false);
+            if (image.Length == 0)
+                return null;
+            Directory.CreateDirectory(CacheFolder);
+            string tmp = path + ".tmp";
+            await File.WriteAllBytesAsync(tmp, image, CancellationToken.None).ConfigureAwait(false);
+            File.Move(tmp, path, overwrite: true);
+            return path;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException or UnauthorizedAccessException)
+        {
+            ct.ThrowIfCancellationRequested();
+            return null;
+        }
     }
 
     public string Name => SourceName;
@@ -178,6 +218,8 @@ public sealed class YouTubeTrackSource : ITrackSource
     private string AudioPath(string id) => Path.Combine(CacheFolder, id + ".m4a");
 
     private string MetaPath(string id) => Path.Combine(CacheFolder, id + ".json");
+
+    private string ArtworkPath(string id) => Path.Combine(CacheFolder, id + ".jpg");
 
     private static TrackInfo ToTrackInfo(YouTubeDownloadInfo info) => new(
         SourceName,

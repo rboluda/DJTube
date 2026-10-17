@@ -5,9 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:DJTube.App.ViewModels"
         xmlns:views="clr-namespace:DJTube.App.Views"
+        xmlns:controls="clr-namespace:DJTube.App.Controls"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-        Title="DJTube" Height="470" Width="1280" MinWidth="1000" MinHeight="420"
+        Title="DJTube" Height="800" Width="1280" MinWidth="1000" MinHeight="680"
+        WindowStartupLocation="CenterScreen"
         Background="{StaticResource BackgroundBrush}"
         Foreground="{StaticResource TextBrush}"
         FontFamily="Segoe UI"
@@ -58,15 +60,40 @@
                        Text="Atajos — A: Espacio = play/pausa, C = cue · B: Intro = play/pausa, M = cue · Esc = salir del campo de enlace · arrastra enlaces o archivos a un plato" />
         </DockPanel>
 
+        <!-- Vista ampliada de los dos platos (estilo AtomixMP3): cabezal fijo en el centro -->
+        <Border DockPanel.Dock="Top" Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="8"
+                Margin="0,0,0,12">
+            <StackPanel>
+                <controls:ZoomWaveform Height="78" Label="A"
+                                       Waveform="{Binding DeckA.Waveform}"
+                                       Position="{Binding DeckA.PositionSeconds}"
+                                       Rate="{Binding DeckA.PlaybackRate}"
+                                       Grid="{Binding DeckA.Grid}"
+                                       CuePoint="{Binding DeckA.CuePoint}"
+                                       Accent="{StaticResource DeckAColor}"
+                                       SecondsVisible="{Binding ZoomSeconds}"
+                                       SeekCommand="{Binding DeckA.SeekSecondsCommand}" />
+                <controls:ZoomWaveform Height="78" Label="B" Margin="0,6,0,0"
+                                       Waveform="{Binding DeckB.Waveform}"
+                                       Position="{Binding DeckB.PositionSeconds}"
+                                       Rate="{Binding DeckB.PlaybackRate}"
+                                       Grid="{Binding DeckB.Grid}"
+                                       CuePoint="{Binding DeckB.CuePoint}"
+                                       Accent="{StaticResource DeckBColor}"
+                                       SecondsVisible="{Binding ZoomSeconds}"
+                                       SeekCommand="{Binding DeckB.SeekSecondsCommand}" />
+            </StackPanel>
+        </Border>
+
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="230" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <views:DeckView Grid.Column="0" DataContext="{Binding DeckA}" Accent="{StaticResource DeckABrush}" />
+            <views:DeckView Grid.Column="0" DataContext="{Binding DeckA}" AccentColor="{StaticResource DeckAColor}" />
             <views:MixerView Grid.Column="1" DataContext="{Binding Mixer}" Margin="12,0" />
-            <views:DeckView Grid.Column="2" DataContext="{Binding DeckB}" Accent="{StaticResource DeckBBrush}" />
+            <views:DeckView Grid.Column="2" DataContext="{Binding DeckB}" AccentColor="{StaticResource DeckBColor}" />
         </Grid>
     </DockPanel>
 </Window>
