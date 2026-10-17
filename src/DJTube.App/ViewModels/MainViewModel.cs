@@ -272,6 +272,7 @@ public partial class MainViewModel : ObservableObject
         _engine.Maintain();
         DeckA.Refresh();
         DeckB.Refresh();
+        Mixer.Refresh();
     }
 
     [RelayCommand]

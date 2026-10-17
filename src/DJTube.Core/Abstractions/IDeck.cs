@@ -1,3 +1,4 @@
+﻿using DJTube.Core.Logic;
 using DJTube.Core.Models;
 
 namespace DJTube.Core.Abstractions;
@@ -24,6 +25,18 @@ public interface IDeck : IDeckTransport
 
     /// <summary>Pre-escucha: el plato suena por los auriculares (independiente de faders y crossfader).</summary>
     bool CueEnabled { get; set; }
+
+    /// <summary>
+    /// Ganancia, EQ de 3 bandas y filtro del canal. Se aplican antes de master y auriculares
+    /// (la pre-escucha suena ecualizada, como en un mezclador). Se conservan al cargar otra pista.
+    /// </summary>
+    EqSettings Eq { get; set; }
+
+    /// <summary>
+    /// Nivel de pico (0..1 por canal) de lo que está sonando del plato, después de ganancia y EQ y antes
+    /// del fader. (0, 0) si no suena.
+    /// </summary>
+    (float Left, float Right) GetLevel();
 
     /// <summary>
     /// Prepara la pista en segundo plano y la sustituye por la actual cuando está lista.

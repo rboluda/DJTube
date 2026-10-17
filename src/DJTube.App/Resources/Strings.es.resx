@@ -128,6 +128,15 @@
   <data name="CrossfaderTip" xml:space="preserve"><value>Crossfader (doble clic: centrar)</value></data>
   <data name="VolumeATip" xml:space="preserve"><value>Volumen del plato A</value></data>
   <data name="VolumeBTip" xml:space="preserve"><value>Volumen del plato B</value></data>
+  <data name="Eq_GainTip" xml:space="preserve"><value>Ganancia de entrada (±12 dB)</value></data>
+  <data name="Eq_HighTip" xml:space="preserve"><value>Agudos (a la izquierda del todo: corte total)</value></data>
+  <data name="Eq_MidTip" xml:space="preserve"><value>Medios (a la izquierda del todo: corte total)</value></data>
+  <data name="Eq_LowTip" xml:space="preserve"><value>Graves (a la izquierda del todo: corte total)</value></data>
+  <data name="Eq_FilterTip" xml:space="preserve"><value>Filtro: a la izquierda paso bajo, a la derecha paso alto, en el centro apagado</value></data>
+  <data name="Eq_KnobHint" xml:space="preserve"><value>Arrastra arriba/abajo o usa la rueda (Mayús: fino) · doble clic: al centro</value></data>
+  <data name="Eq_ResetTip" xml:space="preserve"><value>Poner a cero ganancia, EQ y filtro del plato {0}</value></data>
+  <data name="Mix_Short" xml:space="preserve"><value>MEZCLA</value></data>
+  <data name="Vol_Short" xml:space="preserve"><value>VOL</value></data>
   <data name="Dialog_LoadTrack" xml:space="preserve"><value>Cargar pista</value></data>
   <data name="Dialog_Audio" xml:space="preserve"><value>Audio ({0})</value></data>
   <data name="Dialog_AllFiles" xml:space="preserve"><value>Todos los archivos (*.*)</value></data>

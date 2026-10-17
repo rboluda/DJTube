@@ -128,6 +128,15 @@
   <data name="CrossfaderTip" xml:space="preserve"><value>Crossfader (double-click: centre)</value></data>
   <data name="VolumeATip" xml:space="preserve"><value>Deck A volume</value></data>
   <data name="VolumeBTip" xml:space="preserve"><value>Deck B volume</value></data>
+  <data name="Eq_GainTip" xml:space="preserve"><value>Input gain (±12 dB)</value></data>
+  <data name="Eq_HighTip" xml:space="preserve"><value>Highs (fully left: kill)</value></data>
+  <data name="Eq_MidTip" xml:space="preserve"><value>Mids (fully left: kill)</value></data>
+  <data name="Eq_LowTip" xml:space="preserve"><value>Bass (fully left: kill)</value></data>
+  <data name="Eq_FilterTip" xml:space="preserve"><value>Filter: left low-pass, right high-pass, centre off</value></data>
+  <data name="Eq_KnobHint" xml:space="preserve"><value>Drag up/down or use the wheel (Shift: fine) · double-click: centre</value></data>
+  <data name="Eq_ResetTip" xml:space="preserve"><value>Reset gain, EQ and filter of deck {0}</value></data>
+  <data name="Mix_Short" xml:space="preserve"><value>MIX</value></data>
+  <data name="Vol_Short" xml:space="preserve"><value>VOL</value></data>
   <data name="Dialog_LoadTrack" xml:space="preserve"><value>Load track</value></data>
   <data name="Dialog_Audio" xml:space="preserve"><value>Audio ({0})</value></data>
   <data name="Dialog_AllFiles" xml:space="preserve"><value>All files (*.*)</value></data>

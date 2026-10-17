@@ -1,100 +1,319 @@
-<UserControl x:Class="DJTube.App.Views.MixerView"
+﻿<UserControl x:Class="DJTube.App.Views.MixerView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:DJTube.App.ViewModels"
+             xmlns:controls="clr-namespace:DJTube.App.Controls"
              xmlns:loc="clr-namespace:DJTube.App.Localization"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:MixerViewModel}"
-             d:DesignWidth="230" d:DesignHeight="420">
+             d:DesignWidth="250" d:DesignHeight="420">
     <UserControl.Resources>
         <!-- Botón de pre-escucha: icono de auriculares + letra del plato -->
         <DataTemplate x:Key="PflContent">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="&#xE7F6;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBlock Text="&#xE7F6;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,5,0" />
                 <TextBlock Text="{Binding}" VerticalAlignment="Center" />
             </StackPanel>
         </DataTemplate>
+
+        <Style TargetType="controls:Knob">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="ToolTipService.InitialShowDelay" Value="400" />
+        </Style>
+
+        <Style x:Key="KnobLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="9" />
+            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,0,1" />
+        </Style>
+
+        <Style x:Key="KnobCellA" TargetType="StackPanel">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="Margin" Value="0,0,0,3" />
+        </Style>
+
+        <Style x:Key="KnobCellB" TargetType="StackPanel" BasedOn="{StaticResource KnobCellA}">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+
+        <Style x:Key="KnobLabelA" TargetType="TextBlock" BasedOn="{StaticResource KnobLabel}">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+        </Style>
+
+        <Style x:Key="KnobLabelB" TargetType="TextBlock" BasedOn="{StaticResource KnobLabelA}">
+            <Setter Property="TextAlignment" Value="Left" />
+            <Setter Property="Margin" Value="4,0,0,0" />
+        </Style>
+
+        <!-- Ayuda de un mando: qué hace, valor actual y cómo se usa -->
+        <Style x:Key="TipValue" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="Margin" Value="0,2,0,2" />
+        </Style>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="16">
+    <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="12,10">
         <DockPanel>
             <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Mixer}" Style="{StaticResource CaptionText}"
-                       HorizontalAlignment="Center" Margin="0,0,0,8" />
-
-            <!-- Pre-escucha por plato -->
-            <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <ToggleButton Grid.Column="0" Margin="0,0,4,0" Content="A" ContentTemplate="{StaticResource PflContent}"
-                              IsChecked="{Binding CueA}" Tag="{StaticResource CueBrush}" ToolTip="{Binding CueATip}"
-                              Padding="8,5" FontSize="12" />
-                <ToggleButton Grid.Column="1" Margin="4,0,0,0" Content="B" ContentTemplate="{StaticResource PflContent}"
-                              IsChecked="{Binding CueB}" Tag="{StaticResource CueBrush}" ToolTip="{Binding CueBTip}"
-                              Padding="8,5" FontSize="12" />
-            </Grid>
+                       HorizontalAlignment="Center" Margin="0,0,0,6" />
 
             <!-- Auriculares, crossfader y curva -->
-            <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
-                <TextBlock Text="{loc:Tr PhonesMix}" Style="{StaticResource CaptionText}" />
+            <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
                 <Grid>
-                    <TextBlock Text="CUE" Style="{StaticResource CaptionText}" HorizontalAlignment="Left"
-                               VerticalAlignment="Center" />
-                    <TextBlock Text="MST" Style="{StaticResource CaptionText}" HorizontalAlignment="Right"
-                               VerticalAlignment="Center" />
-                    <Slider Style="{StaticResource FaderSlider}" Margin="28,0" Height="30"
-                            Minimum="0" Maximum="1" Value="{Binding CueMix}" ToolTip="{loc:Tr PhonesMixTip}" />
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="{loc:Tr Mix_Short}" Style="{StaticResource KnobLabel}" />
+                        <controls:Knob Minimum="0" Maximum="1" DefaultValue="0.5" Value="{Binding CueMix}"
+                                       Accent="{StaticResource CueBrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr PhonesMixTip}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                        <TextBlock Text="{loc:Tr Vol_Short}" Style="{StaticResource KnobLabel}" />
+                        <controls:Knob Minimum="0" Maximum="1" DefaultValue="0.8" IsBipolar="False"
+                                       Value="{Binding HeadphoneVolume}" Accent="{StaticResource CueBrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr PhonesVolumeTip}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" VerticalAlignment="Bottom">
+                        <TextBlock Text="{loc:Tr Curve}" Style="{StaticResource KnobLabel}" HorizontalAlignment="Left" />
+                        <ComboBox ItemsSource="{Binding Curves}" SelectedItem="{Binding SelectedCurve}" Focusable="False"
+                                  FontSize="11">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Label}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
                 </Grid>
-                <TextBlock Text="{loc:Tr PhonesVolume}" Style="{StaticResource CaptionText}" Margin="0,2,0,0" />
-                <Slider Style="{StaticResource FaderSlider}" Height="30" Margin="0,0,0,8"
-                        Minimum="0" Maximum="1" Value="{Binding HeadphoneVolume}" ToolTip="{loc:Tr PhonesVolumeTip}" />
 
-                <Grid>
+                <Grid Margin="0,6,0,0">
                     <TextBlock Text="A" Foreground="{StaticResource DeckABrush}" FontWeight="Bold"
                                HorizontalAlignment="Left" VerticalAlignment="Center" />
                     <TextBlock Text="B" Foreground="{StaticResource DeckBBrush}" FontWeight="Bold"
                                HorizontalAlignment="Right" VerticalAlignment="Center" />
-                    <Slider Style="{StaticResource FaderSlider}" Margin="14,0" Height="40"
+                    <Slider Style="{StaticResource FaderSlider}" Margin="14,0" Height="36"
                             Minimum="-1" Maximum="1" TickPlacement="Both"
                             Value="{Binding Crossfader}"
                             MouseDoubleClick="OnCrossfaderDoubleClick"
                             ToolTip="{loc:Tr CrossfaderTip}" />
                 </Grid>
-                <TextBlock Text="{loc:Tr Curve}" Style="{StaticResource CaptionText}" Margin="0,6,0,2" />
-                <ComboBox ItemsSource="{Binding Curves}" SelectedItem="{Binding SelectedCurve}" Focusable="False">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Label}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
             </StackPanel>
 
-            <!-- Faders de canal -->
+            <!-- Dos tiras de canal: mandos por fuera, faders y VU por dentro -->
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <DockPanel Grid.Column="0">
-                    <TextBlock DockPanel.Dock="Bottom" Text="A" Foreground="{StaticResource DeckABrush}"
-                               FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0" />
-                    <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="90"
-                            Minimum="0" Maximum="1" Value="{Binding VolumeA}"
-                            Tag="{StaticResource DeckABrush}" HorizontalAlignment="Center"
-                            ToolTip="{loc:Tr VolumeATip}" />
-                </DockPanel>
-                <DockPanel Grid.Column="1">
-                    <TextBlock DockPanel.Dock="Bottom" Text="B" Foreground="{StaticResource DeckBBrush}"
-                               FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0" />
-                    <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="90"
-                            Minimum="0" Maximum="1" Value="{Binding VolumeB}"
-                            Tag="{StaticResource DeckBBrush}" HorizontalAlignment="Center"
-                            ToolTip="{loc:Tr VolumeBTip}" />
-                </DockPanel>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Canal A: mandos -->
+                <StackPanel Grid.Column="0" DataContext="{Binding EqA}" VerticalAlignment="Top">
+                    <StackPanel Style="{StaticResource KnobCellA}">
+                        <TextBlock Text="GAIN" Style="{StaticResource KnobLabelA}" />
+                        <controls:Knob Value="{Binding Gain}" Accent="{StaticResource TextBrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr Eq_GainTip}" />
+                                    <TextBlock Text="{Binding GainText}" Style="{StaticResource TipValue}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource KnobCellA}">
+                        <TextBlock Text="HIGH" Style="{StaticResource KnobLabelA}" />
+                        <controls:Knob Value="{Binding High}" ShowKill="True" Accent="{StaticResource DeckABrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr Eq_HighTip}" />
+                                    <TextBlock Text="{Binding HighText}" Style="{StaticResource TipValue}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource KnobCellA}">
+                        <TextBlock Text="MID" Style="{StaticResource KnobLabelA}" />
+                        <controls:Knob Value="{Binding Mid}" ShowKill="True" Accent="{StaticResource DeckABrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr Eq_MidTip}" />
+                                    <TextBlock Text="{Binding MidText}" Style="{StaticResource TipValue}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource KnobCellA}">
+                        <TextBlock Text="LOW" Style="{StaticResource KnobLabelA}" />
+                        <controls:Knob Value="{Binding Low}" ShowKill="True" Accent="{StaticResource DeckABrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr Eq_LowTip}" />
+                                    <TextBlock Text="{Binding LowText}" Style="{StaticResource TipValue}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource KnobCellA}">
+                        <TextBlock Text="FILTER" Style="{StaticResource KnobLabelA}" />
+                        <controls:Knob Value="{Binding Filter}" Accent="{StaticResource CueBrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr Eq_FilterTip}" />
+                                    <TextBlock Text="{Binding FilterText}" Style="{StaticResource TipValue}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Canal A: VU y fader -->
+                <Grid Grid.Column="1" Margin="8,4,2,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <controls:LevelMeter Width="8" Margin="0,14,0,10" Left="{Binding EqA.LevelLeft}"
+                                         Right="{Binding EqA.LevelRight}" />
+                    <DockPanel Grid.Column="1">
+                        <Button DockPanel.Dock="Top" Content="⟲" FontSize="10" Padding="4,0" HorizontalAlignment="Center"
+                                Command="{Binding EqA.ResetCommand}" ToolTip="{Binding EqResetATip}" Focusable="False" />
+                        <TextBlock DockPanel.Dock="Bottom" Text="A" Foreground="{StaticResource DeckABrush}"
+                                   FontWeight="Bold" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="80"
+                                Minimum="0" Maximum="1" Value="{Binding VolumeA}"
+                                Tag="{StaticResource DeckABrush}" HorizontalAlignment="Center"
+                                ToolTip="{loc:Tr VolumeATip}" />
+                    </DockPanel>
+                </Grid>
+
+                <!-- Canal B: VU y fader -->
+                <Grid Grid.Column="2" Margin="2,4,8,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Top" Content="⟲" FontSize="10" Padding="4,0" HorizontalAlignment="Center"
+                                Command="{Binding EqB.ResetCommand}" ToolTip="{Binding EqResetBTip}" Focusable="False" />
+                        <TextBlock DockPanel.Dock="Bottom" Text="B" Foreground="{StaticResource DeckBBrush}"
+                                   FontWeight="Bold" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                        <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="80"
+                                Minimum="0" Maximum="1" Value="{Binding VolumeB}"
+                                Tag="{StaticResource DeckBBrush}" HorizontalAlignment="Center"
+                                ToolTip="{loc:Tr VolumeBTip}" />
+                    </DockPanel>
+                    <controls:LevelMeter Grid.Column="1" Width="8" Margin="0,14,0,10" Left="{Binding EqB.LevelLeft}"
+                                         Right="{Binding EqB.LevelRight}" />
+                </Grid>
+
+                <!-- Canal B: mandos -->
+                <StackPanel Grid.Column="3" DataContext="{Binding EqB}" VerticalAlignment="Top">
+                    <StackPanel Style="{StaticResource KnobCellB}">
+                        <controls:Knob Value="{Binding Gain}" Accent="{StaticResource TextBrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr Eq_GainTip}" />
+                                    <TextBlock Text="{Binding GainText}" Style="{StaticResource TipValue}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                        <TextBlock Text="GAIN" Style="{StaticResource KnobLabelB}" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource KnobCellB}">
+                        <controls:Knob Value="{Binding High}" ShowKill="True" Accent="{StaticResource DeckBBrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr Eq_HighTip}" />
+                                    <TextBlock Text="{Binding HighText}" Style="{StaticResource TipValue}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                        <TextBlock Text="HIGH" Style="{StaticResource KnobLabelB}" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource KnobCellB}">
+                        <controls:Knob Value="{Binding Mid}" ShowKill="True" Accent="{StaticResource DeckBBrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr Eq_MidTip}" />
+                                    <TextBlock Text="{Binding MidText}" Style="{StaticResource TipValue}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                        <TextBlock Text="MID" Style="{StaticResource KnobLabelB}" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource KnobCellB}">
+                        <controls:Knob Value="{Binding Low}" ShowKill="True" Accent="{StaticResource DeckBBrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr Eq_LowTip}" />
+                                    <TextBlock Text="{Binding LowText}" Style="{StaticResource TipValue}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                        <TextBlock Text="LOW" Style="{StaticResource KnobLabelB}" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource KnobCellB}">
+                        <controls:Knob Value="{Binding Filter}" Accent="{StaticResource CueBrush}">
+                            <controls:Knob.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Tr Eq_FilterTip}" />
+                                    <TextBlock Text="{Binding FilterText}" Style="{StaticResource TipValue}" />
+                                    <TextBlock Text="{loc:Tr Eq_KnobHint}" Style="{StaticResource CaptionText}" />
+                                </StackPanel>
+                            </controls:Knob.ToolTip>
+                        </controls:Knob>
+                        <TextBlock Text="FILTER" Style="{StaticResource KnobLabelB}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Pre-escucha por plato -->
+                <ToggleButton Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,6,4,0" Content="A"
+                              ContentTemplate="{StaticResource PflContent}"
+                              IsChecked="{Binding CueA}" Tag="{StaticResource CueBrush}" ToolTip="{Binding CueATip}"
+                              Padding="6,4" FontSize="12" />
+                <ToggleButton Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="4,6,0,0" Content="B"
+                              ContentTemplate="{StaticResource PflContent}"
+                              IsChecked="{Binding CueB}" Tag="{StaticResource CueBrush}" ToolTip="{Binding CueBTip}"
+                              Padding="6,4" FontSize="12" />
             </Grid>
         </DockPanel>
     </Border>

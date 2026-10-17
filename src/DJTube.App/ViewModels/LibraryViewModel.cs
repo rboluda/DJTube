@@ -217,10 +217,16 @@ public partial class LibraryViewModel : ObservableObject
     private async Task FillDetailsAsync(LibraryItem item)
     {
         string audio = _source.GetAudioPath(item.Id);
-        string artwork = Path.ChangeExtension(audio, ".jpg");
-        var (bpm, image) = await Task.Run(() => (_analyzer.TryGetCachedGrid(audio)?.Bpm, LoadThumbnail(artwork)));
+        var (bpm, image) = await Task.Run(() => (_analyzer.TryGetCachedGrid(audio)?.Bpm, LoadThumbnail(Path.ChangeExtension(audio, ".jpg"))));
         item.Bpm = bpm;
         item.Artwork = image;
+        if (image is null)
+        {
+            // Canciones que nunca se han visto en un plato: se baja la miniatura (y queda en la caché).
+            string? downloaded = await _source.GetArtworkAsync(_source.CreateTrackInfo(item.Id));
+            if (downloaded is not null)
+                item.Artwork = await Task.Run(() => LoadThumbnail(downloaded));
+        }
     }
 
     private static ImageSource? LoadThumbnail(string path)

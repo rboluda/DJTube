@@ -2,8 +2,9 @@
 
 # DJTube
 
-Aplicación de DJ de escritorio para Windows, sencilla y ligera, con dos platos,
-crossfader, pitch con key lock, SYNC, forma de onda y pre-escucha por auriculares.
+Aplicación de DJ de escritorio para Windows, sencilla y ligera, con dos platos, mezclador con
+EQ de 3 bandas, filtro y VU, crossfader, pitch con key lock, SYNC, forma de onda coloreada por
+frecuencias, biblioteca de canciones descargadas y pre-escucha por auriculares.
 
 Interfaz en español e inglés (Configuración → Idioma). Cambios por versión en
 [CHANGELOG.md](CHANGELOG.md).
@@ -53,6 +54,16 @@ dotnet run --project src/DJTube.App
   «Actualizar yt-dlp»: YouTube cambia a menudo.
 - **Archivo local:** botón «ARCHIVO…» o arrastrar el archivo (MP3, FLAC, WAV, AAC, M4A).
 
+## Biblioteca
+
+Debajo de los platos está todo lo descargado (Ver → Biblioteca o Ctrl+L para ocultarla; el
+divisor cambia su alto). Artista y título salen del título del vídeo y se pueden corregir con F2.
+
+- **Cargar:** botones A / B de cada fila, doble clic (va al plato que no está sonando) o
+  arrastrar la fila a un plato.
+- **Buscar:** escribe parte del artista o del título.
+- **Quitar:** Supr o menú contextual; borra el audio de la caché.
+
 Descargar contenido de YouTube va en contra de sus condiciones de uso. Usa esta función
 bajo tu responsabilidad y solo con contenido que tengas derecho a utilizar.
 
@@ -65,7 +76,15 @@ bajo tu responsabilidad y solo con contenido que tengas derecho a utilizar.
   elige el par del master (p. ej. 1-2) y el de auriculares (p. ej. 3-4).
 
 En el mezclador, el botón 🎧 de cada plato lo manda a los auriculares, independientemente de
-faders y crossfader. «Mezcla auric.» va de solo los platos con 🎧 (CUE) a lo mismo que el master.
+faders y crossfader. El mando «MEZCLA» va de solo los platos con 🎧 (CUE) a lo mismo que el master
+y «VOL» es el volumen de los auriculares.
+
+## Mezclador
+
+Cada canal tiene GAIN (±12 dB), HIGH / MID / LOW (de corte total a +6 dB), FILTER (a la izquierda
+paso bajo, a la derecha paso alto, en el centro apagado), fader y medidor VU. Los mandos se giran
+arrastrando arriba/abajo o con la rueda (Mayús: ajuste fino); doble clic los devuelve al centro y
+⟲ pone a cero todo el canal.
 
 ## Estructura
 

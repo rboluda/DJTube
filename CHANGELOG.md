@@ -4,6 +4,27 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [versionado semántico](https://semver.org/lang/es/). La versión se define en
 `Directory.Build.props`.
 
+## [0.8.0] - 2026-10-17
+
+### Añadido
+- Biblioteca bajo los platos con todo lo descargado: miniatura, artista, título, duración y BPM,
+  con búsqueda. Se carga con los botones A / B, con doble clic (al plato que no suena) o
+  arrastrando la fila a un plato. F2 edita artista y título; Supr la quita (y borra el audio).
+  Ver → Biblioteca (Ctrl+L) la oculta, y el divisor ajusta su alto.
+- Artista y título se separan a partir del título de YouTube (quitando «Official Video», «Lyrics»,
+  «HD»…); las descargas anteriores se convierten solas.
+- Mezclador con GAIN (±12 dB), EQ de 3 bandas HIGH / MID / LOW (de corte total a +6 dB), FILTER
+  (paso bajo / paso alto) y medidor VU estéreo por canal. Mandos giratorios: arrastrar o rueda,
+  doble clic al centro; ⟲ pone a cero el canal. La pre-escucha también suena ecualizada.
+
+### Cambiado
+- La forma de onda se colorea por frecuencias (graves en rojo, medios en verde, agudos en azul),
+  en la vista ampliada y en la de cada pletina.
+- La onda y el BPM se guardan en caché: volver a cargar una canción es instantáneo, y las
+  correcciones de BPM (½ / ×2) se recuerdan.
+- Pletinas más compactas: ½, ×2 y SYNC están junto a CUE y PLAY. La mezcla y el volumen de
+  auriculares son mandos giratorios.
+
 ## [0.7.0] - 2026-10-17
 
 ### Añadido

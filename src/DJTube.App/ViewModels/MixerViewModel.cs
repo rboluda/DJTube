@@ -49,6 +49,8 @@ public partial class MixerViewModel : ObservableObject
         _engine = engine;
         _deckA = engine.Decks[0];
         _deckB = engine.Decks[1];
+        EqA = new ChannelEqViewModel(_deckA);
+        EqB = new ChannelEqViewModel(_deckB);
         _selectedCurve = Curves.FirstOrDefault(c => c.Value == curve) ?? Curves[0];
         _cueMix = Math.Clamp(cueMix, 0, 1);
         _headphoneVolume = Math.Clamp(headphoneVolume, 0, 1);
@@ -59,6 +61,8 @@ public partial class MixerViewModel : ObservableObject
         {
             OnPropertyChanged(nameof(CueATip));
             OnPropertyChanged(nameof(CueBTip));
+            OnPropertyChanged(nameof(EqResetATip));
+            OnPropertyChanged(nameof(EqResetBTip));
         };
     }
 
@@ -69,9 +73,25 @@ public partial class MixerViewModel : ObservableObject
         new(CrossfaderCurveType.ConstantPower, _ => Loc.T("Curve_ConstantPower")),
     ];
 
+    /// <summary>Ganancia, EQ, filtro y VU del canal A.</summary>
+    public ChannelEqViewModel EqA { get; }
+
+    public ChannelEqViewModel EqB { get; }
+
+    /// <summary>Se llama en cada fotograma (medidores).</summary>
+    public void Refresh()
+    {
+        EqA.RefreshLevel();
+        EqB.RefreshLevel();
+    }
+
     public string CueATip => Loc.F("PflTip", "A");
 
     public string CueBTip => Loc.F("PflTip", "B");
+
+    public string EqResetATip => Loc.F("Eq_ResetTip", "A");
+
+    public string EqResetBTip => Loc.F("Eq_ResetTip", "B");
 
     partial void OnVolumeAChanged(double value) => ApplyGains();
 

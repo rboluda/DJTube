@@ -1,4 +1,4 @@
-using DJTube.Core.Abstractions;
+﻿using DJTube.Core.Abstractions;
 using DJTube.Core.Localization;
 using DJTube.Core.Logic;
 using DJTube.Core.Models;
@@ -42,6 +42,8 @@ internal sealed class BassDeck : IDeck, IDisposable
     private bool _cueEnabled;
     private double _cueMix;
     private double _phonesVolume = 1;
+    private EqSettings _eq;
+    private readonly float[] _levels = new float[2];
 
     /// <param name="outputDelayBytes">Bytes de salida del mezclador master que aún no se han oído.</param>
     public BassDeck(Func<int> outputDelayBytes)
@@ -50,7 +52,21 @@ internal sealed class BassDeck : IDeck, IDisposable
     }
 
     /// <summary>Canales BASS de una pista cargada.</summary>
-    private sealed record Chain(int Tempo, int Decoder, int MasterSplit, int CueSplit, double SourceRate, float CueBaseFrequency);
+    private sealed record Chain(int Tempo, int Decoder, int MasterSplit, int CueSplit, double SourceRate, float CueBaseFrequency)
+    {
+        /// <summary>EQ de 3 bandas sobre el tempo stream (BQF de BASS_FX).</summary>
+        public int LowFx { get; init; }
+        public int MidFx { get; init; }
+        public int HighFx { get; init; }
+
+        /// <summary>Filtro de canal: solo existe mientras está activo (0 = apagado).</summary>
+        public int FilterFx { get; set; }
+        public FilterKind FilterKind { get; set; }
+    }
+
+    // Orden en la cadena: primero el EQ y después el filtro (mayor prioridad = antes).
+    private const int EqPriority = 3;
+    private const int FilterPriority = 2;
 
     public TrackInfo? Track
     {
@@ -129,6 +145,37 @@ internal sealed class BassDeck : IDeck, IDisposable
         }
     }
 
+    public EqSettings Eq
+    {
+        get { lock (_sync) return _eq; }
+        set
+        {
+            lock (_sync)
+            {
+                bool gainChanged = value.Gain != _eq.Gain;
+                _eq = value;
+                ApplyEqNoLock();
+                if (gainChanged)
+                    ApplyGainsNoLock();
+            }
+        }
+    }
+
+    public (float Left, float Right) GetLevel()
+    {
+        lock (_sync)
+        {
+            if (_chain is not { } chain || _masterMixer == 0 || !_playing)
+                return (0, 0);
+            // Nivel de lo que está sonando (el mezclador guarda lo que ha leído: MixerChanBuffer).
+            // No incluye el volumen del canal (fader), pero sí la ganancia de entrada, que va en ese volumen.
+            if (BassMix.ChannelGetLevel(chain.MasterSplit, _levels, 0.03f, LevelRetrievalFlags.Stereo) <= 0)
+                return (0, 0);
+            float trim = (float)EqMath.GainFactor(_eq.Gain);
+            return (_levels[0] * trim, _levels[1] * trim);
+        }
+    }
+
     public double PositionSeconds
     {
         get
@@ -187,6 +234,7 @@ internal sealed class BassDeck : IDeck, IDisposable
             _duration = Bass.ChannelBytes2Seconds(loaded.Decoder, Bass.ChannelGetLength(loaded.Decoder, PositionFlags.Bytes));
             _playing = false;
             ApplyPitchNoLock();
+            ApplyEqNoLock();
             ApplyGainsNoLock();
 
             try
@@ -343,14 +391,77 @@ internal sealed class BassDeck : IDeck, IDisposable
         }
 
         float cueFrequency = Bass.ChannelGetInfo(cueSplit).Frequency;
-        return new Chain(tempo, decoder, masterSplit, cueSplit, sourceRate, cueFrequency);
+        return new Chain(tempo, decoder, masterSplit, cueSplit, sourceRate, cueFrequency)
+        {
+            // Si BASS_FX no pudiera crearlos, el plato suena igual (sin EQ): 0 = sin efecto.
+            LowFx = Bass.ChannelSetFX(tempo, EffectType.BQF, EqPriority),
+            MidFx = Bass.ChannelSetFX(tempo, EffectType.BQF, EqPriority),
+            HighFx = Bass.ChannelSetFX(tempo, EffectType.BQF, EqPriority),
+        };
+    }
+
+    // Graves y agudos con shelving, medios con campana; al mínimo, corte total (kill).
+    private void ApplyEqNoLock()
+    {
+        if (_chain is not { } chain)
+            return;
+        SetBqf(chain.LowFx, BQFType.LowShelf, EqMath.LowShelfHz, EqMath.BandDb(_eq.Low));
+        SetBqf(chain.MidFx, BQFType.PeakingEQ, EqMath.MidCenterHz, EqMath.BandDb(_eq.Mid), EqMath.MidBandwidthOctaves);
+        SetBqf(chain.HighFx, BQFType.HighShelf, EqMath.HighShelfHz, EqMath.BandDb(_eq.High));
+        ApplyFilterNoLock(chain);
+    }
+
+    private void ApplyFilterNoLock(Chain chain)
+    {
+        var filter = EqMath.Filter(_eq.Filter);
+        if (filter.Kind == FilterKind.Off)
+        {
+            // Apagado: se quita de la cadena (en los extremos del barrido ya era casi transparente).
+            if (chain.FilterFx != 0)
+                Bass.ChannelRemoveFX(chain.Tempo, chain.FilterFx);
+            chain.FilterFx = 0;
+            chain.FilterKind = FilterKind.Off;
+            return;
+        }
+
+        if (chain.FilterFx == 0)
+            chain.FilterFx = Bass.ChannelSetFX(chain.Tempo, EffectType.BQF, FilterPriority);
+        chain.FilterKind = filter.Kind;
+        double cutoff = Math.Min(filter.CutoffHz, chain.SourceRate * 0.45);
+        Bass.FXSetParameters(chain.FilterFx, new BQFParameters
+        {
+            lFilter = filter.Kind == FilterKind.LowPass ? BQFType.LowPass : BQFType.HighPass,
+            fCenter = (float)cutoff,
+            fBandwidth = 0,
+            fQ = FilterResonance,
+        });
+    }
+
+    /// <summary>Un poco de resonancia, como el filtro de un mezclador DJ.</summary>
+    private const float FilterResonance = 1.1f;
+
+    private static void SetBqf(int fx, BQFType type, double centerHz, double gainDb, double bandwidthOctaves = 0)
+    {
+        if (fx == 0)
+            return;
+        Bass.FXSetParameters(fx, new BQFParameters
+        {
+            lFilter = type,
+            fCenter = (float)centerHz,
+            fGain = (float)gainDb,
+            fBandwidth = (float)bandwidthOctaves,
+            fQ = 0,
+            // La pendiente solo vale para los shelving: en la campana BASS_FX rechaza los parámetros.
+            fS = type is BQFType.LowShelf or BQFType.HighShelf ? 1 : 0,
+        });
     }
 
     private void AddToMixersNoLock(bool paused)
     {
         var chain = _chain!;
         var flags = paused ? BassFlags.MixerChanPause : BassFlags.Default;
-        if (_masterMixer != 0 && !BassMix.MixerAddChannel(_masterMixer, chain.MasterSplit, flags))
+        // MixerChanBuffer: el mezclador guarda lo que lee para poder medir el nivel (VU).
+        if (_masterMixer != 0 && !BassMix.MixerAddChannel(_masterMixer, chain.MasterSplit, flags | BassFlags.MixerChanBuffer))
             throw new BassException(Messages.MixerAddFailed);
         if (_cueMixer != 0)
         {
@@ -385,9 +496,11 @@ internal sealed class BassDeck : IDeck, IDisposable
     {
         if (_chain is not { } chain)
             return;
-        Bass.ChannelSetAttribute(chain.MasterSplit, ChannelAttribute.Volume, _gain);
+        // La ganancia de entrada (trim) afecta a las dos rutas; el fader solo al master.
+        double trim = EqMath.GainFactor(_eq.Gain);
+        Bass.ChannelSetAttribute(chain.MasterSplit, ChannelAttribute.Volume, _gain * trim);
         Bass.ChannelSetAttribute(chain.CueSplit, ChannelAttribute.Volume,
-            HeadphoneMath.CueGain(_cueEnabled, _cueMix, _gain, _phonesVolume));
+            trim * HeadphoneMath.CueGain(_cueEnabled, _cueMix, _gain, _phonesVolume));
     }
 
     private bool HasEndedNoLock() =>

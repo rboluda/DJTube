@@ -32,7 +32,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Miniatura del vídeo y BPM -->
-                <Grid Grid.Row="0" Margin="0,0,0,10">
+                <Grid Grid.Row="0" Margin="0,0,0,6">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -61,14 +61,6 @@
                                    HorizontalAlignment="Right" />
                         <TextBlock Text="{Binding AnalysisStatus}" Style="{StaticResource CaptionText}"
                                    HorizontalAlignment="Right" />
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,6,0,0">
-                            <Button Content="½" Padding="8,3" FontSize="11" Command="{Binding HalveBpmCommand}"
-                                    ToolTip="{loc:Tr HalveTip}" />
-                            <Button Content="×2" Padding="8,3" FontSize="11" Margin="4,0,0,0"
-                                    Command="{Binding DoubleBpmCommand}" ToolTip="{loc:Tr DoubleTip}" />
-                            <Button Content="SYNC" Padding="12,3" Margin="8,0,0,0" Command="{Binding SyncCommand}"
-                                    ToolTip="{loc:Tr SyncTip}" />
-                        </StackPanel>
                     </StackPanel>
                 </Grid>
 
@@ -84,7 +76,7 @@
                 </DockPanel>
 
                 <!-- Carga: enlace de YouTube o archivo -->
-                <DockPanel Grid.Row="2" Margin="0,10,0,0">
+                <DockPanel Grid.Row="2" Margin="0,8,0,0">
                     <Button DockPanel.Dock="Right" Content="{loc:Tr FileButton}" Margin="8,0,0,0"
                             Command="{Binding LoadFileCommand}" ToolTip="{loc:Tr FileTip}" />
                     <Button DockPanel.Dock="Right" Content="{loc:Tr Load}" Margin="8,0,0,0"
@@ -117,20 +109,20 @@
                 </DockPanel>
 
                 <!-- Tiempos -->
-                <Grid Grid.Row="4" Margin="0,10,0,6">
+                <Grid Grid.Row="4" Margin="0,6,0,4">
                     <StackPanel HorizontalAlignment="Left">
                         <TextBlock Text="{loc:Tr Elapsed}" Style="{StaticResource CaptionText}" />
-                        <TextBlock Text="{Binding Elapsed}" FontFamily="Consolas" FontSize="26" />
+                        <TextBlock Text="{Binding Elapsed}" FontFamily="Consolas" FontSize="24" />
                     </StackPanel>
                     <StackPanel HorizontalAlignment="Right">
                         <TextBlock Text="{loc:Tr Remaining}" Style="{StaticResource CaptionText}" HorizontalAlignment="Right" />
-                        <TextBlock Text="{Binding Remaining}" FontFamily="Consolas" FontSize="26"
+                        <TextBlock Text="{Binding Remaining}" FontFamily="Consolas" FontSize="24"
                                    Foreground="{StaticResource TextDimBrush}" />
                     </StackPanel>
                 </Grid>
 
                 <!-- Forma de onda completa: clic o arrastre para saltar -->
-                <controls:WaveformOverview Grid.Row="5" Height="64"
+                <controls:WaveformOverview Grid.Row="5" Height="60"
                                            Waveform="{Binding Waveform}"
                                            Progress="{Binding Progress}"
                                            CueFraction="{Binding CueFraction}"
@@ -138,9 +130,18 @@
                                            SeekCommand="{Binding SeekCommand}"
                                            IsEnabled="{Binding IsLoaded}" />
 
-                <!-- Transporte -->
-                <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0,12,0,0">
-                    <controls:PressButton Content="CUE" Width="88" Height="48" FontSize="15"
+                <!-- Transporte; a la derecha, BPM ½ / ×2 y SYNC -->
+                <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
+                            Margin="0,10,0,0">
+                    <Button Content="½" Padding="8,3" FontSize="11" Command="{Binding HalveBpmCommand}"
+                            ToolTip="{loc:Tr HalveTip}" />
+                    <Button Content="×2" Padding="8,3" FontSize="11" Margin="4,0,0,0"
+                            Command="{Binding DoubleBpmCommand}" ToolTip="{loc:Tr DoubleTip}" />
+                    <Button Content="SYNC" Padding="14,8" Margin="8,0,0,0" Command="{Binding SyncCommand}"
+                            ToolTip="{loc:Tr SyncTip}" />
+                </StackPanel>
+                <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="0,8,0,0">
+                    <controls:PressButton Content="CUE" Width="84" Height="42" FontSize="15"
                                           PressCommand="{Binding CueDownCommand}"
                                           ReleaseCommand="{Binding CueUpCommand}"
                                           IsEnabled="{Binding IsLoaded}">
@@ -156,7 +157,7 @@
                         </controls:PressButton.Style>
                     </controls:PressButton>
 
-                    <Button Width="88" Height="48" Margin="10,0,0,0" FontSize="15"
+                    <Button Width="84" Height="42" Margin="10,0,0,0" FontSize="15"
                             Command="{Binding PlayPauseCommand}" IsEnabled="{Binding IsLoaded}">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
