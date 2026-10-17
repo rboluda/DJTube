@@ -4,6 +4,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [versionado semántico](https://semver.org/lang/es/). La versión se define en
 `Directory.Build.props`.
 
+## [0.5.0] - 2026-10-17
+
+### Añadido
+- Pre-escucha por auriculares: botón 🎧 por plato en el mezclador, mezcla de auriculares
+  (solo CUE ↔ igual que el master) y volumen de auriculares.
+- Desplegable «Auriculares» junto a «Salida» para elegir el dispositivo de pre-escucha.
+- Dos modos de salida (Configuración → Preferencias):
+  - WASAPI: master y auriculares en dispositivos distintos. La ruta de auriculares corrige
+    sola la deriva entre los dos relojes (remuestreo de ±1 % como máximo).
+  - ASIO: una tarjeta multicanal, master y auriculares en pares de canales (p. ej. 1-2 y 3-4).
+- Estado de la salida de auriculares en la barra superior. Si falla, el master sigue sonando.
+
+### Cambiado
+- Cada plato se reparte con splitters de BassMix hacia el master y los auriculares; el de
+  auriculares solo lee lo que ya ha pedido el master, así que nunca lo frena ni lo adelanta.
+
 ## [0.4.0] - 2026-10-17
 
 ### Añadido

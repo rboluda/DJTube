@@ -15,6 +15,24 @@ public sealed class AppSettings
     public double ZoomSeconds { get; set; } = 8;
 
     public string? CrossfaderCurve { get; set; }
+
+    /// <summary>"Wasapi" o "Asio".</summary>
+    public string? OutputMode { get; set; }
+
+    /// <summary>Dispositivo WASAPI de auriculares; null = sin pre-escucha.</summary>
+    public string? CueDeviceName { get; set; }
+
+    public string? AsioDeviceName { get; set; }
+
+    /// <summary>Primer canal ASIO del master (0 = canales 1-2).</summary>
+    public int AsioMasterChannel { get; set; }
+
+    /// <summary>Primer canal ASIO de auriculares (2 = canales 3-4); -1 = sin pre-escucha.</summary>
+    public int AsioCueChannel { get; set; } = 2;
+
+    public double CueMix { get; set; }
+
+    public double HeadphoneVolume { get; set; } = 0.8;
 }
 
 /// <summary>Lee y guarda <see cref="AppSettings"/> en %APPDATA%\DJTube\settings.json.</summary>

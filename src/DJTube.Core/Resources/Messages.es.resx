@@ -26,4 +26,9 @@
   <data name="OnlyFilesSupported" xml:space="preserve"><value>De momento solo se pueden cargar archivos.</value></data>
   <data name="LibraryNotFound" xml:space="preserve"><value>NO ENCONTRADA</value></data>
   <data name="DefaultDevice" xml:space="preserve"><value>{0} (predeterminado)</value></data>
+  <data name="AsioInitFailed" xml:space="preserve"><value>No se pudo abrir el controlador ASIO «{0}»</value></data>
+  <data name="AsioChannelsMissing" xml:space="preserve"><value>La tarjeta ASIO no tiene los canales {0}-{1} (tiene {2} salidas)</value></data>
+  <data name="AsioStartFailed" xml:space="preserve"><value>No se pudo iniciar la tarjeta ASIO</value></data>
+  <data name="AsioChannelFailed" xml:space="preserve"><value>No se pudo enviar el audio a los canales ASIO {0}-{1}</value></data>
+  <data name="SplitFailed" xml:space="preserve"><value>No se pudo crear la señal de auriculares</value></data>
 </root>

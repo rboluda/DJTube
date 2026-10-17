@@ -34,6 +34,17 @@ dotnet run --project src/DJTube.App
 Descargar contenido de YouTube va en contra de sus condiciones de uso. Usa esta función
 bajo tu responsabilidad y solo con contenido que tengas derecho a utilizar.
 
+## Pre-escucha por auriculares
+
+- **WASAPI** (por defecto): elige en la barra superior la «Salida» (master) y los
+  «Auriculares» (otro dispositivo, p. ej. la salida de cascos de la tarjeta o unos
+  auriculares USB).
+- **ASIO** (Configuración → Preferencias → Modo de salida): una tarjeta de 4 canales;
+  elige el par del master (p. ej. 1-2) y el de auriculares (p. ej. 3-4).
+
+En el mezclador, el botón 🎧 de cada plato lo manda a los auriculares, independientemente de
+faders y crossfader. «Mezcla auric.» va de solo los platos con 🎧 (CUE) a lo mismo que el master.
+
 ## Estructura
 
 | Proyecto | Contenido |

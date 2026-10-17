@@ -6,9 +6,13 @@ using DJTube.Core.Logic;
 
 namespace DJTube.App.ViewModels;
 
-/// <summary>Faders de canal y crossfader: calculan la ganancia de cada plato hacia el master.</summary>
+/// <summary>
+/// Faders de canal y crossfader (ganancia de cada plato hacia el master) y sección de auriculares:
+/// CUE por plato, mezcla CUE/master y volumen.
+/// </summary>
 public partial class MixerViewModel : ObservableObject
 {
+    private readonly IAudioEngine _engine;
     private readonly IDeck _deckA;
     private readonly IDeck _deckB;
 
@@ -26,12 +30,36 @@ public partial class MixerViewModel : ObservableObject
     [ObservableProperty]
     private LocalizedOption<CrossfaderCurveType> _selectedCurve;
 
-    public MixerViewModel(IDeck deckA, IDeck deckB, CrossfaderCurveType curve = CrossfaderCurveType.Linear)
+    /// <summary>Plato A por los auriculares.</summary>
+    [ObservableProperty]
+    private bool _cueA;
+
+    [ObservableProperty]
+    private bool _cueB;
+
+    /// <summary>0 = auriculares solo con los platos en CUE; 1 = lo mismo que el master.</summary>
+    [ObservableProperty]
+    private double _cueMix;
+
+    [ObservableProperty]
+    private double _headphoneVolume;
+
+    public MixerViewModel(IAudioEngine engine, CrossfaderCurveType curve, double cueMix, double headphoneVolume)
     {
-        _deckA = deckA;
-        _deckB = deckB;
+        _engine = engine;
+        _deckA = engine.Decks[0];
+        _deckB = engine.Decks[1];
         _selectedCurve = Curves.FirstOrDefault(c => c.Value == curve) ?? Curves[0];
+        _cueMix = Math.Clamp(cueMix, 0, 1);
+        _headphoneVolume = Math.Clamp(headphoneVolume, 0, 1);
+        engine.CueMix = _cueMix;
+        engine.HeadphoneVolume = FaderTaper.ToGain(_headphoneVolume);
         ApplyGains();
+        Loc.Instance.LanguageChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(CueATip));
+            OnPropertyChanged(nameof(CueBTip));
+        };
     }
 
     public IReadOnlyList<LocalizedOption<CrossfaderCurveType>> Curves { get; } =
@@ -41,6 +69,10 @@ public partial class MixerViewModel : ObservableObject
         new(CrossfaderCurveType.ConstantPower, _ => Loc.T("Curve_ConstantPower")),
     ];
 
+    public string CueATip => Loc.F("PflTip", "A");
+
+    public string CueBTip => Loc.F("PflTip", "B");
+
     partial void OnVolumeAChanged(double value) => ApplyGains();
 
     partial void OnVolumeBChanged(double value) => ApplyGains();
@@ -48,6 +80,14 @@ public partial class MixerViewModel : ObservableObject
     partial void OnCrossfaderChanged(double value) => ApplyGains();
 
     partial void OnSelectedCurveChanged(LocalizedOption<CrossfaderCurveType> value) => ApplyGains();
+
+    partial void OnCueAChanged(bool value) => _deckA.CueEnabled = value;
+
+    partial void OnCueBChanged(bool value) => _deckB.CueEnabled = value;
+
+    partial void OnCueMixChanged(double value) => _engine.CueMix = value;
+
+    partial void OnHeadphoneVolumeChanged(double value) => _engine.HeadphoneVolume = FaderTaper.ToGain(value);
 
     [RelayCommand]
     private void CenterCrossfader() => Crossfader = 0;

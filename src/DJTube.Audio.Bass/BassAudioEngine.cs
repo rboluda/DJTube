@@ -11,16 +11,21 @@ namespace DJTube.Audio.Bass;
 using Bass = ManagedBass.Bass;
 
 /// <summary>
-/// Motor de audio sobre BASS. Grafo: platos → mezclador master (decode) → WASAPI.
+/// Motor de audio sobre BASS. Grafo: cada plato → splitter → mezclador master (decode) → salida,
+/// y otro splitter → mezclador de auriculares (decode) → salida de pre-escucha.
+/// Salidas: WASAPI (uno o dos dispositivos) o ASIO (una tarjeta, dos pares de canales).
 /// </summary>
 /// <remarks>Los métodos públicos se llaman desde el hilo de la interfaz.</remarks>
 public sealed class BassAudioEngine : IAudioEngine
 {
     private readonly BassDeck[] _decks;
-    private int _mixer;
-    private int _mixerRate;
-    private int _mixerChannels;
-    private WasapiOutput? _output;
+    private Mixer _master;
+    private Mixer _cue;
+    private WasapiOutput? _wasapiMaster;
+    private WasapiOutput? _wasapiCue;
+    private AsioOutput? _asio;
+    private double _cueMix;
+    private double _headphoneVolume = 1;
     private bool _disposed;
 
     public BassAudioEngine(int deckCount = 2)
@@ -30,18 +35,53 @@ public sealed class BassAudioEngine : IAudioEngine
         _decks = Enumerable.Range(0, deckCount).Select(_ => new BassDeck(GetOutputDelayBytes)).ToArray();
     }
 
+    /// <summary>Mezclador decode y su formato.</summary>
+    private readonly record struct Mixer(int Handle, int Rate, int Channels)
+    {
+        public bool Matches(int rate, int channels) => Handle != 0 && Rate == rate && Channels == channels;
+    }
+
     public IReadOnlyList<IDeck> Decks => _decks;
 
-    public AudioOutputStatus? OutputStatus => _output?.Status;
+    public AudioOutputStatus? OutputStatus => _wasapiMaster?.Status ?? _asio?.MasterStatus;
+
+    public AudioOutputStatus? CueOutputStatus => _wasapiCue?.Status ?? _asio?.CueStatus;
+
+    public string? CueOutputError { get; private set; }
 
     public double OutputDelaySeconds
     {
         get
         {
-            var output = _output;
-            return output is null || output.SampleRate <= 0 ? 0 : output.BufferedFrames / (double)output.SampleRate;
+            if (_wasapiMaster is { SampleRate: > 0 } wasapi)
+                return wasapi.BufferedFrames / (double)wasapi.SampleRate;
+            if (_asio is { SampleRate: > 0 } asio)
+                return asio.LatencyFrames / (double)asio.SampleRate;
+            return 0;
         }
     }
+
+    public double CueMix
+    {
+        get => _cueMix;
+        set
+        {
+            _cueMix = Math.Clamp(double.IsFinite(value) ? value : 0, 0, 1);
+            ApplyCueParameters();
+        }
+    }
+
+    public double HeadphoneVolume
+    {
+        get => _headphoneVolume;
+        set
+        {
+            _headphoneVolume = Math.Clamp(double.IsFinite(value) ? value : 0, 0, 1);
+            ApplyCueParameters();
+        }
+    }
+
+    private bool CueActive => _wasapiCue is not null || _asio?.CueStatus is not null;
 
     public IReadOnlyList<AudioDevice> GetOutputDevices()
     {
@@ -54,22 +94,45 @@ public sealed class BassAudioEngine : IAudioEngine
         return devices;
     }
 
-    public void StartOutput(AudioOutputSettings settings)
+    public IReadOnlyList<AudioDevice> GetAsioDevices() => AsioOutput.GetDevices();
+
+    public void StartOutput(OutputConfig config)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(config);
 
         StopOutput();
-        int device = settings.DeviceId ?? FindDefaultDevice();
-        (int rate, int channels, _) = WasapiOutput.GetMixFormat(device);
-        EnsureMixer(rate, channels);
-        _output = WasapiOutput.Start(device, _mixer, rate, channels, settings.BufferMilliseconds);
+        switch (config)
+        {
+            case WasapiOutputConfig wasapi:
+                StartWasapi(wasapi);
+                break;
+            case AsioOutputConfig asio:
+                StartAsio(asio);
+                break;
+            default:
+                throw new ArgumentException(config.GetType().Name, nameof(config));
+        }
     }
 
     public void StopOutput()
     {
-        _output?.Dispose();
-        _output = null;
+        _wasapiCue?.Dispose();
+        _wasapiCue = null;
+        _wasapiMaster?.Dispose();
+        _wasapiMaster = null;
+        _asio?.Dispose();
+        _asio = null;
+        CueOutputError = null;
+    }
+
+    public void Maintain()
+    {
+        bool active = CueActive;
+        // Con dos dispositivos WASAPI hay dos relojes: hace falta corregir la deriva.
+        bool adaptive = _wasapiCue is not null;
+        foreach (var deck in _decks)
+            deck.MaintainCue(active, adaptive);
     }
 
     public void Dispose()
@@ -84,39 +147,110 @@ public sealed class BassAudioEngine : IAudioEngine
             deck.Detach();
             deck.Dispose();
         }
-        if (_mixer != 0)
-            Bass.StreamFree(_mixer);
-        _mixer = 0;
+        FreeMixer(ref _master);
+        FreeMixer(ref _cue);
     }
 
-    /// <summary>Crea (o recrea si cambia el formato) el mezclador master y le engancha los platos.</summary>
-    private void EnsureMixer(int rate, int channels)
+    private void StartWasapi(WasapiOutputConfig config)
     {
-        if (_mixer != 0 && _mixerRate == rate && _mixerChannels == channels)
-            return;
+        int masterDevice = config.MasterDeviceId ?? FindDefaultDevice();
+        (int rate, int channels, _) = WasapiOutput.GetMixFormat(masterDevice);
 
+        int? cueDevice = config.CueDeviceId is { } id && id != masterDevice ? id : null;
+        (int cueRate, int cueChannels) = (0, 0);
+        if (cueDevice is { } c)
+            (cueRate, cueChannels, _) = WasapiOutput.GetMixFormat(c);
+
+        ConfigureMixers(rate, channels, cueRate, cueChannels);
+        _wasapiMaster = WasapiOutput.Start(masterDevice, _master.Handle, rate, channels, config.BufferMilliseconds);
+
+        if (cueDevice is { } cue)
+        {
+            // Si falla la salida de auriculares, el master sigue sonando.
+            try
+            {
+                _wasapiCue = WasapiOutput.Start(cue, _cue.Handle, cueRate, cueChannels, config.BufferMilliseconds);
+            }
+            catch (BassException ex)
+            {
+                CueOutputError = ex.Message;
+            }
+        }
+    }
+
+    private void StartAsio(AsioOutputConfig config)
+    {
+        var asio = AsioOutput.Open(config.DeviceId);
+        try
+        {
+            bool withCue = config.CueChannel >= 0;
+            ConfigureMixers(asio.SampleRate, 2, withCue ? asio.SampleRate : 0, 2);
+            asio.Start(_master.Handle, config.MasterChannel, withCue ? _cue.Handle : 0, config.CueChannel);
+            _asio = asio;
+        }
+        catch
+        {
+            asio.Dispose();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Crea (o recrea si cambia el formato) los mezcladores y engancha los platos.
+    /// cueRate 0 = sin mezclador de auriculares.
+    /// </summary>
+    private void ConfigureMixers(int rate, int channels, int cueRate, int cueChannels)
+    {
         foreach (var deck in _decks)
             deck.Detach();
-        if (_mixer != 0)
-            Bass.StreamFree(_mixer);
 
-        // NonStop: sigue entregando silencio sin fuentes activas (sin cortes en el dispositivo).
-        // PositionEx: guarda historial de posiciones para compensar la latencia de salida.
-        _mixer = BassMix.CreateMixerStream(
-            rate, channels, BassFlags.Decode | BassFlags.Float | BassFlags.MixerNonStop | BassFlags.MixerPositionEx);
-        if (_mixer == 0)
-            throw new BassException(Messages.MixerCreateFailed);
-        _mixerRate = rate;
-        _mixerChannels = channels;
+        if (!_master.Matches(rate, channels))
+        {
+            FreeMixer(ref _master);
+            // PositionEx: guarda historial de posiciones para compensar la latencia de salida.
+            _master = CreateMixer(rate, channels, BassFlags.MixerPositionEx);
+        }
+
+        if (cueRate == 0)
+            FreeMixer(ref _cue);
+        else if (!_cue.Matches(cueRate, cueChannels))
+        {
+            FreeMixer(ref _cue);
+            _cue = CreateMixer(cueRate, cueChannels, BassFlags.Default);
+        }
 
         foreach (var deck in _decks)
-            deck.AttachTo(_mixer);
+            deck.AttachTo(_master.Handle, _cue.Handle);
+        ApplyCueParameters();
+    }
+
+    private static Mixer CreateMixer(int rate, int channels, BassFlags extra)
+    {
+        // NonStop: sigue entregando silencio sin fuentes activas (sin cortes en el dispositivo).
+        int handle = BassMix.CreateMixerStream(
+            rate, channels, BassFlags.Decode | BassFlags.Float | BassFlags.MixerNonStop | extra);
+        if (handle == 0)
+            throw new BassException(Messages.MixerCreateFailed);
+        return new Mixer(handle, rate, channels);
+    }
+
+    private static void FreeMixer(ref Mixer mixer)
+    {
+        if (mixer.Handle != 0)
+            Bass.StreamFree(mixer.Handle);
+        mixer = default;
+    }
+
+    private void ApplyCueParameters()
+    {
+        foreach (var deck in _decks)
+            deck.SetCueParameters(_cueMix, _headphoneVolume);
     }
 
     private int GetOutputDelayBytes()
     {
-        var output = _output;
-        return output is null ? 0 : output.BufferedFrames * _mixerChannels * sizeof(float);
+        int frames = _wasapiMaster?.BufferedFrames ?? _asio?.LatencyFrames ?? 0;
+        return frames * _master.Channels * sizeof(float);
     }
 
     private static int FindDefaultDevice()

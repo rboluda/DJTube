@@ -14,8 +14,20 @@ using DJTube.Sources.YouTube;
 
 namespace DJTube.App.ViewModels;
 
+public enum OutputMode
+{
+    /// <summary>Master y auriculares en dispositivos WASAPI distintos.</summary>
+    Wasapi,
+
+    /// <summary>Una tarjeta ASIO multicanal: master y auriculares en pares de canales.</summary>
+    Asio,
+}
+
 public partial class MainViewModel : ObservableObject
 {
+    /// <summary>Pares de canales ASIO que se ofrecen (primer canal, base 0).</summary>
+    private static readonly int[] AsioPairs = [0, 2, 4, 6];
+
     private readonly IAudioEngine _engine;
     private readonly YouTubeTrackSource _youTube;
     private readonly SettingsService _settingsService;
@@ -27,7 +39,23 @@ public partial class MainViewModel : ObservableObject
     private (string Key, object? Arg) _ytDlpState = ("YtDlpChecking", null);
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWasapiMode), nameof(IsAsioMode))]
+    private OutputMode _outputMode;
+
+    [ObservableProperty]
     private LocalizedOption<AudioDevice>? _selectedDevice;
+
+    [ObservableProperty]
+    private LocalizedOption<AudioDevice?>? _selectedCueDevice;
+
+    [ObservableProperty]
+    private LocalizedOption<AudioDevice>? _selectedAsioDevice;
+
+    [ObservableProperty]
+    private LocalizedOption<int>? _selectedMasterPair;
+
+    [ObservableProperty]
+    private LocalizedOption<int>? _selectedCuePair;
 
     [ObservableProperty]
     private bool _hasOutputError;
@@ -56,6 +84,7 @@ public partial class MainViewModel : ObservableObject
         _settingsService = settingsService;
         _settings = settings;
         _zoomSeconds = Math.Clamp(settings.ZoomSeconds, ZoomWaveform.MinSecondsVisible, ZoomWaveform.MaxSecondsVisible);
+        _outputMode = Enum.TryParse(settings.OutputMode, out OutputMode mode) ? mode : OutputMode.Wasapi;
 
         Func<double> delay = () => engine.OutputDelaySeconds;
         DeckA = new DeckViewModel("A", engine.Decks[0], localSource, youTube, analyzer, delay, dialogs);
@@ -64,16 +93,26 @@ public partial class MainViewModel : ObservableObject
         DeckB.SyncTarget = DeckA;
 
         var curve = Enum.TryParse(settings.CrossfaderCurve, out CrossfaderCurveType saved) ? saved : CrossfaderCurveType.Linear;
-        Mixer = new MixerViewModel(engine.Decks[0], engine.Decks[1], curve);
+        Mixer = new MixerViewModel(engine, curve, settings.CueMix, settings.HeadphoneVolume);
         Mixer.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(MixerViewModel.SelectedCurve))
+            if (e.PropertyName is nameof(MixerViewModel.SelectedCurve) or nameof(MixerViewModel.CueMix)
+                or nameof(MixerViewModel.HeadphoneVolume))
                 SaveSettings();
         };
+
+        MasterPairs = AsioPairs.Select(PairOption).ToList();
+        CuePairs = [new LocalizedOption<int>(-1, _ => Loc.T("NoHeadphones")), .. AsioPairs.Select(PairOption)];
+        OutputModes =
+        [
+            new(OutputMode.Wasapi, _ => Loc.T("Mode_Wasapi")),
+            new(OutputMode.Asio, _ => Loc.T("Mode_Asio")),
+        ];
 
         Loc.Instance.LanguageChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(OutputStatus));
+            OnPropertyChanged(nameof(CueStatus));
             OnPropertyChanged(nameof(YtDlpStatus));
             OnPropertyChanged(nameof(Libraries));
         };
@@ -85,7 +124,23 @@ public partial class MainViewModel : ObservableObject
 
     public MixerViewModel Mixer { get; }
 
+    /// <summary>Dispositivos WASAPI para el master.</summary>
     public ObservableCollection<LocalizedOption<AudioDevice>> Devices { get; } = [];
+
+    /// <summary>Dispositivos WASAPI para los auriculares (el primero es «ninguno»).</summary>
+    public ObservableCollection<LocalizedOption<AudioDevice?>> CueDevices { get; } = [];
+
+    public ObservableCollection<LocalizedOption<AudioDevice>> AsioDevices { get; } = [];
+
+    public IReadOnlyList<LocalizedOption<int>> MasterPairs { get; }
+
+    public IReadOnlyList<LocalizedOption<int>> CuePairs { get; }
+
+    public IReadOnlyList<LocalizedOption<OutputMode>> OutputModes { get; }
+
+    public bool IsWasapiMode => OutputMode == OutputMode.Wasapi;
+
+    public bool IsAsioMode => OutputMode == OutputMode.Asio;
 
     public string WindowTitle => AppInfo.Title;
 
@@ -103,9 +158,24 @@ public partial class MainViewModel : ObservableObject
                 return Loc.F("OutputError", _outputError);
             if (_engine.OutputStatus is not { } s)
                 return Loc.T("OutputStopped");
-            return Loc.F("OutputStatus", s.DeviceName, s.SampleRate, s.Channels, s.LatencyMilliseconds);
+            return Loc.F("OutputStatus", s.Driver, s.DeviceName, s.SampleRate, s.Channels, s.LatencyMilliseconds);
         }
     }
+
+    /// <summary>Estado de la salida de auriculares ("" si no hay).</summary>
+    public string CueStatus
+    {
+        get
+        {
+            if (_engine.CueOutputError is { } error)
+                return Loc.F("CueError", error);
+            if (_engine.CueOutputStatus is not { } s)
+                return "";
+            return Loc.F("CueStatus", s.DeviceName, s.SampleRate, s.LatencyMilliseconds);
+        }
+    }
+
+    public bool HasCueError => _engine.CueOutputError is not null;
 
     public string YtDlpStatus => _ytDlpState.Arg is null ? Loc.T(_ytDlpState.Key) : Loc.F(_ytDlpState.Key, _ytDlpState.Arg);
 
@@ -122,11 +192,25 @@ public partial class MainViewModel : ObservableObject
         try
         {
             Devices.Clear();
+            CueDevices.Clear();
+            CueDevices.Add(new LocalizedOption<AudioDevice?>(null, _ => Loc.T("NoHeadphones")));
             foreach (var device in _engine.GetOutputDevices())
+            {
                 Devices.Add(new LocalizedOption<AudioDevice>(device, DeviceLabel));
+                CueDevices.Add(new LocalizedOption<AudioDevice?>(device, d => DeviceLabel(d!)));
+            }
             SelectedDevice = Devices.FirstOrDefault(d => d.Value.Name == _settings.OutputDeviceName)
                 ?? Devices.FirstOrDefault(d => d.Value.IsDefault)
                 ?? Devices.FirstOrDefault();
+            SelectedCueDevice = CueDevices.FirstOrDefault(d => d.Value?.Name == _settings.CueDeviceName) ?? CueDevices[0];
+
+            AsioDevices.Clear();
+            foreach (var device in _engine.GetAsioDevices())
+                AsioDevices.Add(new LocalizedOption<AudioDevice>(device, d => d.Name));
+            SelectedAsioDevice = AsioDevices.FirstOrDefault(d => d.Value.Name == _settings.AsioDeviceName)
+                ?? AsioDevices.FirstOrDefault();
+            SelectedMasterPair = MasterPairs.FirstOrDefault(p => p.Value == _settings.AsioMasterChannel) ?? MasterPairs[0];
+            SelectedCuePair = CuePairs.FirstOrDefault(p => p.Value == _settings.AsioCueChannel) ?? CuePairs[2];
         }
         finally
         {
@@ -139,6 +223,7 @@ public partial class MainViewModel : ObservableObject
     /// <summary>Se llama en cada fotograma.</summary>
     public void Refresh()
     {
+        _engine.Maintain();
         DeckA.Refresh();
         DeckB.Refresh();
     }
@@ -161,13 +246,17 @@ public partial class MainViewModel : ObservableObject
 
     partial void OnZoomSecondsChanged(double value) => SaveSettings();
 
-    partial void OnSelectedDeviceChanged(LocalizedOption<AudioDevice>? value)
-    {
-        if (_initializing)
-            return;
-        StartOutput();
-        SaveSettings();
-    }
+    partial void OnOutputModeChanged(OutputMode value) => OutputSelectionChanged();
+
+    partial void OnSelectedDeviceChanged(LocalizedOption<AudioDevice>? value) => OutputSelectionChanged();
+
+    partial void OnSelectedCueDeviceChanged(LocalizedOption<AudioDevice?>? value) => OutputSelectionChanged();
+
+    partial void OnSelectedAsioDeviceChanged(LocalizedOption<AudioDevice>? value) => OutputSelectionChanged();
+
+    partial void OnSelectedMasterPairChanged(LocalizedOption<int>? value) => OutputSelectionChanged();
+
+    partial void OnSelectedCuePairChanged(LocalizedOption<int>? value) => OutputSelectionChanged();
 
     [RelayCommand]
     private async Task UpdateYtDlp()
@@ -204,14 +293,32 @@ public partial class MainViewModel : ObservableObject
         if (_initializing)
             return;
         _settings.Language = Loc.Instance.Language;
+        _settings.OutputMode = OutputMode.ToString();
         _settings.OutputDeviceName = SelectedDevice?.Value.Name ?? _settings.OutputDeviceName;
+        _settings.CueDeviceName = SelectedCueDevice?.Value?.Name;
+        _settings.AsioDeviceName = SelectedAsioDevice?.Value.Name ?? _settings.AsioDeviceName;
+        _settings.AsioMasterChannel = SelectedMasterPair?.Value ?? 0;
+        _settings.AsioCueChannel = SelectedCuePair?.Value ?? 2;
         _settings.ZoomSeconds = ZoomSeconds;
         _settings.CrossfaderCurve = Mixer.SelectedCurve.Value.ToString();
+        _settings.CueMix = Mixer.CueMix;
+        _settings.HeadphoneVolume = Mixer.HeadphoneVolume;
         _settingsService.Save(_settings);
     }
 
     private static string DeviceLabel(AudioDevice device) =>
         device.IsDefault ? Messages.DefaultDevice(device.Name) : device.Name;
+
+    private static LocalizedOption<int> PairOption(int first) =>
+        new(first, f => Loc.F("ChannelPair", f + 1, f + 2));
+
+    private void OutputSelectionChanged()
+    {
+        if (_initializing)
+            return;
+        StartOutput();
+        SaveSettings();
+    }
 
     private async Task RefreshYtDlpStatusAsync()
     {
@@ -241,8 +348,25 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
-            _engine.StartOutput(new AudioOutputSettings(SelectedDevice?.Value.Id));
-            _outputError = null;
+            if (OutputMode == OutputMode.Asio)
+            {
+                if (SelectedAsioDevice is not { } asio)
+                {
+                    _engine.StopOutput();
+                    _outputError = Loc.T("NoAsioDrivers");
+                }
+                else
+                {
+                    _engine.StartOutput(new AsioOutputConfig(
+                        asio.Value.Id, SelectedMasterPair?.Value ?? 0, SelectedCuePair?.Value ?? -1));
+                    _outputError = null;
+                }
+            }
+            else
+            {
+                _engine.StartOutput(new WasapiOutputConfig(SelectedDevice?.Value.Id, SelectedCueDevice?.Value?.Id));
+                _outputError = null;
+            }
         }
         catch (Exception ex)
         {
@@ -250,5 +374,7 @@ public partial class MainViewModel : ObservableObject
         }
         HasOutputError = _outputError is not null;
         OnPropertyChanged(nameof(OutputStatus));
+        OnPropertyChanged(nameof(CueStatus));
+        OnPropertyChanged(nameof(HasCueError));
     }
 }

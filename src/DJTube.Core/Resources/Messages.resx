@@ -26,4 +26,9 @@
   <data name="OnlyFilesSupported" xml:space="preserve"><value>Only files can be loaded for now.</value></data>
   <data name="LibraryNotFound" xml:space="preserve"><value>NOT FOUND</value></data>
   <data name="DefaultDevice" xml:space="preserve"><value>{0} (default)</value></data>
+  <data name="AsioInitFailed" xml:space="preserve"><value>Could not open the ASIO driver &quot;{0}&quot;</value></data>
+  <data name="AsioChannelsMissing" xml:space="preserve"><value>The ASIO device has no channels {0}-{1} (it has {2} outputs)</value></data>
+  <data name="AsioStartFailed" xml:space="preserve"><value>Could not start the ASIO device</value></data>
+  <data name="AsioChannelFailed" xml:space="preserve"><value>Could not route audio to ASIO channels {0}-{1}</value></data>
+  <data name="SplitFailed" xml:space="preserve"><value>Could not create the headphone feed</value></data>
 </root>

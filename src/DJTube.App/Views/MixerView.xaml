@@ -7,14 +7,51 @@
              xmlns:loc="clr-namespace:DJTube.App.Localization"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:MixerViewModel}"
-             d:DesignWidth="220" d:DesignHeight="320">
+             d:DesignWidth="230" d:DesignHeight="420">
+    <UserControl.Resources>
+        <!-- Botón de pre-escucha: icono de auriculares + letra del plato -->
+        <DataTemplate x:Key="PflContent">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xE7F6;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
     <Border Background="{StaticResource PanelBrush}" CornerRadius="8" Padding="16">
         <DockPanel>
             <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Mixer}" Style="{StaticResource CaptionText}"
                        HorizontalAlignment="Center" Margin="0,0,0,8" />
 
-            <!-- Crossfader y curva -->
-            <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <!-- Pre-escucha por plato -->
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <ToggleButton Grid.Column="0" Margin="0,0,4,0" Content="A" ContentTemplate="{StaticResource PflContent}"
+                              IsChecked="{Binding CueA}" Tag="{StaticResource CueBrush}" ToolTip="{Binding CueATip}"
+                              Padding="8,5" FontSize="12" />
+                <ToggleButton Grid.Column="1" Margin="4,0,0,0" Content="B" ContentTemplate="{StaticResource PflContent}"
+                              IsChecked="{Binding CueB}" Tag="{StaticResource CueBrush}" ToolTip="{Binding CueBTip}"
+                              Padding="8,5" FontSize="12" />
+            </Grid>
+
+            <!-- Auriculares, crossfader y curva -->
+            <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+                <TextBlock Text="{loc:Tr PhonesMix}" Style="{StaticResource CaptionText}" />
+                <Grid>
+                    <TextBlock Text="CUE" Style="{StaticResource CaptionText}" HorizontalAlignment="Left"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="MST" Style="{StaticResource CaptionText}" HorizontalAlignment="Right"
+                               VerticalAlignment="Center" />
+                    <Slider Style="{StaticResource FaderSlider}" Margin="28,0" Height="30"
+                            Minimum="0" Maximum="1" Value="{Binding CueMix}" ToolTip="{loc:Tr PhonesMixTip}" />
+                </Grid>
+                <TextBlock Text="{loc:Tr PhonesVolume}" Style="{StaticResource CaptionText}" Margin="0,2,0,0" />
+                <Slider Style="{StaticResource FaderSlider}" Height="30" Margin="0,0,0,8"
+                        Minimum="0" Maximum="1" Value="{Binding HeadphoneVolume}" ToolTip="{loc:Tr PhonesVolumeTip}" />
+
                 <Grid>
                     <TextBlock Text="A" Foreground="{StaticResource DeckABrush}" FontWeight="Bold"
                                HorizontalAlignment="Left" VerticalAlignment="Center" />
@@ -26,7 +63,7 @@
                             MouseDoubleClick="OnCrossfaderDoubleClick"
                             ToolTip="{loc:Tr CrossfaderTip}" />
                 </Grid>
-                <TextBlock Text="{loc:Tr Curve}" Style="{StaticResource CaptionText}" Margin="0,8,0,2" />
+                <TextBlock Text="{loc:Tr Curve}" Style="{StaticResource CaptionText}" Margin="0,6,0,2" />
                 <ComboBox ItemsSource="{Binding Curves}" SelectedItem="{Binding SelectedCurve}" Focusable="False">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
@@ -45,7 +82,7 @@
                 <DockPanel Grid.Column="0">
                     <TextBlock DockPanel.Dock="Bottom" Text="A" Foreground="{StaticResource DeckABrush}"
                                FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0" />
-                    <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="120"
+                    <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="90"
                             Minimum="0" Maximum="1" Value="{Binding VolumeA}"
                             Tag="{StaticResource DeckABrush}" HorizontalAlignment="Center"
                             ToolTip="{loc:Tr VolumeATip}" />
@@ -53,7 +90,7 @@
                 <DockPanel Grid.Column="1">
                     <TextBlock DockPanel.Dock="Bottom" Text="B" Foreground="{StaticResource DeckBBrush}"
                                FontWeight="Bold" HorizontalAlignment="Center" Margin="0,4,0,0" />
-                    <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="120"
+                    <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="90"
                             Minimum="0" Maximum="1" Value="{Binding VolumeB}"
                             Tag="{StaticResource DeckBBrush}" HorizontalAlignment="Center"
                             ToolTip="{loc:Tr VolumeBTip}" />

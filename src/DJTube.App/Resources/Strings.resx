@@ -20,7 +20,26 @@
   <data name="Menu_About" xml:space="preserve"><value>_About DJTube</value></data>
   <data name="Output" xml:space="preserve"><value>Output</value></data>
   <data name="OutputStopped" xml:space="preserve"><value>Output stopped</value></data>
-  <data name="OutputStatus" xml:space="preserve"><value>WASAPI · {0} · {1} Hz · {2} channels · buffer {3:0.0} ms</value></data>
+  <data name="OutputStatus" xml:space="preserve"><value>{0} · {1} · {2} Hz · {3} ch · buffer {4:0.0} ms</value></data>
+  <data name="Headphones" xml:space="preserve"><value>Headphones</value></data>
+  <data name="NoHeadphones" xml:space="preserve"><value>— None —</value></data>
+  <data name="HeadphonesTip" xml:space="preserve"><value>Device for pre-listening (CUE)</value></data>
+  <data name="CueStatus" xml:space="preserve"><value>Headphones: {0} · {1} Hz · buffer {2:0.0} ms</value></data>
+  <data name="CueError" xml:space="preserve"><value>Headphones: {0}</value></data>
+  <data name="AsioDriver" xml:space="preserve"><value>ASIO</value></data>
+  <data name="AsioDriverTip" xml:space="preserve"><value>ASIO device (multichannel card)</value></data>
+  <data name="MasterPair" xml:space="preserve"><value>Master</value></data>
+  <data name="ChannelPair" xml:space="preserve"><value>Channels {0}-{1}</value></data>
+  <data name="NoAsioDrivers" xml:space="preserve"><value>No ASIO drivers installed: choose WASAPI in Settings → Preferences</value></data>
+  <data name="PflTip" xml:space="preserve"><value>Listen to deck {0} on the headphones (CUE)</value></data>
+  <data name="PhonesMix" xml:space="preserve"><value>PHONES MIX</value></data>
+  <data name="PhonesMixTip" xml:space="preserve"><value>Headphones: only the decks with 🎧 ◄► the same as the master</value></data>
+  <data name="PhonesVolume" xml:space="preserve"><value>PHONES VOL.</value></data>
+  <data name="PhonesVolumeTip" xml:space="preserve"><value>Headphone volume</value></data>
+  <data name="Pref_OutputMode" xml:space="preserve"><value>Output mode</value></data>
+  <data name="Mode_Wasapi" xml:space="preserve"><value>WASAPI — master and headphones on separate devices</value></data>
+  <data name="Mode_Asio" xml:space="preserve"><value>ASIO — one multichannel card (e.g. 1-2 master, 3-4 headphones)</value></data>
+  <data name="Pref_OutputModeNote" xml:space="preserve"><value>Choose the devices or channels in the bar at the top of the window.</value></data>
   <data name="OutputError" xml:space="preserve"><value>Output error: {0}</value></data>
   <data name="ShortcutsHint" xml:space="preserve"><value>Shortcuts — A: Space = play/pause, C = cue · B: Enter = play/pause, M = cue · F1 = all shortcuts · drag links or files onto a deck</value></data>
   <data name="UpdateYtDlp" xml:space="preserve"><value>Update yt-dlp</value></data>

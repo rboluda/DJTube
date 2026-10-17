@@ -11,23 +11,27 @@ namespace DJTube.Audio.Bass;
 using Bass = ManagedBass.Bass;
 
 /// <summary>
-/// Un plato: archivo decodificado → BASS_FX tempo → mezclador master.
+/// Un plato: archivo decodificado → BASS_FX tempo → dos splitters: uno al mezclador master y otro
+/// al de auriculares (pre-escucha).
 /// </summary>
 /// <remarks>
 /// Ninguna operación de esta clase se ejecuta en el hilo de audio. Play/pausa/seek/pitch/volumen solo
-/// cambian flags, atributos o la posición del canal en el mezclador (instantáneo). La carga se hace en
-/// segundo plano y la pista nueva se engancha al mezclador cuando ya está lista.
+/// cambian flags, atributos o la posición de los canales (instantáneo). La carga se hace en segundo
+/// plano y la pista nueva se engancha a los mezcladores cuando ya está lista.
 /// Las posiciones están siempre en tiempo de la pista original (sin pitch).
+///
+/// El splitter de auriculares es "esclavo": solo lee lo que ya ha pedido el master, así que la salida
+/// de auriculares nunca adelanta ni frena a la principal. Si cada salida tiene su propio reloj
+/// (dos dispositivos), <see cref="MaintainCue"/> corrige la deriva remuestreando un poco la ruta de auriculares.
 /// </remarks>
 internal sealed class BassDeck : IDeck, IDisposable
 {
     private readonly Lock _sync = new();
     private readonly Func<int> _outputDelayBytes;
 
-    private int _mixer;
-    private int _stream;        // canal de tempo (dueño del decodificador)
-    private int _decoder;       // decodificador del archivo: referencia de bytes ↔ segundos
-    private double _sourceRate;
+    private int _masterMixer;
+    private int _cueMixer;
+    private Chain? _chain;
     private bool _playing;
     private int _loadGeneration;
     private TrackInfo? _track;
@@ -35,12 +39,18 @@ internal sealed class BassDeck : IDeck, IDisposable
     private double _pitch;
     private bool _keyLock;
     private double _gain = 1;
+    private bool _cueEnabled;
+    private double _cueMix;
+    private double _phonesVolume = 1;
 
-    /// <param name="outputDelayBytes">Bytes de salida del mezclador que aún no se han oído.</param>
+    /// <param name="outputDelayBytes">Bytes de salida del mezclador master que aún no se han oído.</param>
     public BassDeck(Func<int> outputDelayBytes)
     {
         _outputDelayBytes = outputDelayBytes;
     }
+
+    /// <summary>Canales BASS de una pista cargada.</summary>
+    private sealed record Chain(int Tempo, int Decoder, int MasterSplit, int CueSplit, double SourceRate, float CueBaseFrequency);
 
     public TrackInfo? Track
     {
@@ -54,7 +64,7 @@ internal sealed class BassDeck : IDeck, IDisposable
 
     public bool IsLoaded
     {
-        get { lock (_sync) return _stream != 0; }
+        get { lock (_sync) return _chain is not null; }
     }
 
     public bool HasEnded
@@ -64,7 +74,7 @@ internal sealed class BassDeck : IDeck, IDisposable
 
     public bool IsPlaying
     {
-        get { lock (_sync) return _playing && _stream != 0 && !HasEndedNoLock(); }
+        get { lock (_sync) return _playing && _chain is not null && !HasEndedNoLock(); }
     }
 
     public double PitchPercent
@@ -101,7 +111,20 @@ internal sealed class BassDeck : IDeck, IDisposable
             lock (_sync)
             {
                 _gain = double.IsFinite(value) ? Math.Max(0, value) : 0;
-                ApplyGainNoLock();
+                ApplyGainsNoLock();
+            }
+        }
+    }
+
+    public bool CueEnabled
+    {
+        get { lock (_sync) return _cueEnabled; }
+        set
+        {
+            lock (_sync)
+            {
+                _cueEnabled = value;
+                ApplyGainsNoLock();
             }
         }
     }
@@ -110,23 +133,35 @@ internal sealed class BassDeck : IDeck, IDisposable
     {
         get
         {
-            int stream, decoder;
-            bool inMixer;
+            Chain? chain;
+            bool fromMixer;
             lock (_sync)
             {
-                stream = _stream;
-                decoder = _decoder;
-                inMixer = _mixer != 0;
+                chain = _chain;
+                // En pausa el mezclador no lee el plato (su historial no ve los saltos) y no queda nada
+                // por oír: la posición de la pista es exacta. Sonando, se compensa la latencia de salida.
+                fromMixer = _masterMixer != 0 && _playing;
             }
-            if (stream == 0)
+            if (chain is null)
                 return 0;
 
-            long position = inMixer
-                ? BassMix.ChannelGetPosition(stream, PositionFlags.Bytes, _outputDelayBytes())
+            long position = fromMixer
+                ? BassMix.ChannelGetPosition(chain.MasterSplit, PositionFlags.Bytes, _outputDelayBytes())
                 : -1;
             if (position < 0)
-                position = Bass.ChannelGetPosition(stream, PositionFlags.Bytes);
-            return position < 0 ? 0 : Bass.ChannelBytes2Seconds(decoder, position);
+                position = Bass.ChannelGetPosition(chain.Tempo, PositionFlags.Bytes);
+            return position < 0 ? 0 : Bass.ChannelBytes2Seconds(chain.Decoder, position);
+        }
+    }
+
+    /// <summary>Mezcla y volumen de auriculares (los fija el motor para todos los platos).</summary>
+    internal void SetCueParameters(double cueMix, double phonesVolume)
+    {
+        lock (_sync)
+        {
+            _cueMix = Math.Clamp(cueMix, 0, 1);
+            _phonesVolume = Math.Clamp(phonesVolume, 0, 1);
+            ApplyGainsNoLock();
         }
     }
 
@@ -135,34 +170,36 @@ internal sealed class BassDeck : IDeck, IDisposable
         ArgumentNullException.ThrowIfNull(media);
         int generation = Interlocked.Increment(ref _loadGeneration);
 
-        LoadedStream loaded = await Task.Run(() => CreateStream(media), ct).ConfigureAwait(false);
+        Chain loaded = await Task.Run(() => CreateChain(media), ct).ConfigureAwait(false);
 
-        int old;
+        Chain? old;
         lock (_sync)
         {
             if (generation != _loadGeneration || ct.IsCancellationRequested)
             {
-                FreeInBackground(loaded.Stream);
+                FreeInBackground(loaded);
                 throw new OperationCanceledException(ct);
             }
 
-            old = DetachStreamNoLock();
-            _stream = loaded.Stream;
-            _decoder = loaded.Decoder;
-            _sourceRate = loaded.SourceRate;
+            old = DetachChainNoLock();
+            _chain = loaded;
             _track = media.Track;
-            _duration = loaded.Duration;
+            _duration = Bass.ChannelBytes2Seconds(loaded.Decoder, Bass.ChannelGetLength(loaded.Decoder, PositionFlags.Bytes));
             _playing = false;
             ApplyPitchNoLock();
-            ApplyGainNoLock();
+            ApplyGainsNoLock();
 
-            if (_mixer != 0 && !BassMix.MixerAddChannel(_mixer, _stream, BassFlags.MixerChanPause))
+            try
             {
-                var error = Bass.LastError;
+                AddToMixersNoLock(paused: true);
+            }
+            catch
+            {
+                DetachChainNoLock();
                 ResetTrackNoLock();
-                FreeInBackground(loaded.Stream);
+                FreeInBackground(loaded);
                 FreeInBackground(old);
-                throw new BassException(Messages.MixerAddFailed, error);
+                throw;
             }
         }
         FreeInBackground(old);
@@ -171,10 +208,10 @@ internal sealed class BassDeck : IDeck, IDisposable
     public void Unload()
     {
         Interlocked.Increment(ref _loadGeneration);
-        int old;
+        Chain? old;
         lock (_sync)
         {
-            old = DetachStreamNoLock();
+            old = DetachChainNoLock();
             ResetTrackNoLock();
         }
         FreeInBackground(old);
@@ -184,7 +221,7 @@ internal sealed class BassDeck : IDeck, IDisposable
     {
         lock (_sync)
         {
-            if (_stream == 0 || HasEndedNoLock())
+            if (_chain is null || HasEndedNoLock())
                 return;
             SetPausedNoLock(false);
             _playing = true;
@@ -195,7 +232,7 @@ internal sealed class BassDeck : IDeck, IDisposable
     {
         lock (_sync)
         {
-            if (_stream == 0)
+            if (_chain is null)
                 return;
             SetPausedNoLock(true);
             _playing = false;
@@ -206,7 +243,7 @@ internal sealed class BassDeck : IDeck, IDisposable
     {
         lock (_sync)
         {
-            if (_stream == 0)
+            if (_chain is not { } chain)
                 return;
 
             // Al terminar la pista el canal deja de sonar pero sigue "sin pausa" en el mezclador:
@@ -218,26 +255,21 @@ internal sealed class BassDeck : IDeck, IDisposable
             }
 
             double target = Math.Clamp(seconds, 0, Math.Max(0, _duration - 0.001));
-            long bytes = Bass.ChannelSeconds2Bytes(_decoder, target);
-            if (_mixer != 0)
-                BassMix.ChannelSetPosition(_stream, bytes, PositionFlags.Bytes);
-            else
-                Bass.ChannelSetPosition(_stream, bytes, PositionFlags.Bytes);
+            Bass.ChannelSetPosition(chain.Tempo, Bass.ChannelSeconds2Bytes(chain.Decoder, target), PositionFlags.Bytes);
+            // Descarta lo que los splitters tenían ya leído de la posición anterior.
+            BassMix.SplitStreamReset(chain.Tempo);
         }
     }
 
-    /// <summary>Engancha el plato a un mezclador (al arrancar o cambiar la salida).</summary>
-    internal void AttachTo(int mixer)
+    /// <summary>Engancha el plato a los mezcladores (al arrancar o cambiar la salida). cueMixer 0 = sin auriculares.</summary>
+    internal void AttachTo(int masterMixer, int cueMixer)
     {
         lock (_sync)
         {
-            _mixer = mixer;
-            if (_stream != 0)
-            {
-                var flags = _playing ? BassFlags.Default : BassFlags.MixerChanPause;
-                if (!BassMix.MixerAddChannel(mixer, _stream, flags))
-                    throw new BassException(Messages.MixerAddFailed);
-            }
+            _masterMixer = masterMixer;
+            _cueMixer = cueMixer;
+            if (_chain is not null)
+                AddToMixersNoLock(paused: !_playing);
         }
     }
 
@@ -245,17 +277,42 @@ internal sealed class BassDeck : IDeck, IDisposable
     {
         lock (_sync)
         {
-            if (_stream != 0 && _mixer != 0)
-                BassMix.MixerRemoveChannel(_stream);
-            _mixer = 0;
+            RemoveFromMixersNoLock();
+            _masterMixer = 0;
+            _cueMixer = 0;
+        }
+    }
+
+    /// <summary>
+    /// Mantiene la ruta de auriculares a ~30 ms detrás del master. Con dos relojes (dos dispositivos)
+    /// ajusta un poco su velocidad para compensar la deriva; con uno (ASIO) solo vigila que no se acumule.
+    /// </summary>
+    internal void MaintainCue(bool cueActive, bool adaptive)
+    {
+        lock (_sync)
+        {
+            if (_chain is not { } chain)
+                return;
+
+            int available = BassMix.SplitStreamGetAvailable(chain.CueSplit);
+            double seconds = available > 0 ? Bass.ChannelBytes2Seconds(chain.CueSplit, available) : 0;
+            if (HeadphoneMath.ShouldReset(cueActive, seconds))
+            {
+                if (available > 0)
+                    BassMix.SplitStreamReset(chain.CueSplit);
+                return;
+            }
+            if (!adaptive || !_playing)
+                return;
+
+            double ratio = HeadphoneMath.DriftCorrection(seconds);
+            Bass.ChannelSetAttribute(chain.CueSplit, ChannelAttribute.Frequency, chain.CueBaseFrequency * ratio);
         }
     }
 
     public void Dispose() => Unload();
 
-    private readonly record struct LoadedStream(int Stream, int Decoder, double SourceRate, double Duration);
-
-    private static LoadedStream CreateStream(TrackMedia media)
+    private static Chain CreateChain(TrackMedia media)
     {
         if (media.FilePath is not { } path)
             throw new NotSupportedException(Messages.OnlyFilesSupported);
@@ -265,9 +322,7 @@ internal sealed class BassDeck : IDeck, IDisposable
         if (decoder == 0)
             throw new BassException(Messages.OpenFailed(Path.GetFileName(path)));
 
-        double duration = Bass.ChannelBytes2Seconds(decoder, Bass.ChannelGetLength(decoder, PositionFlags.Bytes));
         int sourceRate = Bass.ChannelGetInfo(decoder).Frequency;
-
         int tempo = BassFx.TempoCreate(decoder, BassFlags.Decode | BassFlags.FxFreeSource);
         if (tempo == 0)
         {
@@ -275,56 +330,104 @@ internal sealed class BassDeck : IDeck, IDisposable
             Bass.StreamFree(decoder);
             throw new BassException(Messages.TempoFailed, error);
         }
-        return new LoadedStream(tempo, decoder, sourceRate, duration);
+
+        int masterSplit = BassMix.CreateSplitStream(tempo, BassFlags.Decode, null);
+        int cueSplit = masterSplit == 0 ? 0 : BassMix.CreateSplitStream(tempo, BassFlags.Decode | BassFlags.SplitSlave, null);
+        if (masterSplit == 0 || cueSplit == 0)
+        {
+            var error = Bass.LastError;
+            if (masterSplit != 0)
+                Bass.StreamFree(masterSplit);
+            Bass.StreamFree(tempo);
+            throw new BassException(Messages.SplitFailed, error);
+        }
+
+        float cueFrequency = Bass.ChannelGetInfo(cueSplit).Frequency;
+        return new Chain(tempo, decoder, masterSplit, cueSplit, sourceRate, cueFrequency);
+    }
+
+    private void AddToMixersNoLock(bool paused)
+    {
+        var chain = _chain!;
+        var flags = paused ? BassFlags.MixerChanPause : BassFlags.Default;
+        if (_masterMixer != 0 && !BassMix.MixerAddChannel(_masterMixer, chain.MasterSplit, flags))
+            throw new BassException(Messages.MixerAddFailed);
+        if (_cueMixer != 0)
+        {
+            BassMix.SplitStreamReset(chain.CueSplit);
+            if (!BassMix.MixerAddChannel(_cueMixer, chain.CueSplit, flags))
+                throw new BassException(Messages.MixerAddFailed);
+        }
+    }
+
+    private void RemoveFromMixersNoLock()
+    {
+        if (_chain is not { } chain)
+            return;
+        if (_masterMixer != 0)
+            BassMix.MixerRemoveChannel(chain.MasterSplit);
+        if (_cueMixer != 0)
+            BassMix.MixerRemoveChannel(chain.CueSplit);
     }
 
     private void ApplyPitchNoLock()
     {
-        if (_stream == 0)
+        if (_chain is not { } chain)
             return;
-        var settings = PitchMath.ToTempoSettings(_pitch, _keyLock, _sourceRate);
-        Bass.ChannelSetAttribute(_stream, ChannelAttribute.Tempo, settings.TempoPercent);
-        Bass.ChannelSetAttribute(_stream, ChannelAttribute.TempoFrequency, settings.Frequency);
+        var settings = PitchMath.ToTempoSettings(_pitch, _keyLock, chain.SourceRate);
+        Bass.ChannelSetAttribute(chain.Tempo, ChannelAttribute.Tempo, settings.TempoPercent);
+        Bass.ChannelSetAttribute(chain.Tempo, ChannelAttribute.TempoFrequency, settings.Frequency);
     }
 
-    // El mezclador aplica el volumen de cada fuente (con rampa, sin chasquidos).
-    private void ApplyGainNoLock()
+    // Los mezcladores aplican el volumen de cada fuente (con rampa, sin chasquidos).
+    // Auriculares: CUE (independiente de faders) mezclado con lo que suena en el master.
+    private void ApplyGainsNoLock()
     {
-        if (_stream != 0)
-            Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, _gain);
+        if (_chain is not { } chain)
+            return;
+        Bass.ChannelSetAttribute(chain.MasterSplit, ChannelAttribute.Volume, _gain);
+        Bass.ChannelSetAttribute(chain.CueSplit, ChannelAttribute.Volume,
+            HeadphoneMath.CueGain(_cueEnabled, _cueMix, _gain, _phonesVolume));
     }
 
     private bool HasEndedNoLock() =>
-        _stream != 0 && Bass.ChannelIsActive(_stream) == PlaybackState.Stopped;
+        _chain is { } chain && Bass.ChannelIsActive(chain.Tempo) == PlaybackState.Stopped;
 
-    private void SetPausedNoLock(bool paused) =>
-        BassMix.ChannelFlags(_stream, paused ? BassFlags.MixerChanPause : BassFlags.Default, BassFlags.MixerChanPause);
+    private void SetPausedNoLock(bool paused)
+    {
+        var chain = _chain!;
+        var flags = paused ? BassFlags.MixerChanPause : BassFlags.Default;
+        BassMix.ChannelFlags(chain.MasterSplit, flags, BassFlags.MixerChanPause);
+        BassMix.ChannelFlags(chain.CueSplit, flags, BassFlags.MixerChanPause);
+    }
 
     private void ResetTrackNoLock()
     {
-        _stream = 0;
-        _decoder = 0;
-        _sourceRate = 0;
+        _chain = null;
         _track = null;
         _duration = 0;
         _playing = false;
     }
 
-    /// <summary>Saca el stream actual del mezclador y lo devuelve para liberarlo fuera del lock.</summary>
-    private int DetachStreamNoLock()
+    /// <summary>Saca la pista actual de los mezcladores y la devuelve para liberarla fuera del lock.</summary>
+    private Chain? DetachChainNoLock()
     {
-        int old = _stream;
-        if (old != 0 && _mixer != 0)
-            BassMix.MixerRemoveChannel(old);
-        _stream = 0;
-        _decoder = 0;
+        RemoveFromMixersNoLock();
+        var old = _chain;
+        _chain = null;
         return old;
     }
 
-    /// <summary>Liberar un stream puede esperar al hilo de lectura del archivo: no en el hilo de la UI.</summary>
-    private static void FreeInBackground(int stream)
+    /// <summary>Liberar streams puede esperar al hilo de lectura del archivo: no en el hilo de la UI.</summary>
+    private static void FreeInBackground(Chain? chain)
     {
-        if (stream != 0)
-            _ = Task.Run(() => Bass.StreamFree(stream));
+        if (chain is null)
+            return;
+        _ = Task.Run(() =>
+        {
+            Bass.StreamFree(chain.CueSplit);
+            Bass.StreamFree(chain.MasterSplit);
+            Bass.StreamFree(chain.Tempo); // libera también el decodificador (FxFreeSource)
+        });
     }
 }

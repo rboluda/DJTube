@@ -22,6 +22,9 @@ public interface IDeck : IDeckTransport
     /// <summary>Ganancia hacia el master (fader de canal × crossfader). 1 = sin cambio.</summary>
     double MasterGain { get; set; }
 
+    /// <summary>Pre-escucha: el plato suena por los auriculares (independiente de faders y crossfader).</summary>
+    bool CueEnabled { get; set; }
+
     /// <summary>
     /// Prepara la pista en segundo plano y la sustituye por la actual cuando está lista.
     /// El plato queda en pausa al principio. Si se inicia otra carga antes de terminar,

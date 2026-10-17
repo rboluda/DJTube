@@ -35,6 +35,12 @@ public static class Messages
     public static string OnlyFilesSupported => Get(nameof(OnlyFilesSupported));
     public static string LibraryNotFound => Get(nameof(LibraryNotFound));
     public static string DefaultDevice(string name) => Format(nameof(DefaultDevice), name);
+    public static string AsioInitFailed(string name) => Format(nameof(AsioInitFailed), name);
+    public static string AsioChannelsMissing(int first, int second, int outputs) =>
+        Format(nameof(AsioChannelsMissing), first, second, outputs);
+    public static string AsioStartFailed => Get(nameof(AsioStartFailed));
+    public static string AsioChannelFailed(int first, int second) => Format(nameof(AsioChannelFailed), first, second);
+    public static string SplitFailed => Get(nameof(SplitFailed));
 
     private static string Get(string key) => Resources.GetString(key, CultureInfo.CurrentUICulture) ?? key;
 

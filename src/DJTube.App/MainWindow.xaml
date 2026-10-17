@@ -51,31 +51,85 @@
         </Menu>
 
         <DockPanel Margin="16,12,16,16">
-            <!-- Salida de audio -->
+            <!-- Salida de audio y auriculares (pre-escucha) -->
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-                <TextBlock DockPanel.Dock="Left" Text="{loc:Tr Output}" VerticalAlignment="Center" Margin="0,0,10,0"
-                           Foreground="{StaticResource TextDimBrush}" />
-                <ComboBox DockPanel.Dock="Left" Width="280" Focusable="False"
-                          ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Label}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                <TextBlock Text="{Binding OutputStatus}" VerticalAlignment="Center" Margin="12,0,0,0"
-                           TextTrimming="CharacterEllipsis" ToolTip="{Binding Libraries}">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasOutputError}" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                <DockPanel.Resources>
+                    <DataTemplate x:Key="OptionLabel">
+                        <TextBlock Text="{Binding Label}" />
+                    </DataTemplate>
+                    <Style x:Key="BarLabel" TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <Setter Property="Margin" Value="0,0,8,0" />
+                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                    </Style>
+                    <Style x:Key="PhonesIcon" TargetType="TextBlock" BasedOn="{StaticResource BarLabel}">
+                        <Setter Property="Text" Value="&#xE7F6;" />
+                        <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+                        <Setter Property="Margin" Value="18,0,6,0" />
+                    </Style>
+                </DockPanel.Resources>
+
+                <!-- WASAPI: un dispositivo para el master y otro para los auriculares -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal"
+                            Visibility="{Binding IsWasapiMode, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{loc:Tr Output}" Style="{StaticResource BarLabel}" />
+                    <ComboBox Width="250" Focusable="False" ItemTemplate="{StaticResource OptionLabel}"
+                              ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}" />
+                    <TextBlock Style="{StaticResource PhonesIcon}" />
+                    <TextBlock Text="{loc:Tr Headphones}" Style="{StaticResource BarLabel}" />
+                    <ComboBox Width="250" Focusable="False" ItemTemplate="{StaticResource OptionLabel}"
+                              ItemsSource="{Binding CueDevices}" SelectedItem="{Binding SelectedCueDevice}"
+                              ToolTip="{loc:Tr HeadphonesTip}" />
+                </StackPanel>
+
+                <!-- ASIO: una tarjeta multicanal, master y auriculares en pares de canales -->
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal"
+                            Visibility="{Binding IsAsioMode, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{loc:Tr AsioDriver}" Style="{StaticResource BarLabel}" />
+                    <ComboBox Width="220" Focusable="False" ItemTemplate="{StaticResource OptionLabel}"
+                              ItemsSource="{Binding AsioDevices}" SelectedItem="{Binding SelectedAsioDevice}"
+                              ToolTip="{loc:Tr AsioDriverTip}" />
+                    <TextBlock Text="{loc:Tr MasterPair}" Style="{StaticResource BarLabel}" Margin="18,0,8,0" />
+                    <ComboBox Width="120" Focusable="False" ItemTemplate="{StaticResource OptionLabel}"
+                              ItemsSource="{Binding MasterPairs}" SelectedItem="{Binding SelectedMasterPair}" />
+                    <TextBlock Style="{StaticResource PhonesIcon}" />
+                    <TextBlock Text="{loc:Tr Headphones}" Style="{StaticResource BarLabel}" />
+                    <ComboBox Width="130" Focusable="False" ItemTemplate="{StaticResource OptionLabel}"
+                              ItemsSource="{Binding CuePairs}" SelectedItem="{Binding SelectedCuePair}"
+                              ToolTip="{loc:Tr HeadphonesTip}" />
+                </StackPanel>
+
+                <!-- Estado de las dos salidas -->
+                <StackPanel VerticalAlignment="Center" Margin="16,0,0,0">
+                    <TextBlock Text="{Binding OutputStatus}" FontSize="11" TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding Libraries}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasOutputError}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="{Binding CueStatus}" FontSize="11" TextTrimming="CharacterEllipsis">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasCueError}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                    </DataTrigger>
+                                    <Trigger Property="Text" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
             </DockPanel>
 
             <!-- Barra inferior: atajos y estado de yt-dlp -->

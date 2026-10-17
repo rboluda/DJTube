@@ -20,7 +20,26 @@
   <data name="Menu_About" xml:space="preserve"><value>Acerca _de DJTube</value></data>
   <data name="Output" xml:space="preserve"><value>Salida</value></data>
   <data name="OutputStopped" xml:space="preserve"><value>Salida detenida</value></data>
-  <data name="OutputStatus" xml:space="preserve"><value>WASAPI · {0} · {1} Hz · {2} canales · buffer {3:0.0} ms</value></data>
+  <data name="OutputStatus" xml:space="preserve"><value>{0} · {1} · {2} Hz · {3} canales · buffer {4:0.0} ms</value></data>
+  <data name="Headphones" xml:space="preserve"><value>Auriculares</value></data>
+  <data name="NoHeadphones" xml:space="preserve"><value>— Ninguno —</value></data>
+  <data name="HeadphonesTip" xml:space="preserve"><value>Dispositivo para la pre-escucha (CUE)</value></data>
+  <data name="CueStatus" xml:space="preserve"><value>Auriculares: {0} · {1} Hz · buffer {2:0.0} ms</value></data>
+  <data name="CueError" xml:space="preserve"><value>Auriculares: {0}</value></data>
+  <data name="AsioDriver" xml:space="preserve"><value>ASIO</value></data>
+  <data name="AsioDriverTip" xml:space="preserve"><value>Tarjeta ASIO (multicanal)</value></data>
+  <data name="MasterPair" xml:space="preserve"><value>Master</value></data>
+  <data name="ChannelPair" xml:space="preserve"><value>Canales {0}-{1}</value></data>
+  <data name="NoAsioDrivers" xml:space="preserve"><value>No hay controladores ASIO instalados: elige WASAPI en Configuración → Preferencias</value></data>
+  <data name="PflTip" xml:space="preserve"><value>Escuchar el plato {0} por los auriculares (CUE)</value></data>
+  <data name="PhonesMix" xml:space="preserve"><value>MEZCLA AURIC.</value></data>
+  <data name="PhonesMixTip" xml:space="preserve"><value>Auriculares: solo los platos con 🎧 ◄► lo mismo que el master</value></data>
+  <data name="PhonesVolume" xml:space="preserve"><value>VOL. AURIC.</value></data>
+  <data name="PhonesVolumeTip" xml:space="preserve"><value>Volumen de auriculares</value></data>
+  <data name="Pref_OutputMode" xml:space="preserve"><value>Modo de salida</value></data>
+  <data name="Mode_Wasapi" xml:space="preserve"><value>WASAPI — master y auriculares en dispositivos distintos</value></data>
+  <data name="Mode_Asio" xml:space="preserve"><value>ASIO — una tarjeta multicanal (p. ej. 1-2 master, 3-4 auriculares)</value></data>
+  <data name="Pref_OutputModeNote" xml:space="preserve"><value>Los dispositivos o canales se eligen en la barra superior de la ventana.</value></data>
   <data name="OutputError" xml:space="preserve"><value>Error de salida: {0}</value></data>
   <data name="ShortcutsHint" xml:space="preserve"><value>Atajos — A: Espacio = play/pausa, C = cue · B: Intro = play/pausa, M = cue · F1 = todos los atajos · arrastra enlaces o archivos a un plato</value></data>
   <data name="UpdateYtDlp" xml:space="preserve"><value>Actualizar yt-dlp</value></data>

@@ -25,7 +25,7 @@ internal sealed class WasapiOutput : IDisposable
         SampleRate = info.Frequency;
         Channels = info.Channels;
         double latencyMs = info.BufferLength * 1000.0 / (info.Frequency * (double)_bytesPerDeviceFrame);
-        Status = new AudioOutputStatus(deviceName, info.Frequency, info.Channels, latencyMs);
+        Status = new AudioOutputStatus("WASAPI", deviceName, info.Frequency, info.Channels, latencyMs);
     }
 
     public int SampleRate { get; }
