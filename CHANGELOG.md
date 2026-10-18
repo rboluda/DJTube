@@ -4,7 +4,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [versionado semántico](https://semver.org/lang/es/). La versión se define en
 `Directory.Build.props`.
 
-## [Sin publicar]
+## [0.11.0] - 2026-10-18
 
 ### Añadido
 - Manual de usuario en PDF con capturas (`docs/DJTube-Manual.pdf`), enlazado desde el README.
