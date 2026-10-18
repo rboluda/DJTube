@@ -45,6 +45,9 @@ public sealed class AppSettings
     /// <summary>Tamaño de letra de la biblioteca (más pequeño = más canciones a la vista).</summary>
     public double LibraryFontSize { get; set; } = 13;
 
+    /// <summary>Tema de colores: Violet, Light, Win98 o Blue.</summary>
+    public string Theme { get; set; } = "Violet";
+
     /// <summary>Igualar la sonoridad de las canciones (ganancia automática).</summary>
     public bool AutoGain { get; set; } = true;
 
@@ -65,6 +68,21 @@ public sealed class AppSettings
 
     /// <summary>Hot cues y loops caen en el golpe más cercano.</summary>
     public bool Quantize { get; set; } = true;
+
+    /// <summary>No dejar cargar otra canción en un plato que está sonando.</summary>
+    public bool LockPlayingDeck { get; set; } = true;
+
+    /// <summary>Rango de pitch al arrancar (8 o 16 %).</summary>
+    public double DefaultPitchRange { get; set; } = 8;
+
+    /// <summary>Búfer de la salida WASAPI en ms (0 = el del dispositivo).</summary>
+    public double BufferMs { get; set; }
+
+    /// <summary>Límite de la caché de YouTube en GB (0 = sin límite).</summary>
+    public double CacheLimitGb { get; set; }
+
+    /// <summary>Atajos de teclado personalizados (tecla → acción); null = los de serie.</summary>
+    public Dictionary<string, string>? KeyBindings { get; set; }
 
     /// <summary>Formato de la grabación además del WAV: Wav (solo WAV), Mp3 o M4a.</summary>
     public string RecordingFormat { get; set; } = "Mp3";

@@ -41,6 +41,7 @@ public partial class App : Application
         var settingsService = new SettingsService();
         var settings = settingsService.Load();
         Loc.Instance.SetLanguage(settings.Language ?? Loc.DefaultLanguage);
+        ThemeManager.Apply(settings.Theme);
 
         try
         {

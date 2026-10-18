@@ -1,4 +1,4 @@
-using DJTube.Core.Localization;
+﻿using DJTube.Core.Localization;
 
 namespace DJTube.Core.Models;
 
@@ -18,7 +18,14 @@ public abstract record OutputConfig;
 /// <param name="CueDeviceId">Dispositivo de auriculares; null = sin pre-escucha.</param>
 /// <param name="BufferMilliseconds">Tamaño de buffer pedido; 0 = el mínimo que admita el dispositivo.</param>
 public sealed record WasapiOutputConfig(int? MasterDeviceId = null, int? CueDeviceId = null, double BufferMilliseconds = 0)
-    : OutputConfig;
+    : OutputConfig
+{
+    /// <summary>
+    /// <see cref="CueDeviceId"/> especial: auriculares en la misma salida que el master, en modo "split"
+    /// (izquierda = master en mono, derecha = pre-escucha en mono). Para quien solo tiene una salida.
+    /// </summary>
+    public const int SplitCue = -2;
+}
 
 /// <summary>
 /// ASIO: una tarjeta multicanal; master y auriculares en pares de canales (0 = canales 1-2, 2 = canales 3-4…).

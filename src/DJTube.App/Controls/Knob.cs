@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -35,6 +35,11 @@ public sealed class Knob : RangeBase
     public static readonly DependencyProperty IsBipolarProperty = DependencyProperty.Register(
         nameof(IsBipolar), typeof(bool), typeof(Knob),
         new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender));
+
+    public Knob()
+    {
+        Services.ThemeManager.Changed += (_, _) => InvalidateVisual();
+    }
 
     private Point _dragStart;
     private double _valueAtDragStart;

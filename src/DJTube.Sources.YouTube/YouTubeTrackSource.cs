@@ -113,6 +113,55 @@ public sealed class YouTubeTrackSource : ITrackSource
             DeletePartialFiles(videoId);
     }
 
+    /// <summary>Tamaño de la caché (audio, datos y miniaturas) en bytes.</summary>
+    public long CacheSizeBytes()
+    {
+        if (!Directory.Exists(CacheFolder))
+            return 0;
+        return new DirectoryInfo(CacheFolder).EnumerateFiles().Sum(f => f.Length);
+    }
+
+    /// <summary>
+    /// Libera espacio hasta quedar por debajo de <paramref name="maxBytes"/>: borra primero las canciones que
+    /// hace más tiempo que no se cargan, sin tocar las de <paramref name="keep"/> (en listas, en un plato).
+    /// Devuelve los IDs borrados.
+    /// </summary>
+    public IReadOnlyList<string> FreeSpace(long maxBytes, IReadOnlySet<string> keep)
+    {
+        var deleted = new List<string>();
+        long size = CacheSizeBytes();
+        if (size <= maxBytes || !Directory.Exists(CacheFolder))
+            return deleted;
+
+        var candidates = Directory.EnumerateFiles(CacheFolder, "*.json")
+            .Select(path => (Id: Path.GetFileNameWithoutExtension(path), Used: File.GetLastAccessTimeUtc(path)))
+            .Where(c => YouTubeUrl.IsValidVideoId(c.Id) && !keep.Contains(c.Id))
+            .OrderBy(c => c.Used)
+            .ToList();
+        foreach (var (id, _) in candidates)
+        {
+            if (size <= maxBytes)
+                break;
+            long freed = Directory.EnumerateFiles(CacheFolder, id + ".*").Sum(f => new FileInfo(f).Length);
+            DeletePartialFiles(id);
+            size -= freed;
+            deleted.Add(id);
+        }
+        return deleted;
+    }
+
+    /// <summary>Marca la canción como usada ahora (para el límite de caché).</summary>
+    private void Touch(string id)
+    {
+        try
+        {
+            File.SetLastAccessTimeUtc(MetaPath(id), DateTime.UtcNow);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
+
     /// <summary>Pistas ya descargadas.</summary>
     public async IAsyncEnumerable<TrackInfo> BrowseAsync(
         string? location, [EnumeratorCancellation] CancellationToken ct = default)
@@ -141,6 +190,7 @@ public sealed class YouTubeTrackSource : ITrackSource
             throw new ArgumentException(Messages.InvalidVideoId(track.Id), nameof(track));
 
         var downloaded = await EnsureDownloadedAsync(track.Id, progress, ct).ConfigureAwait(false);
+        Touch(track.Id);
         return TrackMedia.FromFile(downloaded, AudioPath(track.Id));
     }
 

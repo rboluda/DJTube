@@ -27,7 +27,7 @@
 
         <Style x:Key="KnobLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="9" />
-            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDimBrush}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="Margin" Value="0,0,0,1" />
         </Style>
@@ -61,7 +61,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+    <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelRadius}" Padding="12,10">
         <DockPanel>
             <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Mixer}" Style="{StaticResource CaptionText}"
                        HorizontalAlignment="Center" Margin="0,0,0,6" />
@@ -78,7 +78,7 @@
                     <StackPanel Grid.Column="0" Margin="0,0,6,0">
                         <TextBlock Text="{loc:Tr Mix_Short}" Style="{StaticResource KnobLabel}" />
                         <controls:Knob Minimum="0" Maximum="1" DefaultValue="0.5" Value="{Binding CueMix}"
-                                       Accent="{StaticResource CueBrush}">
+                                       Accent="{DynamicResource CueBrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr PhonesMixTip}" />
@@ -90,7 +90,7 @@
                     <StackPanel Grid.Column="1" Margin="0,0,6,0">
                         <TextBlock Text="{loc:Tr Vol_Short}" Style="{StaticResource KnobLabel}" />
                         <controls:Knob Minimum="0" Maximum="1" DefaultValue="0.8" IsBipolar="False"
-                                       Value="{Binding HeadphoneVolume}" Accent="{StaticResource CueBrush}">
+                                       Value="{Binding HeadphoneVolume}" Accent="{DynamicResource CueBrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr PhonesVolumeTip}" />
@@ -103,7 +103,7 @@
                         <TextBlock Text="MASTER" Style="{StaticResource KnobLabel}" />
                         <StackPanel Orientation="Horizontal">
                             <controls:Knob Minimum="0" Maximum="1" DefaultValue="1" IsBipolar="False"
-                                           Value="{Binding MasterVolume}" Accent="{StaticResource TextBrush}">
+                                           Value="{Binding MasterVolume}" Accent="{DynamicResource TextBrush}">
                                 <controls:Knob.ToolTip>
                                     <StackPanel>
                                         <TextBlock Text="{loc:Tr MasterTip}" />
@@ -129,9 +129,9 @@
                 </Grid>
 
                 <Grid Margin="0,6,0,0">
-                    <TextBlock Text="A" Foreground="{StaticResource DeckABrush}" FontWeight="Bold"
+                    <TextBlock Text="A" Foreground="{DynamicResource DeckABrush}" FontWeight="Bold"
                                HorizontalAlignment="Left" VerticalAlignment="Center" />
-                    <TextBlock Text="B" Foreground="{StaticResource DeckBBrush}" FontWeight="Bold"
+                    <TextBlock Text="B" Foreground="{DynamicResource DeckBBrush}" FontWeight="Bold"
                                HorizontalAlignment="Right" VerticalAlignment="Center" />
                     <Slider Style="{StaticResource FaderSlider}" Margin="14,0" Height="36"
                             Minimum="-1" Maximum="1" TickPlacement="Both"
@@ -158,7 +158,7 @@
                 <StackPanel Grid.Column="0" DataContext="{Binding EqA}" VerticalAlignment="Top">
                     <StackPanel Style="{StaticResource KnobCellA}">
                         <TextBlock Text="GAIN" Style="{StaticResource KnobLabelA}" />
-                        <controls:Knob Value="{Binding Gain}" Accent="{StaticResource TextBrush}">
+                        <controls:Knob Value="{Binding Gain}" Accent="{DynamicResource TextBrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr Eq_GainTip}" />
@@ -170,7 +170,7 @@
                     </StackPanel>
                     <StackPanel Style="{StaticResource KnobCellA}">
                         <TextBlock Text="HIGH" Style="{StaticResource KnobLabelA}" />
-                        <controls:Knob Value="{Binding High}" ShowKill="True" Accent="{StaticResource DeckABrush}">
+                        <controls:Knob Value="{Binding High}" ShowKill="True" Accent="{DynamicResource DeckABrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr Eq_HighTip}" />
@@ -182,7 +182,7 @@
                     </StackPanel>
                     <StackPanel Style="{StaticResource KnobCellA}">
                         <TextBlock Text="MID" Style="{StaticResource KnobLabelA}" />
-                        <controls:Knob Value="{Binding Mid}" ShowKill="True" Accent="{StaticResource DeckABrush}">
+                        <controls:Knob Value="{Binding Mid}" ShowKill="True" Accent="{DynamicResource DeckABrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr Eq_MidTip}" />
@@ -194,7 +194,7 @@
                     </StackPanel>
                     <StackPanel Style="{StaticResource KnobCellA}">
                         <TextBlock Text="LOW" Style="{StaticResource KnobLabelA}" />
-                        <controls:Knob Value="{Binding Low}" ShowKill="True" Accent="{StaticResource DeckABrush}">
+                        <controls:Knob Value="{Binding Low}" ShowKill="True" Accent="{DynamicResource DeckABrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr Eq_LowTip}" />
@@ -206,7 +206,7 @@
                     </StackPanel>
                     <StackPanel Style="{StaticResource KnobCellA}">
                         <TextBlock Text="FILTER" Style="{StaticResource KnobLabelA}" />
-                        <controls:Knob Value="{Binding Filter}" Accent="{StaticResource CueBrush}">
+                        <controls:Knob Value="{Binding Filter}" Accent="{DynamicResource CueBrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr Eq_FilterTip}" />
@@ -229,11 +229,11 @@
                     <DockPanel Grid.Column="1">
                         <Button DockPanel.Dock="Top" Content="⟲" FontSize="10" Padding="4,0" HorizontalAlignment="Center"
                                 Command="{Binding EqA.ResetCommand}" ToolTip="{Binding EqResetATip}" Focusable="False" />
-                        <TextBlock DockPanel.Dock="Bottom" Text="A" Foreground="{StaticResource DeckABrush}"
+                        <TextBlock DockPanel.Dock="Bottom" Text="A" Foreground="{DynamicResource DeckABrush}"
                                    FontWeight="Bold" HorizontalAlignment="Center" Margin="0,2,0,0" />
                         <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="80"
                                 Minimum="0" Maximum="1" Value="{Binding VolumeA}"
-                                Tag="{StaticResource DeckABrush}" HorizontalAlignment="Center"
+                                Tag="{DynamicResource DeckABrush}" HorizontalAlignment="Center"
                                 ToolTip="{loc:Tr VolumeATip}" />
                     </DockPanel>
                 </Grid>
@@ -247,11 +247,11 @@
                     <DockPanel>
                         <Button DockPanel.Dock="Top" Content="⟲" FontSize="10" Padding="4,0" HorizontalAlignment="Center"
                                 Command="{Binding EqB.ResetCommand}" ToolTip="{Binding EqResetBTip}" Focusable="False" />
-                        <TextBlock DockPanel.Dock="Bottom" Text="B" Foreground="{StaticResource DeckBBrush}"
+                        <TextBlock DockPanel.Dock="Bottom" Text="B" Foreground="{DynamicResource DeckBBrush}"
                                    FontWeight="Bold" HorizontalAlignment="Center" Margin="0,2,0,0" />
                         <Slider Orientation="Vertical" Style="{StaticResource FaderSlider}" MinHeight="80"
                                 Minimum="0" Maximum="1" Value="{Binding VolumeB}"
-                                Tag="{StaticResource DeckBBrush}" HorizontalAlignment="Center"
+                                Tag="{DynamicResource DeckBBrush}" HorizontalAlignment="Center"
                                 ToolTip="{loc:Tr VolumeBTip}" />
                     </DockPanel>
                     <controls:LevelMeter Grid.Column="1" Width="8" Margin="0,14,0,10" Left="{Binding EqB.LevelLeft}"
@@ -261,7 +261,7 @@
                 <!-- Canal B: mandos -->
                 <StackPanel Grid.Column="3" DataContext="{Binding EqB}" VerticalAlignment="Top">
                     <StackPanel Style="{StaticResource KnobCellB}">
-                        <controls:Knob Value="{Binding Gain}" Accent="{StaticResource TextBrush}">
+                        <controls:Knob Value="{Binding Gain}" Accent="{DynamicResource TextBrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr Eq_GainTip}" />
@@ -273,7 +273,7 @@
                         <TextBlock Text="GAIN" Style="{StaticResource KnobLabelB}" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource KnobCellB}">
-                        <controls:Knob Value="{Binding High}" ShowKill="True" Accent="{StaticResource DeckBBrush}">
+                        <controls:Knob Value="{Binding High}" ShowKill="True" Accent="{DynamicResource DeckBBrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr Eq_HighTip}" />
@@ -285,7 +285,7 @@
                         <TextBlock Text="HIGH" Style="{StaticResource KnobLabelB}" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource KnobCellB}">
-                        <controls:Knob Value="{Binding Mid}" ShowKill="True" Accent="{StaticResource DeckBBrush}">
+                        <controls:Knob Value="{Binding Mid}" ShowKill="True" Accent="{DynamicResource DeckBBrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr Eq_MidTip}" />
@@ -297,7 +297,7 @@
                         <TextBlock Text="MID" Style="{StaticResource KnobLabelB}" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource KnobCellB}">
-                        <controls:Knob Value="{Binding Low}" ShowKill="True" Accent="{StaticResource DeckBBrush}">
+                        <controls:Knob Value="{Binding Low}" ShowKill="True" Accent="{DynamicResource DeckBBrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr Eq_LowTip}" />
@@ -309,7 +309,7 @@
                         <TextBlock Text="LOW" Style="{StaticResource KnobLabelB}" />
                     </StackPanel>
                     <StackPanel Style="{StaticResource KnobCellB}">
-                        <controls:Knob Value="{Binding Filter}" Accent="{StaticResource CueBrush}">
+                        <controls:Knob Value="{Binding Filter}" Accent="{DynamicResource CueBrush}">
                             <controls:Knob.ToolTip>
                                 <StackPanel>
                                     <TextBlock Text="{loc:Tr Eq_FilterTip}" />
@@ -325,11 +325,11 @@
                 <!-- Pre-escucha por plato -->
                 <ToggleButton Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,6,4,0" Content="A"
                               ContentTemplate="{StaticResource PflContent}"
-                              IsChecked="{Binding CueA}" Tag="{StaticResource CueBrush}" ToolTip="{Binding CueATip}"
+                              IsChecked="{Binding CueA}" Tag="{DynamicResource CueBrush}" ToolTip="{Binding CueATip}"
                               Padding="6,4" FontSize="12" />
                 <ToggleButton Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="4,6,0,0" Content="B"
                               ContentTemplate="{StaticResource PflContent}"
-                              IsChecked="{Binding CueB}" Tag="{StaticResource CueBrush}" ToolTip="{Binding CueBTip}"
+                              IsChecked="{Binding CueB}" Tag="{DynamicResource CueBrush}" ToolTip="{Binding CueBTip}"
                               Padding="6,4" FontSize="12" />
             </Grid>
         </DockPanel>

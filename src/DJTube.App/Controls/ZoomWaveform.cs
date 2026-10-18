@@ -46,6 +46,7 @@ public sealed class ZoomWaveform : SKElement
     public ZoomWaveform()
     {
         Cursor = Cursors.SizeWE;
+        Services.ThemeManager.Changed += (_, _) => InvalidateVisual();
     }
 
     public WaveformData? Waveform { get => (WaveformData?)GetValue(WaveformProperty); set => SetValue(WaveformProperty, value); }

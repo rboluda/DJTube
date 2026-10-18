@@ -327,4 +327,54 @@ No: add only this song</value></data>
   <data name="MidiAct_Library_Browse" xml:space="preserve"><value>Library: browse</value></data>
   <data name="MidiAct_App_Record" xml:space="preserve"><value>Record / stop</value></data>
   <data name="MidiAct_App_Automix" xml:space="preserve"><value>Automix on/off</value></data>
+  <data name="Theme_Violet" xml:space="preserve"><value>Violet (default)</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>White</value></data>
+  <data name="Theme_Win98" xml:space="preserve"><value>Grey (Windows 98)</value></data>
+  <data name="Theme_Blue" xml:space="preserve"><value>Blue</value></data>
+  <data name="PrefTab_General" xml:space="preserve"><value>General</value></data>
+  <data name="PrefTab_Audio" xml:space="preserve"><value>Audio</value></data>
+  <data name="PrefTab_Mixing" xml:space="preserve"><value>Mixing</value></data>
+  <data name="PrefTab_Recording" xml:space="preserve"><value>Recording</value></data>
+  <data name="PrefTab_Library" xml:space="preserve"><value>Library</value></data>
+  <data name="PrefTab_Keyboard" xml:space="preserve"><value>Keyboard</value></data>
+  <data name="Pref_Theme" xml:space="preserve"><value>Colour theme</value></data>
+  <data name="Pref_ThemeNote" xml:space="preserve"><value>You see it straight away; Cancel goes back to the previous one.</value></data>
+  <data name="Pref_Buffer" xml:space="preserve"><value>Audio buffer (WASAPI)</value></data>
+  <data name="Pref_BufferAuto" xml:space="preserve"><value>Automatic (device)</value></data>
+  <data name="Pref_BufferNote" xml:space="preserve"><value>Smaller = less delay between pressing a button and hearing it. If the sound crackles, make it bigger.</value></data>
+  <data name="Pref_Limiter" xml:space="preserve"><value>Limiter on the master</value></data>
+  <data name="Pref_LimiterNote" xml:space="preserve"><value>Stops the output and the recording from distorting when you push the volume.</value></data>
+  <data name="Pref_AutoGain" xml:space="preserve"><value>Same loudness for every song (automatic gain)</value></data>
+  <data name="Pref_TargetDefault" xml:space="preserve"><value>{0:0} LUFS (recommended)</value></data>
+  <data name="Pref_AutoGainNote" xml:space="preserve"><value>Target loudness: louder targets lift quiet songs more.</value></data>
+  <data name="Pref_PitchRange" xml:space="preserve"><value>Pitch range when starting</value></data>
+  <data name="Pref_Quantize" xml:space="preserve"><value>Quantize hot cues and loops to the beat</value></data>
+  <data name="Pref_QuantizeNote" xml:space="preserve"><value>Hot cues and loops fall on the nearest beat, even if you press a little early or late.</value></data>
+  <data name="Pref_LockDeck" xml:space="preserve"><value>Lock the deck that is playing</value></data>
+  <data name="Pref_LockDeckNote" xml:space="preserve"><value>You cannot load another song by mistake onto a deck that is on air.</value></data>
+  <data name="Pref_AutomixFade" xml:space="preserve"><value>Automix crossfade length</value></data>
+  <data name="Pref_AutomixTempo" xml:space="preserve"><value>Automix matches tempo and phase</value></data>
+  <data name="Pref_RecordingFormat" xml:space="preserve"><value>Recording format</value></data>
+  <data name="Pref_RecordingFormatNote" xml:space="preserve"><value>The WAV (CD quality) is always kept; the MP3 or M4A is created when you stop recording.</value></data>
+  <data name="Fmt_Wav" xml:space="preserve"><value>WAV only</value></data>
+  <data name="Fmt_Mp3" xml:space="preserve"><value>WAV + MP3 (320 kbps)</value></data>
+  <data name="Fmt_M4a" xml:space="preserve"><value>WAV + M4A (AAC 256 kbps)</value></data>
+  <data name="Pref_CacheLimit" xml:space="preserve"><value>Cache size limit</value></data>
+  <data name="Pref_NoLimit" xml:space="preserve"><value>No limit</value></data>
+  <data name="Pref_CacheSize" xml:space="preserve"><value>It now takes {0:0.00} GB.</value></data>
+  <data name="Pref_CacheLimitNote" xml:space="preserve"><value>When it is exceeded, the songs not loaded for the longest time are deleted (never those in playlists or on a deck).</value></data>
+  <data name="Pref_KeysNote" xml:space="preserve"><value>Choose «Change» and press the key (with Shift if you want). Esc cancels. Ctrl shortcuts are fixed.</value></data>
+  <data name="Pref_KeysReset" xml:space="preserve"><value>Restore defaults</value></data>
+  <data name="Pref_Key" xml:space="preserve"><value>Key</value></data>
+  <data name="Pref_KeyChange" xml:space="preserve"><value>Change</value></data>
+  <data name="Pref_PressKey" xml:space="preserve"><value>Press a key…</value></data>
+  <data name="Key_Shift" xml:space="preserve"><value>Shift</value></data>
+  <data name="Err_DeckPlaying" xml:space="preserve"><value>Deck {0} is playing: stop it before loading another song (or turn off the lock in Preferences).</value></data>
+  <data name="Library_CacheFreed" xml:space="preserve"><value>Cache limit: {0} songs that were not used for a long time were removed.</value></data>
+  <data name="Headphones_Split" xml:space="preserve"><value>Split on this output (L master / R headphones)</value></data>
+  <data name="Key_HotCues" xml:space="preserve"><value>1–8 / Shift+1–8</value></data>
+  <data name="Sc_HotCues" xml:space="preserve"><value>Hot cues of deck A / deck B</value></data>
+  <data name="Sc_LoopSync" xml:space="preserve"><value>Loop · reloop · SYNC of deck A / deck B</value></data>
+  <data name="Sc_History" xml:space="preserve"><value>Session history</value></data>
+  <data name="Sc_Custom" xml:space="preserve"><value>The deck keys can be changed in Preferences → Keyboard (the ones above are the defaults).</value></data>
 </root>

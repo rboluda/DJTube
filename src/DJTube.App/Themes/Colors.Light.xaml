@@ -1,0 +1,57 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+    <!-- Blanco: fondos claros y paneles blancos; las ondas se quedan sobre fondo oscuro para que se lean los colores. -->
+    <sys:Boolean x:Key="ThemeIsDark">False</sys:Boolean>
+
+    <Color x:Key="BackgroundColor">#FFE9EBF1</Color>
+    <Color x:Key="PanelColor">#FFFFFFFF</Color>
+    <Color x:Key="PanelBorderColor">#FFD3D7E1</Color>
+    <Color x:Key="ControlColor">#FFF0F2F7</Color>
+    <Color x:Key="ControlEdgeColor">#FFC4C9D6</Color>
+    <Color x:Key="ControlHoverColor">#FFE1E5EE</Color>
+    <Color x:Key="TextColor">#FF1B1E28</Color>
+    <Color x:Key="TextDimColor">#FF5C6375</Color>
+    <Color x:Key="DeckAColor">#FFE8700A</Color>
+    <Color x:Key="DeckBColor">#FF7C4DDB</Color>
+    <Color x:Key="CueColor">#FFC79A00</Color>
+    <Color x:Key="PlayColor">#FF1E9E5A</Color>
+    <Color x:Key="ErrorColor">#FFD93636</Color>
+    <Color x:Key="FaderCapColor">#FF3A3F4E</Color>
+    <Color x:Key="BrandRedColor">#FFE84500</Color>
+    <Color x:Key="OnAccentColor">#FFFFFFFF</Color>
+    <Color x:Key="HoverOverlayColor">#14000000</Color>
+    <Color x:Key="AltRowColor">#08000000</Color>
+    <Color x:Key="RowHoverColor">#12000000</Color>
+    <Color x:Key="MeterOffColor">#22000000</Color>
+    <Color x:Key="WaveformBackgroundColor">#FF1E2130</Color>
+    <Color x:Key="WaveformGridColor">#FF343A52</Color>
+
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+    <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}" />
+    <SolidColorBrush x:Key="PanelBorderBrush" Color="{StaticResource PanelBorderColor}" />
+    <SolidColorBrush x:Key="ControlBrush" Color="{StaticResource ControlColor}" />
+    <SolidColorBrush x:Key="ControlEdgeBrush" Color="{StaticResource ControlEdgeColor}" />
+    <SolidColorBrush x:Key="ControlHoverBrush" Color="{StaticResource ControlHoverColor}" />
+    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}" />
+    <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}" />
+    <SolidColorBrush x:Key="DeckABrush" Color="{StaticResource DeckAColor}" />
+    <SolidColorBrush x:Key="DeckBBrush" Color="{StaticResource DeckBColor}" />
+    <SolidColorBrush x:Key="CueBrush" Color="{StaticResource CueColor}" />
+    <SolidColorBrush x:Key="PlayBrush" Color="{StaticResource PlayColor}" />
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
+    <SolidColorBrush x:Key="FaderCapBrush" Color="{StaticResource FaderCapColor}" />
+    <SolidColorBrush x:Key="BrandRedBrush" Color="{StaticResource BrandRedColor}" />
+    <SolidColorBrush x:Key="OnAccentBrush" Color="{StaticResource OnAccentColor}" />
+    <SolidColorBrush x:Key="HoverOverlayBrush" Color="{StaticResource HoverOverlayColor}" />
+    <SolidColorBrush x:Key="AltRowBrush" Color="{StaticResource AltRowColor}" />
+    <SolidColorBrush x:Key="RowHoverBrush" Color="{StaticResource RowHoverColor}" />
+    <SolidColorBrush x:Key="MeterOffBrush" Color="{StaticResource MeterOffColor}" />
+    <SolidColorBrush x:Key="WaveformBackgroundBrush" Color="{StaticResource WaveformBackgroundColor}" />
+    <SolidColorBrush x:Key="WaveformGridBrush" Color="{StaticResource WaveformGridColor}" />
+
+    <!-- Forma: redondeo de paneles y controles, y fuente -->
+    <CornerRadius x:Key="PanelRadius">8</CornerRadius>
+    <CornerRadius x:Key="ControlRadius">6</CornerRadius>
+    <FontFamily x:Key="UiFont">Segoe UI</FontFamily>
+</ResourceDictionary>

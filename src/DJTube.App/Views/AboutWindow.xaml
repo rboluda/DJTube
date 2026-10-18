@@ -1,4 +1,4 @@
-<Window x:Class="DJTube.App.Views.AboutWindow"
+﻿<Window x:Class="DJTube.App.Views.AboutWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -14,11 +14,11 @@
             <Image Source="{StaticResource LogoLarge}" Width="72" Height="72" Margin="0,0,14,0"
                    RenderOptions.BitmapScalingMode="HighQuality" />
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="DJ" FontSize="34" FontWeight="Bold" Foreground="{StaticResource DeckABrush}" />
-                <TextBlock Text="Tube" FontSize="34" FontWeight="Bold" Foreground="{StaticResource DeckBBrush}" />
+                <TextBlock Text="DJ" FontSize="34" FontWeight="Bold" Foreground="{DynamicResource DeckABrush}" />
+                <TextBlock Text="Tube" FontSize="34" FontWeight="Bold" Foreground="{DynamicResource DeckBBrush}" />
             </StackPanel>
         </StackPanel>
-        <TextBlock Text="{loc:Tr About_Tagline}" Foreground="{StaticResource TextDimBrush}" Margin="0,2,0,0" />
+        <TextBlock Text="{loc:Tr About_Tagline}" Foreground="{DynamicResource TextDimBrush}" Margin="0,2,0,0" />
         <TextBlock Text="{loc:Tr About_Author}" FontWeight="SemiBold" Margin="0,6,0,14" />
 
         <TextBlock Text="{Binding VersionText}" FontSize="15" FontWeight="SemiBold" />
@@ -31,7 +31,7 @@
 
         <TextBlock Text="{loc:Tr About_Audio}" TextWrapping="Wrap" Margin="0,14,0,0" />
         <TextBlock Text="{loc:Tr About_YouTube}" TextWrapping="Wrap" Margin="0,8,0,0"
-                   Foreground="{StaticResource TextDimBrush}" />
+                   Foreground="{DynamicResource TextDimBrush}" />
 
         <DockPanel Margin="0,20,0,0">
             <Button DockPanel.Dock="Right" Content="{loc:Tr Close}" IsCancel="True" IsDefault="True" MinWidth="96" />

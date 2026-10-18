@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 
 namespace DJTube.App.Controls;
@@ -19,7 +19,17 @@ public sealed class LevelMeter : FrameworkElement
         nameof(Right), typeof(double), typeof(LevelMeter),
         new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsRender));
 
-    private static readonly Brush Off = Frozen(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF));
+    public LevelMeter()
+    {
+        Services.ThemeManager.Changed += (_, _) => InvalidateVisual();
+    }
+
+    /// <summary>Segmento apagado: del tema (claro sobre fondos oscuros, oscuro sobre claros).</summary>
+    private static Brush Off => TryFindResourceStatic("MeterOffBrush") ?? FallbackOff;
+
+    private static readonly Brush FallbackOff = Frozen(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF));
+
+    private static Brush? TryFindResourceStatic(string key) => System.Windows.Application.Current?.TryFindResource(key) as Brush;
     private static readonly Brush Green = Frozen(Color.FromRgb(0x3D, 0xDC, 0x84));
     private static readonly Brush Yellow = Frozen(Color.FromRgb(0xFD, 0xCD, 0x21));
     private static readonly Brush Red = Frozen(Color.FromRgb(0xFF, 0x5C, 0x5C));

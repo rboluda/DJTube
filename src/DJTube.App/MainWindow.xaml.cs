@@ -92,14 +92,15 @@ public partial class MainWindow : Window
 
     private void OnRendering(object? sender, EventArgs e) => ViewModel?.Refresh();
 
-    private (DeckViewModel Deck, bool IsCue)? MapDeckKey(Key key) => ViewModel is not { } vm ? null : key switch
+    /// <summary>Acción de la tecla según los atajos (personalizables en Preferencias → Teclado).</summary>
+    private string? ActionFor(KeyEventArgs e)
     {
-        Key.Space => (vm.DeckA, false),
-        Key.C => (vm.DeckA, true),
-        Key.Enter => (vm.DeckB, false),
-        Key.M => (vm.DeckB, true),
-        _ => null,
-    };
+        if (ViewModel is not { } vm)
+            return null;
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        return KeyboardShortcuts.Gesture(key, Keyboard.Modifiers) is { } gesture
+            && vm.KeyBindings.TryGetValue(gesture, out var action) ? action : null;
+    }
 
     private static bool IsTyping => Keyboard.FocusedElement is TextBox;
 
@@ -123,24 +124,20 @@ public partial class MainWindow : Window
         }
 
         // Mientras se escribe un enlace, las teclas son para el campo de texto.
-        if (IsTyping || Keyboard.Modifiers != ModifierKeys.None || MapDeckKey(e.Key) is not var (deck, isCue))
+        if (IsTyping || ActionFor(e) is not { } action)
             return;
 
         e.Handled = true;
-        if (e.IsRepeat)
-            return;
-
-        if (isCue)
-            deck.CueDownCommand.Execute(null);
-        else
-            deck.PlayPauseCommand.Execute(null);
+        if (!e.IsRepeat)
+            vm.Midi.Trigger(action, press: true);
     }
 
     private void OnPreviewKeyUp(object sender, KeyEventArgs e)
     {
-        if (!IsTyping && MapDeckKey(e.Key) is (var deck, true))
+        // Soltar importa en CUE y en el loop roll (mientras se mantiene).
+        if (!IsTyping && ViewModel is { } vm && ActionFor(e) is { } action)
         {
-            deck.CueUpCommand.Execute(null);
+            vm.Midi.Trigger(action, press: false);
             e.Handled = true;
         }
     }

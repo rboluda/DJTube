@@ -43,10 +43,12 @@ public sealed class WaveformOverview : SKElement
     private SKBitmap? _cache;
     private WaveformData? _cacheData;
     private Color _cacheAccent;
+    private int _cacheTheme;
 
     public WaveformOverview()
     {
         Cursor = Cursors.Hand;
+        Services.ThemeManager.Changed += (_, _) => InvalidateVisual();
     }
 
     public WaveformData? Waveform
@@ -127,13 +129,14 @@ public sealed class WaveformOverview : SKElement
     private SKBitmap GetCache(WaveformData waveform, int w, int h)
     {
         if (_cache is not null && _cache.Width == w && _cache.Height == h && ReferenceEquals(_cacheData, waveform)
-            && _cacheAccent == Accent)
+            && _cacheAccent == Accent && _cacheTheme == Services.ThemeManager.Version)
             return _cache;
 
         _cache?.Dispose();
         _cache = new SKBitmap(w, h);
         _cacheData = waveform;
         _cacheAccent = Accent;
+        _cacheTheme = Services.ThemeManager.Version;
 
         using var canvas = new SKCanvas(_cache);
         canvas.Clear(WaveformPaint.Background);
@@ -174,10 +177,10 @@ public sealed class WaveformOverview : SKElement
 /// <summary>Colores y primitivas de dibujo compartidas por las vistas de onda.</summary>
 internal static class WaveformPaint
 {
-    // Paleta de marca (ver Themes/Dark.xaml).
-    public static readonly SKColor Background = new(0x16, 0x0D, 0x27);
-    public static readonly SKColor Grid = new(0x2B, 0x1D, 0x4A);
-    public static readonly SKColor Cue = new(0xFD, 0xCD, 0x21);
+    // Colores del tema activo (Themes/Colors.*.xaml).
+    public static SKColor Background => ToSk(Services.ThemeManager.GetColor("WaveformBackgroundColor", Color.FromRgb(0x16, 0x0D, 0x27)));
+    public static SKColor Grid => ToSk(Services.ThemeManager.GetColor("WaveformGridColor", Color.FromRgb(0x2B, 0x1D, 0x4A)));
+    public static SKColor Cue => ToSk(Services.ThemeManager.GetColor("CueColor", Color.FromRgb(0xFD, 0xCD, 0x21)));
 
     public static SKColor ToSk(Color c) => new(c.R, c.G, c.B, c.A);
 

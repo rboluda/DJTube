@@ -779,8 +779,16 @@ public partial class DeckViewModel : ObservableObject
     [RelayCommand]
     private void CancelLoad() => _loadCts?.Cancel();
 
+    /// <summary>No cargar otra canción mientras este plato suena (Preferencias).</summary>
+    public bool LockWhilePlaying { get; set; }
+
     public async Task LoadTrackAsync(ITrackSource source, TrackInfo track)
     {
+        if (LockWhilePlaying && _deck.IsPlaying)
+        {
+            Error = Loc.F("Err_DeckPlaying", Name);
+            return;
+        }
         _loadCts?.Cancel();
         var cts = new CancellationTokenSource();
         _loadCts = cts;

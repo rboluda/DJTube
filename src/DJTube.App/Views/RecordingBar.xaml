@@ -18,7 +18,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10,6">
+    <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelRadius}" Padding="10,6">
         <DockPanel>
             <!-- Grabar / pausa / detener -->
             <Button DockPanel.Dock="Left" Style="{StaticResource TransportButton}" Command="{Binding RecordCommand}"
@@ -29,7 +29,7 @@
                         <TextBlock Text="{loc:Tr Rec_Hint}" Style="{StaticResource CaptionText}" />
                     </StackPanel>
                 </Button.ToolTip>
-                <Ellipse x:Name="RecDot" Width="14" Height="14" Fill="{StaticResource ErrorBrush}">
+                <Ellipse x:Name="RecDot" Width="14" Height="14" Fill="{DynamicResource ErrorBrush}">
                     <Ellipse.Style>
                         <Style TargetType="Ellipse">
                             <Style.Triggers>
@@ -59,8 +59,8 @@
                         <Style.Triggers>
                             <!-- En pausa: resaltado -->
                             <DataTrigger Binding="{Binding IsPaused}" Value="True">
-                                <Setter Property="BorderBrush" Value="{StaticResource CueBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource CueBrush}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource CueBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource CueBrush}" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -75,10 +75,10 @@
                        VerticalAlignment="Center" Margin="8,0,12,0">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                        <Setter Property="Foreground" Value="{DynamicResource TextDimBrush}" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsRecording}" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -88,16 +88,16 @@
                        FontWeight="SemiBold" Margin="0,0,12,0">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                        <Setter Property="Foreground" Value="{DynamicResource TextDimBrush}" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsRecording}" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsPaused}" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource CueBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource CueBrush}" />
                             </DataTrigger>
                             <DataTrigger Binding="{Binding HasError}" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -110,7 +110,7 @@
                     Visibility="{Binding IsExporting, Converter={StaticResource BoolToVisibility}}" />
             <ProgressBar DockPanel.Dock="Right" Width="90" Height="6" Minimum="0" Maximum="1" Margin="10,0,0,0"
                          VerticalAlignment="Center" Value="{Binding ExportProgress, Mode=OneWay}"
-                         Foreground="{StaticResource DeckABrush}"
+                         Foreground="{DynamicResource DeckABrush}"
                          Visibility="{Binding IsExporting, Converter={StaticResource BoolToVisibility}}" />
 
             <!-- Carpeta, tamaño y nivel (a la derecha) -->
@@ -123,14 +123,14 @@
             </Button>
             <ProgressBar DockPanel.Dock="Right" Width="120" Height="6" Minimum="0" Maximum="1" Margin="10,0,0,0"
                          VerticalAlignment="Center" Value="{Binding Level, Mode=OneWay}"
-                         Foreground="{StaticResource PlayBrush}" />
+                         Foreground="{DynamicResource PlayBrush}" />
             <TextBlock DockPanel.Dock="Right" Text="{Binding SizeText}" FontSize="11" VerticalAlignment="Center">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                        <Setter Property="Foreground" Value="{DynamicResource TextDimBrush}" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsLowSpace}" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
                                 <Setter Property="ToolTip" Value="{loc:Tr Rec_LowSpace}" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -143,10 +143,10 @@
                 <TextBlock Text="{Binding FileName}" Style="{StaticResource CaptionText}" TextTrimming="CharacterEllipsis"
                            ToolTip="{Binding FileName}" />
                 <DockPanel Visibility="{Binding HasNotice, Converter={StaticResource BoolToVisibility}}"
-                           Background="{StaticResource PanelBrush}">
+                           Background="{DynamicResource PanelBrush}">
                     <Button DockPanel.Dock="Right" Content="✕" Padding="6,0" FontSize="10" Margin="6,0,0,0"
                             Command="{Binding DismissNoticeCommand}" Focusable="False" />
-                    <TextBlock Text="{Binding NoticeText}" Foreground="{StaticResource CueBrush}" FontSize="11"
+                    <TextBlock Text="{Binding NoticeText}" Foreground="{DynamicResource CueBrush}" FontSize="11"
                                TextTrimming="CharacterEllipsis" ToolTip="{Binding NoticeText}" VerticalAlignment="Center" />
                 </DockPanel>
             </Grid>

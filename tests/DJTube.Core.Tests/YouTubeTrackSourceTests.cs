@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using DJTube.Core.Models;
 using DJTube.Sources.YouTube;
 
@@ -168,6 +168,27 @@ public sealed class YouTubeTrackSourceTests : IDisposable
         Assert.False(_source.IsCached("abcdefghijk"));
         Assert.Empty(Directory.EnumerateFiles(_cache, "abcdefghijk.*"));
         Assert.True(_source.IsCached("zyxwvutsrqp"));
+    }
+
+    [Fact]
+    public void FreeSpace_DeletesLeastRecentlyUsedButKeepsProtected()
+    {
+        Seed("aaaaaaaaaaa", new YouTubeDownloadInfo("aaaaaaaaaaa", "Vieja", null, 100, "Vieja"));
+        Seed("bbbbbbbbbbb", new YouTubeDownloadInfo("bbbbbbbbbbb", "En una lista", null, 100, "En una lista"));
+        Seed("ccccccccccc", new YouTubeDownloadInfo("ccccccccccc", "Reciente", null, 100, "Reciente"));
+        File.SetLastAccessTimeUtc(Path.Combine(_cache, "aaaaaaaaaaa.json"), new DateTime(2020, 1, 1));
+        File.SetLastAccessTimeUtc(Path.Combine(_cache, "bbbbbbbbbbb.json"), new DateTime(2019, 1, 1));
+        File.SetLastAccessTimeUtc(Path.Combine(_cache, "ccccccccccc.json"), new DateTime(2026, 1, 1));
+        long sizeOfOld = Directory.EnumerateFiles(_cache, "aaaaaaaaaaa.*").Sum(f => new FileInfo(f).Length);
+        long limit = _source.CacheSizeBytes() - sizeOfOld; // basta con quitar la más vieja
+
+        var deleted = _source.FreeSpace(limit, new HashSet<string> { "bbbbbbbbbbb" });
+
+        Assert.Equal(["aaaaaaaaaaa"], deleted);
+        Assert.False(_source.IsCached("aaaaaaaaaaa"));
+        Assert.True(_source.IsCached("bbbbbbbbbbb"));
+        Assert.True(_source.IsCached("ccccccccccc"));
+        Assert.Empty(_source.FreeSpace(long.MaxValue, new HashSet<string>()));
     }
 
     private void Seed(string id, YouTubeDownloadInfo info)

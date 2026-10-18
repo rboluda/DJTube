@@ -62,7 +62,7 @@ public sealed class BassAudioEngine : IAudioEngine
 
     public AudioOutputStatus? OutputStatus => _wasapiMaster?.Status ?? _asio?.MasterStatus;
 
-    public AudioOutputStatus? CueOutputStatus => _wasapiCue?.Status ?? _asio?.CueStatus;
+    public AudioOutputStatus? CueOutputStatus => _wasapiCue?.Status ?? _asio?.CueStatus ?? _splitStatus;
 
     public string? CueOutputError { get; private set; }
 
@@ -99,7 +99,11 @@ public sealed class BassAudioEngine : IAudioEngine
         }
     }
 
-    private bool CueActive => _wasapiCue is not null || _asio?.CueStatus is not null;
+    private bool CueActive => _wasapiCue is not null || _asio?.CueStatus is not null || _split != 0;
+
+    /// <summary>Mezclador del modo split (master a la izquierda, auriculares a la derecha), o 0.</summary>
+    private int _split;
+    private AudioOutputStatus? _splitStatus;
 
     public IReadOnlyList<AudioDevice> GetOutputDevices()
     {
@@ -134,12 +138,54 @@ public sealed class BassAudioEngine : IAudioEngine
         }
     }
 
+    /// <summary>
+    /// Modo split: un mezclador más junta el master (en mono, a la izquierda) y los auriculares (en mono, a la
+    /// derecha) en un solo dispositivo. Mismo reloj para los dos: no hay deriva que corregir.
+    /// </summary>
+    private void StartSplit(int device, int rate, int channels, double bufferMs)
+    {
+        ConfigureMixers(rate, channels, rate, channels);
+        _split = BassMix.CreateMixerStream(rate, channels, BassFlags.Decode | BassFlags.Float | BassFlags.MixerNonStop);
+        if (_split == 0)
+            throw new BassException(Messages.MixerCreateFailed);
+
+        // Matriz [salida, entrada]: suma L+R a mono y la manda a un solo lado.
+        float[,] Side(int output)
+        {
+            var m = new float[channels, channels];
+            for (int input = 0; input < Math.Min(2, channels); input++)
+                m[output, input] = channels > 1 ? 0.5f : 1f;
+            return m;
+        }
+        if (!BassMix.MixerAddChannel(_split, _master.Output, BassFlags.MixerChanMatrix)
+            || !BassMix.MixerAddChannel(_split, _cue.Output, BassFlags.MixerChanMatrix))
+            throw new BassException(Messages.MixerAddFailed);
+        BassMix.ChannelSetMatrix(_master.Output, Side(0));
+        BassMix.ChannelSetMatrix(_cue.Output, Side(Math.Min(1, channels - 1)));
+
+        _wasapiMaster = WasapiOutput.Start(device, _split, rate, channels, bufferMs);
+        var s = _wasapiMaster.Status;
+        _splitStatus = s with { Driver = "Split", DeviceName = s.DeviceName + " · R" };
+    }
+
+    private void FreeSplit()
+    {
+        if (_split == 0)
+            return;
+        BassMix.MixerRemoveChannel(_master.Output);
+        BassMix.MixerRemoveChannel(_cue.Output);
+        Bass.StreamFree(_split);
+        _split = 0;
+        _splitStatus = null;
+    }
+
     public void StopOutput()
     {
         _wasapiCue?.Dispose();
         _wasapiCue = null;
         _wasapiMaster?.Dispose();
         _wasapiMaster = null;
+        FreeSplit(); // después de cerrar el dispositivo que lo lee
         _asio?.Dispose();
         _asio = null;
         CueOutputError = null;
@@ -295,7 +341,13 @@ public sealed class BassAudioEngine : IAudioEngine
         int masterDevice = config.MasterDeviceId ?? FindDefaultDevice();
         (int rate, int channels, _) = WasapiOutput.GetMixFormat(masterDevice);
 
-        int? cueDevice = config.CueDeviceId is { } id && id != masterDevice ? id : null;
+        if (config.CueDeviceId == WasapiOutputConfig.SplitCue)
+        {
+            StartSplit(masterDevice, rate, channels, config.BufferMilliseconds);
+            return;
+        }
+
+        int? cueDevice = config.CueDeviceId is { } id && id >= 0 && id != masterDevice ? id : null;
         (int cueRate, int cueChannels) = (0, 0);
         if (cueDevice is { } c)
             (cueRate, cueChannels, _) = WasapiOutput.GetMixFormat(c);

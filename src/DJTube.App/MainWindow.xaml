@@ -11,14 +11,14 @@
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="{Binding WindowTitle}" Height="1000" Width="1360" MinWidth="1000" MinHeight="700"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundBrush}"
-        Foreground="{StaticResource TextBrush}"
-        FontFamily="Segoe UI"
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
+        FontFamily="{DynamicResource UiFont}"
         Icon="pack://application:,,,/Assets/djtube.ico"
         PreviewKeyDown="OnPreviewKeyDown" PreviewKeyUp="OnPreviewKeyUp">
     <DockPanel>
         <!-- Menú, con el logo a la izquierda -->
-        <DockPanel DockPanel.Dock="Top" Background="{StaticResource PanelBrush}">
+        <DockPanel DockPanel.Dock="Top" Background="{DynamicResource PanelBrush}">
             <Image DockPanel.Dock="Left" Source="{StaticResource LogoSmall}" Width="22" Height="22"
                    Margin="12,0,2,0" RenderOptions.BitmapScalingMode="HighQuality" />
             <Menu>
@@ -73,7 +73,7 @@
                 Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibility}}">
             <Border.Style>
                 <Style TargetType="Border">
-                    <Setter Property="Background" Value="{StaticResource ControlBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource ControlBrush}" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsError}" Value="True">
                             <Setter Property="Background" Value="#FF4A1A2A" />
@@ -85,20 +85,20 @@
                 <Button DockPanel.Dock="Right" Content="✕" Padding="8,2" Margin="8,0,0,0" FontSize="11"
                         Command="{Binding DismissCommand}" ToolTip="{loc:Tr Update_Later}" />
                 <Button DockPanel.Dock="Right" Content="{loc:Tr Update_Install}" Padding="12,4" Margin="8,0,0,0"
-                        Command="{Binding InstallCommand}" Background="{StaticResource DeckABrush}" Foreground="Black"
+                        Command="{Binding InstallCommand}" Background="{DynamicResource DeckABrush}" Foreground="{DynamicResource OnAccentBrush}"
                         Visibility="{Binding CanInstall, Converter={StaticResource BoolToVisibility}}" />
                 <Button DockPanel.Dock="Right" Content="{loc:Tr Update_DownloadPage}" Padding="12,4" Margin="8,0,0,0"
-                        Command="{Binding OpenNotesCommand}" Background="{StaticResource DeckABrush}" Foreground="Black"
+                        Command="{Binding OpenNotesCommand}" Background="{DynamicResource DeckABrush}" Foreground="{DynamicResource OnAccentBrush}"
                         Visibility="{Binding CanDownloadPage, Converter={StaticResource BoolToVisibility}}" />
                 <Button DockPanel.Dock="Right" Content="{loc:Tr Update_Notes}" Padding="12,4" Margin="8,0,0,0"
                         Command="{Binding OpenNotesCommand}"
                         Visibility="{Binding HasUpdate, Converter={StaticResource BoolToVisibility}}" />
                 <ProgressBar DockPanel.Dock="Right" Width="160" Margin="12,0,0,0" VerticalAlignment="Center"
                              Minimum="0" Maximum="1" Value="{Binding Progress, Mode=OneWay, TargetNullValue=0}"
-                             Foreground="{StaticResource DeckABrush}"
+                             Foreground="{DynamicResource DeckABrush}"
                              Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
                 <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,10,0"
-                           Foreground="{StaticResource CueBrush}" />
+                           Foreground="{DynamicResource CueBrush}" />
                 <TextBlock Text="{Binding Message}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </DockPanel>
         </Border>
@@ -113,7 +113,7 @@
                     <Style x:Key="BarLabel" TargetType="TextBlock">
                         <Setter Property="VerticalAlignment" Value="Center" />
                         <Setter Property="Margin" Value="0,0,8,0" />
-                        <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                        <Setter Property="Foreground" Value="{DynamicResource TextDimBrush}" />
                     </Style>
                     <Style x:Key="PhonesIcon" TargetType="TextBlock" BasedOn="{StaticResource BarLabel}">
                         <Setter Property="Text" Value="&#xE7F6;" />
@@ -159,10 +159,10 @@
                            Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="360" ToolTip="{Binding YtDlpStatus}">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextDimBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding HasYtDlpError}" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -174,10 +174,10 @@
                                ToolTip="{Binding Libraries}">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextDimBrush}" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding HasOutputError}" Value="True">
-                                        <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -186,10 +186,10 @@
                     <TextBlock Text="{Binding CueStatus}" FontSize="11" TextTrimming="CharacterEllipsis">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextDimBrush}" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding HasCueError}" Value="True">
-                                        <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
                                     </DataTrigger>
                                     <Trigger Property="Text" Value="">
                                         <Setter Property="Visibility" Value="Collapsed" />
@@ -205,7 +205,7 @@
             <views:RecordingBar DockPanel.Dock="Bottom" Margin="0,10,0,0" DataContext="{Binding Recording}" />
 
             <!-- Vista ampliada de los dos platos (estilo AtomixMP3): cabezal fijo en el centro -->
-            <Border DockPanel.Dock="Top" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="8"
+            <Border DockPanel.Dock="Top" Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelRadius}" Padding="8"
                     Margin="0,0,0,12">
                 <StackPanel>
                     <controls:ZoomWaveform Height="56" Label="A" ToolTip="{loc:Tr ZoomTip}"
@@ -215,7 +215,7 @@
                                            Grid="{Binding DeckA.Grid}"
                                            CuePoint="{Binding DeckA.CuePoint}"
                                            Markers="{Binding DeckA.Markers}"
-                                           Accent="{StaticResource DeckAColor}"
+                                           Accent="{DynamicResource DeckAColor}"
                                            SecondsVisible="{Binding ZoomSeconds}"
                                            SeekCommand="{Binding DeckA.SeekSecondsCommand}" />
                     <controls:ZoomWaveform Height="56" Label="B" Margin="0,6,0,0" ToolTip="{loc:Tr ZoomTip}"
@@ -225,7 +225,7 @@
                                            Grid="{Binding DeckB.Grid}"
                                            CuePoint="{Binding DeckB.CuePoint}"
                                            Markers="{Binding DeckB.Markers}"
-                                           Accent="{StaticResource DeckBColor}"
+                                           Accent="{DynamicResource DeckBColor}"
                                            SecondsVisible="{Binding ZoomSeconds}"
                                            SeekCommand="{Binding DeckB.SeekSecondsCommand}" />
                 </StackPanel>
@@ -244,9 +244,9 @@
                         <ColumnDefinition Width="260" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <views:DeckView Grid.Column="0" DataContext="{Binding DeckA}" AccentColor="{StaticResource DeckAColor}" />
+                    <views:DeckView Grid.Column="0" DataContext="{Binding DeckA}" AccentColor="{DynamicResource DeckAColor}" />
                     <views:MixerView Grid.Column="1" DataContext="{Binding Mixer}" Margin="12,0" />
-                    <views:DeckView Grid.Column="2" DataContext="{Binding DeckB}" AccentColor="{StaticResource DeckBColor}" />
+                    <views:DeckView Grid.Column="2" DataContext="{Binding DeckB}" AccentColor="{DynamicResource DeckBColor}" />
                 </Grid>
                 <GridSplitter x:Name="LibrarySplitter" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                               ResizeDirection="Rows" Background="Transparent" Focusable="False"

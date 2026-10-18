@@ -120,6 +120,16 @@ public partial class MidiViewModel : ObservableObject, IDisposable
 
     public void Dispose() => _input?.Dispose();
 
+    /// <summary>Ejecuta una acción como si fuera un botón (atajos de teclado).</summary>
+    public void Trigger(string actionId, bool press)
+    {
+        if (_actions.TryGetValue(actionId, out var action))
+            Execute(action, new MidiMessage(new MidiSignal(MidiSignalKind.Note, 0, 0), press ? 127 : 0, 127));
+    }
+
+    /// <summary>Acciones de tipo botón (las que se pueden poner en una tecla), con su nombre.</summary>
+    public IEnumerable<MidiActionRow> ButtonActions => Rows.Where(r => r.Action.Kind == MidiActionKind.Button);
+
     /// <summary>Un mensaje de la controladora (en el hilo de la interfaz).</summary>
     public void OnMessage(MidiMessage message)
     {

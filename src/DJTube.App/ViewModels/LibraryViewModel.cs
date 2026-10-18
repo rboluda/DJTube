@@ -714,8 +714,39 @@ public partial class LibraryViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Límite de caché (Preferencias): si se pasa, borra lo que hace más tiempo que no se carga, sin tocar
+    /// canciones de listas ni las que están en un plato.
+    /// </summary>
+    public void EnforceCacheLimit()
+    {
+        if (_settings.CacheLimitGb <= 0)
+            return;
+        var keep = new HashSet<string>(_playlists.Playlists.SelectMany(p => p.VideoIds));
+        foreach (var deck in new[] { _deckA, _deckB })
+        {
+            if (deck.LoadedTrack?.Id is { } id)
+                keep.Add(id);
+        }
+        var deleted = _source.FreeSpace((long)(_settings.CacheLimitGb * 1024 * 1024 * 1024), keep);
+        if (deleted.Count == 0)
+            return;
+        foreach (string id in deleted)
+        {
+            if (_analyzer is CachingTrackAnalyzer cache)
+                cache.Forget(_source.GetAudioPath(id));
+            _tracks.Remove(id);
+        }
+        Rebuild();
+        ShowImportResult(Loc.F("Library_CacheFreed", deleted.Count), error: false);
+    }
+
+    /// <summary>Tamaño actual de la caché (Preferencias).</summary>
+    public long CacheSizeBytes => _source.CacheSizeBytes();
+
     private void FinishImport()
     {
+        EnforceCacheLimit();
         if (Interlocked.Decrement(ref _importsWaiting) == 0)
         {
             IsImporting = false;
@@ -891,6 +922,7 @@ public partial class LibraryViewModel : ObservableObject
         _playlists.RemoveVideo(id);
         _tracks.Remove(id);
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(IsEmptyAndNoResults));
         OnPropertyChanged(nameof(CountText));
     }
 
@@ -935,6 +967,7 @@ public partial class LibraryViewModel : ObservableObject
         foreach (var entry in entries)
             Entries.Add(entry);
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(IsEmptyAndNoResults));
         OnPropertyChanged(nameof(CountText));
     }
 
@@ -1009,6 +1042,7 @@ public partial class LibraryViewModel : ObservableObject
         if (lists.Count > 0 && !IsGrouped)
             Rebuild();
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(IsEmptyAndNoResults));
         OnPropertyChanged(nameof(CountText));
     }
 

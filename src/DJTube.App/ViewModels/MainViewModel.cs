@@ -146,6 +146,35 @@ public partial class MainViewModel : ObservableObject
     /// <summary>Aviso de actualizaciones.</summary>
     public UpdateViewModel Update { get; }
 
+    public AppSettings Settings => _settings;
+
+    /// <summary>Aplica las opciones de Preferencias que no se guardan solas (al arrancar y al aceptar).</summary>
+    public void ApplyOptions()
+    {
+        foreach (var deck in new[] { DeckA, DeckB })
+        {
+            deck.LockWhilePlaying = _settings.LockPlayingDeck;
+            if (!deck.IsLoaded)
+                deck.PitchRange = _settings.DefaultPitchRange >= PitchMath.WideRange ? PitchMath.WideRange : PitchMath.DefaultRange;
+            deck.ApplyAutoGain();
+        }
+        _engine.LimiterEnabled = _settings.Limiter;
+        Library.EnforceCacheLimit();
+    }
+
+    /// <summary>Vuelve a abrir la salida (al cambiar el búfer).</summary>
+    public void RestartOutput() => OutputSelectionChanged();
+
+    /// <summary>Atajos de teclado activos (los guardados o los de serie).</summary>
+    public IReadOnlyDictionary<string, string> KeyBindings =>
+        _settings.KeyBindings is { Count: > 0 } custom ? custom : KeyboardShortcuts.Defaults;
+
+    public void SetKeyBindings(Dictionary<string, string>? bindings)
+    {
+        _settings.KeyBindings = bindings;
+        SaveSettings();
+    }
+
     /// <summary>Controladoras MIDI.</summary>
     public MidiViewModel Midi => _midi ??= new MidiViewModel(this);
 
@@ -266,6 +295,9 @@ public partial class MainViewModel : ObservableObject
             Devices.Clear();
             CueDevices.Clear();
             CueDevices.Add(new LocalizedOption<AudioDevice?>(null, _ => Loc.T("NoHeadphones")));
+            // Una sola salida: auriculares en modo split (izquierda master, derecha pre-escucha).
+            CueDevices.Add(new LocalizedOption<AudioDevice?>(
+                new AudioDevice(WasapiOutputConfig.SplitCue, SplitDeviceName, false), _ => Loc.T("Headphones_Split")));
             foreach (var device in _engine.GetOutputDevices())
             {
                 Devices.Add(new LocalizedOption<AudioDevice>(device, DeviceLabel));
@@ -291,6 +323,7 @@ public partial class MainViewModel : ObservableObject
         StartOutput();
         _ = Library.LoadAsync();
         Midi.Connect();
+        ApplyOptions();
         Recording.RecoverInterrupted();
         _ = RefreshYtDlpStatusAsync();
         if (CheckForUpdates)
@@ -404,6 +437,9 @@ public partial class MainViewModel : ObservableObject
         _settingsService.Save(_settings);
     }
 
+    /// <summary>Nombre con el que se guarda la opción "split" en los ajustes.</summary>
+    private const string SplitDeviceName = "__split__";
+
     private static string DeviceLabel(AudioDevice device) =>
         device.IsDefault ? Messages.DefaultDevice(device.Name) : device.Name;
 
@@ -462,7 +498,7 @@ public partial class MainViewModel : ObservableObject
             }
             else
             {
-                _engine.StartOutput(new WasapiOutputConfig(SelectedDevice?.Value.Id, SelectedCueDevice?.Value?.Id));
+                _engine.StartOutput(new WasapiOutputConfig(SelectedDevice?.Value.Id, SelectedCueDevice?.Value?.Id, _settings.BufferMs));
                 _outputError = null;
             }
         }

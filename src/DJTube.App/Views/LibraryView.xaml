@@ -16,7 +16,7 @@
             <Setter Property="Height" Value="20" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Focusable" Value="False" />
             <Setter Property="Template">
@@ -38,7 +38,7 @@
         <Style x:Key="RightCell" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Right" />
             <Setter Property="FontFamily" Value="Consolas" />
-            <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextDimBrush}" />
         </Style>
 
         <Style x:Key="TrimmedCell" TargetType="TextBlock">
@@ -52,8 +52,8 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1"
-            CornerRadius="8" Padding="10,8,10,6">
+    <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1"
+            CornerRadius="{DynamicResource PanelRadius}" Padding="10,8,10,6">
         <DockPanel>
             <!-- Cabecera: título, recuento, análisis; a la derecha importar, buscar, letra y ocultar -->
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
@@ -81,12 +81,12 @@
                          Text="{Binding ImportText, UpdateSourceTrigger=PropertyChanged}"
                          Tag="{loc:Tr Library_Import}" KeyDown="OnImportKeyDown" ToolTip="{loc:Tr Library_ImportTip}" />
                 <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"
-                           Foreground="{StaticResource DeckABrush}" Margin="2,0,8,0" />
+                           Foreground="{DynamicResource DeckABrush}" Margin="2,0,8,0" />
                 <TextBlock Text="{loc:Tr Library}" FontWeight="SemiBold" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding CountText}" Style="{StaticResource CaptionText}" VerticalAlignment="Center"
                            Margin="10,0,0,0" />
                 <TextBlock Text="{Binding AnalysisStatus}" Style="{StaticResource CaptionText}" VerticalAlignment="Center"
-                           Foreground="{StaticResource CueBrush}" Margin="10,0,0,0" />
+                           Foreground="{DynamicResource CueBrush}" Margin="10,0,0,0" />
                 <TextBlock Text="{loc:Tr Library_Hint}" Style="{StaticResource CaptionText}" VerticalAlignment="Center"
                            Margin="14,0,8,0" TextTrimming="CharacterEllipsis" ToolTip="{loc:Tr Library_Hint}" />
             </DockPanel>
@@ -100,7 +100,7 @@
                         Command="{Binding SkipCommand}" ToolTip="{loc:Tr Automix_SkipTip}" />
                 <ToggleButton DockPanel.Dock="Left" Content="AUTOMIX" Padding="10,3" Margin="0,0,10,0"
                               IsChecked="{Binding IsOn, Mode=OneWay}" Command="{Binding ToggleCommand}"
-                              Tag="{StaticResource PlayBrush}" ToolTip="{loc:Tr Automix_Tip}" />
+                              Tag="{DynamicResource PlayBrush}" ToolTip="{loc:Tr Automix_Tip}" />
                 <TextBlock Text="{Binding StatusText}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </DockPanel>
 
@@ -109,10 +109,10 @@
                        Visibility="{Binding IsPreviewing, Converter={StaticResource BoolToVisibility}}">
                 <Button DockPanel.Dock="Right" Content="■" Style="{StaticResource SmallButton}" Margin="8,0,0,0"
                         Command="{Binding StopPreviewCommand}" ToolTip="{loc:Tr Preview_Stop}" />
-                <TextBlock Text="&#xE7F6;" FontFamily="Segoe MDL2 Assets" Foreground="{StaticResource CueBrush}"
+                <TextBlock Text="&#xE7F6;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource CueBrush}"
                            VerticalAlignment="Center" Margin="0,0,8,0" />
                 <TextBlock Text="{Binding PreviewText}" FontSize="11" VerticalAlignment="Center"
-                           Foreground="{StaticResource CueBrush}" TextTrimming="CharacterEllipsis" />
+                           Foreground="{DynamicResource CueBrush}" TextTrimming="CharacterEllipsis" />
             </DockPanel>
 
             <!-- Progreso de la importación -->
@@ -143,16 +143,16 @@
                 </Button>
                 <ProgressBar DockPanel.Dock="Right" Width="180" Minimum="0" Maximum="1" VerticalAlignment="Center"
                              Value="{Binding ImportProgress, Mode=OneWay, TargetNullValue=0}"
-                             Foreground="{StaticResource DeckABrush}"
+                             Foreground="{DynamicResource DeckABrush}"
                              Visibility="{Binding IsImporting, Converter={StaticResource BoolToVisibility}}" />
                 <TextBlock Text="{Binding ImportStatus}" FontSize="11" VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis" ToolTip="{Binding ImportStatus}">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ImportHasError}" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -194,16 +194,16 @@
                                                                   Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=DataGrid}}">
                                                         <ToggleButton.Template>
                                                             <ControlTemplate TargetType="ToggleButton">
-                                                                <Border x:Name="Bd" Background="{StaticResource ControlBrush}"
-                                                                        BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="0,0,0,1"
+                                                                <Border x:Name="Bd" Background="{DynamicResource ControlBrush}"
+                                                                        BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="0,0,0,1"
                                                                         Padding="8,5" Margin="0,2,0,0" CornerRadius="4">
                                                                     <DockPanel>
                                                                         <TextBlock x:Name="Arrow" Text="&#xE76C;" FontFamily="Segoe MDL2 Assets"
                                                                                    FontSize="10" VerticalAlignment="Center" Margin="0,0,8,0"
-                                                                                   Foreground="{StaticResource TextDimBrush}" />
+                                                                                   Foreground="{DynamicResource TextDimBrush}" />
                                                                         <TextBlock x:Name="Icon" Text="&#xE90B;" FontFamily="Segoe MDL2 Assets"
                                                                                    VerticalAlignment="Center" Margin="0,0,8,0"
-                                                                                   Foreground="{StaticResource DeckBBrush}" />
+                                                                                   Foreground="{DynamicResource DeckBBrush}" />
                                                                         <TextBlock Text="{Binding Name.Title}" FontWeight="SemiBold" VerticalAlignment="Center"
                                                                                    TextTrimming="CharacterEllipsis" />
                                                                         <TextBlock Text="{Binding Name.CountText}" Style="{StaticResource CaptionText}"
@@ -236,11 +236,11 @@
                                                                         <Setter TargetName="Arrow" Property="Text" Value="&#xE70D;" />
                                                                     </Trigger>
                                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                                                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlHoverBrush}" />
                                                                     </Trigger>
                                                                     <DataTrigger Binding="{Binding Name.IsPlaylist}" Value="False">
                                                                         <Setter TargetName="Icon" Property="Text" Value="&#xE8D6;" />
-                                                                        <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                                                                        <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource TextDimBrush}" />
                                                                     </DataTrigger>
                                                                 </ControlTemplate.Triggers>
                                                             </ControlTemplate>
@@ -271,11 +271,11 @@
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Content="A" Style="{StaticResource DeckLoadButton}"
-                                                Background="{StaticResource DeckABrush}"
+                                                Background="{DynamicResource DeckABrush}"
                                                 Command="{Binding DataContext.LoadToACommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}" ToolTip="{loc:Tr Library_LoadA}" />
                                         <Button Content="B" Style="{StaticResource DeckLoadButton}" Margin="4,0,0,0"
-                                                Background="{StaticResource DeckBBrush}"
+                                                Background="{DynamicResource DeckBBrush}"
                                                 Command="{Binding DataContext.LoadToBCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}" ToolTip="{loc:Tr Library_LoadB}" />
                                         <Button Content="&#xE7F6;" FontFamily="Segoe MDL2 Assets" Margin="4,0,0,0"
@@ -283,12 +283,12 @@
                                                 CommandParameter="{Binding}" ToolTip="{loc:Tr Preview_Tip}">
                                             <Button.Style>
                                                 <Style TargetType="Button" BasedOn="{StaticResource DeckLoadButton}">
-                                                    <Setter Property="Background" Value="{StaticResource ControlHoverBrush}" />
-                                                    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                                    <Setter Property="Background" Value="{DynamicResource ControlHoverBrush}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding Track.IsPreviewing}" Value="True">
-                                                            <Setter Property="Background" Value="{StaticResource CueBrush}" />
-                                                            <Setter Property="Foreground" Value="Black" />
+                                                            <Setter Property="Background" Value="{DynamicResource CueBrush}" />
+                                                            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -303,7 +303,7 @@
                         <DataGridTemplateColumn Width="Auto" CanUserResize="False" CanUserSort="False">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border CornerRadius="3" Background="{StaticResource ControlBrush}"
+                                    <Border CornerRadius="3" Background="{DynamicResource ControlBrush}"
                                             Width="{Binding DataContext.ArtworkWidth, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             Height="{Binding DataContext.ArtworkHeight, RelativeSource={RelativeSource AncestorType=DataGrid}}">
                                         <Border CornerRadius="3">
@@ -340,7 +340,7 @@
                                                 <Setter Property="Background" Value="Transparent" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Track.IsHarmonic}" Value="True">
-                                                        <Setter Property="Background" Value="{StaticResource PlayBrush}" />
+                                                        <Setter Property="Background" Value="{DynamicResource PlayBrush}" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -348,10 +348,10 @@
                                         <TextBlock Text="{Binding Track.KeyText}" FontFamily="Consolas">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="{StaticResource TextDimBrush}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextDimBrush}" />
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding Track.IsHarmonic}" Value="True">
-                                                            <Setter Property="Foreground" Value="Black" />
+                                                            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
                                                             <Setter Property="FontWeight" Value="Bold" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
@@ -366,7 +366,7 @@
                 </DataGrid>
 
                 <!-- Resultados de la búsqueda en YouTube (tapan la biblioteca mientras se ven) -->
-                <DockPanel Background="{StaticResource PanelBrush}"
+                <DockPanel Background="{DynamicResource PanelBrush}"
                            Visibility="{Binding IsShowingResults, Converter={StaticResource BoolToVisibility}}">
                     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
                         <Button DockPanel.Dock="Left" Style="{StaticResource SmallButton}" Margin="0,0,10,0"
@@ -377,10 +377,10 @@
                             </StackPanel>
                         </Button>
                         <ProgressBar DockPanel.Dock="Right" Width="120" IsIndeterminate="True" VerticalAlignment="Center"
-                                     Foreground="{StaticResource DeckABrush}"
+                                     Foreground="{DynamicResource DeckABrush}"
                                      Visibility="{Binding IsSearching, Converter={StaticResource BoolToVisibility}}" />
                         <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,6,0"
-                                   Foreground="{StaticResource BrandRedBrush}" />
+                                   Foreground="{DynamicResource BrandRedBrush}" />
                         <TextBlock Text="{Binding ResultsTitle}" VerticalAlignment="Center" FontWeight="SemiBold"
                                    TextTrimming="CharacterEllipsis" />
                     </DockPanel>
@@ -399,10 +399,10 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
-                                            <Button Content="A" Style="{StaticResource DeckLoadButton}" Background="{StaticResource DeckABrush}"
+                                            <Button Content="A" Style="{StaticResource DeckLoadButton}" Background="{DynamicResource DeckABrush}"
                                                     Command="{Binding DataContext.ResultLoadACommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                     CommandParameter="{Binding}" ToolTip="{loc:Tr Library_LoadA}" />
-                                            <Button Content="B" Style="{StaticResource DeckLoadButton}" Margin="4,0,0,0" Background="{StaticResource DeckBBrush}"
+                                            <Button Content="B" Style="{StaticResource DeckLoadButton}" Margin="4,0,0,0" Background="{DynamicResource DeckBBrush}"
                                                     Command="{Binding DataContext.ResultLoadBCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                     CommandParameter="{Binding}" ToolTip="{loc:Tr Library_LoadB}" />
                                             <Button Margin="4,0,0,0"
@@ -411,14 +411,14 @@
                                                 <Button.Style>
                                                     <Style TargetType="Button" BasedOn="{StaticResource DeckLoadButton}">
                                                         <Setter Property="Content" Value="+" />
-                                                        <Setter Property="Background" Value="{StaticResource ControlHoverBrush}" />
-                                                        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                                        <Setter Property="Background" Value="{DynamicResource ControlHoverBrush}" />
+                                                        <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
                                                         <Setter Property="ToolTip" Value="{loc:Tr Search_AddTip}" />
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsInLibrary}" Value="True">
                                                                 <Setter Property="Content" Value="✓" />
-                                                                <Setter Property="Background" Value="{StaticResource PlayBrush}" />
-                                                                <Setter Property="Foreground" Value="Black" />
+                                                                <Setter Property="Background" Value="{DynamicResource PlayBrush}" />
+                                                                <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
                                                                 <Setter Property="ToolTip" Value="{loc:Tr Search_InLibrary}" />
                                                             </DataTrigger>
                                                         </Style.Triggers>
@@ -430,19 +430,19 @@
                                                     CommandParameter="{Binding}" ToolTip="{loc:Tr Preview_Tip}">
                                                 <Button.Style>
                                                     <Style TargetType="Button" BasedOn="{StaticResource DeckLoadButton}">
-                                                        <Setter Property="Background" Value="{StaticResource ControlHoverBrush}" />
-                                                        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                                        <Setter Property="Background" Value="{DynamicResource ControlHoverBrush}" />
+                                                        <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsPreviewing}" Value="True">
-                                                                <Setter Property="Background" Value="{StaticResource CueBrush}" />
-                                                                <Setter Property="Foreground" Value="Black" />
+                                                                <Setter Property="Background" Value="{DynamicResource CueBrush}" />
+                                                                <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Button.Style>
                                             </Button>
                                             <ProgressBar Width="14" Height="4" Margin="4,0,0,0" IsIndeterminate="True"
-                                                         Foreground="{StaticResource DeckABrush}"
+                                                         Foreground="{DynamicResource DeckABrush}"
                                                          Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
                                         </StackPanel>
                                     </DataTemplate>
@@ -451,7 +451,7 @@
                             <DataGridTemplateColumn Width="Auto" CanUserResize="False">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border CornerRadius="3" Background="{StaticResource ControlBrush}"
+                                        <Border CornerRadius="3" Background="{DynamicResource ControlBrush}"
                                                 Width="{Binding DataContext.ArtworkWidth, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 Height="{Binding DataContext.ArtworkHeight, RelativeSource={RelativeSource AncestorType=DataGrid}}">
                                             <Border CornerRadius="3">

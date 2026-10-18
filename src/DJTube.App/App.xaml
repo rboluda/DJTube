@@ -6,6 +6,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!-- El primero es el tema de colores: ThemeManager lo cambia en caliente. -->
+                <ResourceDictionary Source="Themes/Colors.Violet.xaml" />
                 <ResourceDictionary Source="Themes/Dark.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:NegateConverter x:Key="NegateConverter" />

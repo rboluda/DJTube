@@ -327,4 +327,54 @@ No: añadir solo esta canción</value></data>
   <data name="MidiAct_Library_Browse" xml:space="preserve"><value>Biblioteca: navegar</value></data>
   <data name="MidiAct_App_Record" xml:space="preserve"><value>Grabar / detener</value></data>
   <data name="MidiAct_App_Automix" xml:space="preserve"><value>Automix on/off</value></data>
+  <data name="Theme_Violet" xml:space="preserve"><value>Violeta (predeterminado)</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>Blanco</value></data>
+  <data name="Theme_Win98" xml:space="preserve"><value>Gris (Windows 98)</value></data>
+  <data name="Theme_Blue" xml:space="preserve"><value>Azul</value></data>
+  <data name="PrefTab_General" xml:space="preserve"><value>General</value></data>
+  <data name="PrefTab_Audio" xml:space="preserve"><value>Audio</value></data>
+  <data name="PrefTab_Mixing" xml:space="preserve"><value>Mezcla</value></data>
+  <data name="PrefTab_Recording" xml:space="preserve"><value>Grabación</value></data>
+  <data name="PrefTab_Library" xml:space="preserve"><value>Biblioteca</value></data>
+  <data name="PrefTab_Keyboard" xml:space="preserve"><value>Teclado</value></data>
+  <data name="Pref_Theme" xml:space="preserve"><value>Tema de colores</value></data>
+  <data name="Pref_ThemeNote" xml:space="preserve"><value>Se ve al momento; Cancelar vuelve al anterior.</value></data>
+  <data name="Pref_Buffer" xml:space="preserve"><value>Búfer de audio (WASAPI)</value></data>
+  <data name="Pref_BufferAuto" xml:space="preserve"><value>Automático (el del dispositivo)</value></data>
+  <data name="Pref_BufferNote" xml:space="preserve"><value>Más pequeño = menos retraso entre pulsar y oír. Si el sonido da chasquidos, súbelo.</value></data>
+  <data name="Pref_Limiter" xml:space="preserve"><value>Limitador en el master</value></data>
+  <data name="Pref_LimiterNote" xml:space="preserve"><value>Evita que la salida y la grabación saturen al subir el volumen.</value></data>
+  <data name="Pref_AutoGain" xml:space="preserve"><value>Mismo volumen para todas las canciones (ganancia automática)</value></data>
+  <data name="Pref_TargetDefault" xml:space="preserve"><value>{0:0} LUFS (recomendado)</value></data>
+  <data name="Pref_AutoGainNote" xml:space="preserve"><value>Volumen objetivo: cuanto más alto, más se suben las canciones suaves.</value></data>
+  <data name="Pref_PitchRange" xml:space="preserve"><value>Rango de pitch al arrancar</value></data>
+  <data name="Pref_Quantize" xml:space="preserve"><value>Cuantizar hot cues y loops al golpe</value></data>
+  <data name="Pref_QuantizeNote" xml:space="preserve"><value>Hot cues y loops caen en el golpe más cercano aunque pulses un poco antes o después.</value></data>
+  <data name="Pref_LockDeck" xml:space="preserve"><value>Bloquear el plato que está sonando</value></data>
+  <data name="Pref_LockDeckNote" xml:space="preserve"><value>No se puede cargar otra canción por error en un plato que está sonando.</value></data>
+  <data name="Pref_AutomixFade" xml:space="preserve"><value>Duración del fundido del Automix</value></data>
+  <data name="Pref_AutomixTempo" xml:space="preserve"><value>El Automix iguala tempo y fase</value></data>
+  <data name="Pref_RecordingFormat" xml:space="preserve"><value>Formato de la grabación</value></data>
+  <data name="Pref_RecordingFormatNote" xml:space="preserve"><value>El WAV (calidad CD) se guarda siempre; el MP3 o M4A se crea al detener la grabación.</value></data>
+  <data name="Fmt_Wav" xml:space="preserve"><value>Solo WAV</value></data>
+  <data name="Fmt_Mp3" xml:space="preserve"><value>WAV + MP3 (320 kbps)</value></data>
+  <data name="Fmt_M4a" xml:space="preserve"><value>WAV + M4A (AAC 256 kbps)</value></data>
+  <data name="Pref_CacheLimit" xml:space="preserve"><value>Límite de tamaño de la caché</value></data>
+  <data name="Pref_NoLimit" xml:space="preserve"><value>Sin límite</value></data>
+  <data name="Pref_CacheSize" xml:space="preserve"><value>Ahora ocupa {0:0.00} GB.</value></data>
+  <data name="Pref_CacheLimitNote" xml:space="preserve"><value>Si se pasa, se borran las canciones que hace más tiempo que no cargas (nunca las de listas ni las de un plato).</value></data>
+  <data name="Pref_KeysNote" xml:space="preserve"><value>Elige «Cambiar» y pulsa la tecla (con Mayús si quieres). Esc cancela. Los atajos con Ctrl son fijos.</value></data>
+  <data name="Pref_KeysReset" xml:space="preserve"><value>Restaurar los de serie</value></data>
+  <data name="Pref_Key" xml:space="preserve"><value>Tecla</value></data>
+  <data name="Pref_KeyChange" xml:space="preserve"><value>Cambiar</value></data>
+  <data name="Pref_PressKey" xml:space="preserve"><value>Pulsa una tecla…</value></data>
+  <data name="Key_Shift" xml:space="preserve"><value>Mayús</value></data>
+  <data name="Err_DeckPlaying" xml:space="preserve"><value>El plato {0} está sonando: páralo antes de cargar otra canción (o quita el bloqueo en Preferencias).</value></data>
+  <data name="Library_CacheFreed" xml:space="preserve"><value>Límite de caché: se han quitado {0} canciones que no se usaban hace tiempo.</value></data>
+  <data name="Headphones_Split" xml:space="preserve"><value>Split en esta salida (izq. master / der. auriculares)</value></data>
+  <data name="Key_HotCues" xml:space="preserve"><value>1–8 / Mayús+1–8</value></data>
+  <data name="Sc_HotCues" xml:space="preserve"><value>Hot cues del plato A / del plato B</value></data>
+  <data name="Sc_LoopSync" xml:space="preserve"><value>Loop · reloop · SYNC del plato A / del plato B</value></data>
+  <data name="Sc_History" xml:space="preserve"><value>Historial de la sesión</value></data>
+  <data name="Sc_Custom" xml:space="preserve"><value>Las teclas de los platos se cambian en Preferencias → Teclado (las de arriba son las de serie).</value></data>
 </root>
