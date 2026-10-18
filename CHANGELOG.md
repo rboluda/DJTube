@@ -1,8 +1,39 @@
-# Cambios
+﻿# Cambios
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [versionado semántico](https://semver.org/lang/es/). La versión se define en
 `Directory.Build.props`.
+
+## [0.10.0] - 2026-10-18
+
+### Añadido
+- Hot cues: 8 por plato (clic para fijar o saltar, clic derecho para borrar), guardados por
+  canción y marcados en las ondas.
+- Loops sin cortes: automático de 1/8 a 32 tiempos, manual IN/OUT, mitad/doble, reloop y loop roll.
+- Volumen igualado: el análisis mide la sonoridad (LUFS) y cada canción se lleva al mismo
+  volumen (ganancia automática, objetivo configurable).
+- Sección master: volumen, limitador de picos (la salida y la grabación no saturan) y VU.
+- Tonalidad de cada canción en notación Camelot, en la pletina y en la biblioteca; en verde las
+  que encajan con lo que suena (mezcla armónica).
+- Buscar en YouTube desde la biblioteca (botón «YouTube» o Intro) y cargar, añadir o pre-escuchar
+  los resultados.
+- Pre-escucha 🎧 de cualquier canción solo por los auriculares, sin ocupar un plato.
+- Efectos por plato a tempo: eco, reverb, flanger y phaser.
+- Historial de la sesión (Ctrl+H) y, al grabar, lista de temas (.txt y .cue) junto a la grabación;
+  conversión automática a MP3 320 kbps o M4A.
+- Automix: cola de canciones con fundidos al mismo tempo y en fase.
+- Controladoras MIDI con modo «aprender» (cualquier marca): platos, mezclador, EQ, efectos, hot
+  cues, loops, jog, biblioteca, grabación y Automix.
+- Temas de color: violeta, blanco, gris Windows 98 y azul.
+- Preferencias por pestañas: búfer de audio, limitador, ganancia automática, rango de pitch,
+  cuantizar, bloquear el plato que suena, Automix, formato de grabación, límite de caché y atajos
+  de teclado personalizables.
+- Auriculares en modo split para quien tiene una sola salida (izquierda master, derecha
+  pre-escucha).
+
+### Cambiado
+- La caché de análisis pasa a la versión 2 (con sonoridad y tonalidad); las canciones ya
+  analizadas se completan solas en segundo plano.
 
 ## [0.9.0] - 2026-10-17
 

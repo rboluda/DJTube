@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/logo.png" alt="DJTube" width="160"></p>
+﻿<p align="center"><img src="assets/logo.png" alt="DJTube" width="160"></p>
 
 # DJTube
 
@@ -80,10 +80,27 @@ divisor cambia su alto). Artista y título salen del título del vídeo y se pue
 - **Tamaño de letra:** A− / A+ o Ctrl+rueda, para ver más canciones a la vez.
 - El BPM se calcula solo, en segundo plano.
 
+## Hot cues, loops y efectos
+
+- **Hot cues:** 8 botones de color por plato. Clic en uno vacío lo fija en ese punto (en el golpe si
+  está activado cuantizar); clic en uno lleno salta a él; clic derecho lo borra. Se guardan por canción.
+- **Loops:** LOOP repite los tiempos elegidos (◂ ▸ cambian el tamaño), IN/OUT hacen un loop manual,
+  ⟲ sale o vuelve a entrar, y ROLL repite mientras se mantiene y luego sigue donde iría la canción.
+- **Efectos:** eco, reverb, flanger o phaser por plato, con cantidad y tiempos a tempo con el BPM.
+
+## Automix, MIDI y teclado
+
+- **Automix:** pon canciones en la cola (menú de la canción o «Automix con esta lista») y pulsa
+  AUTOMIX: carga la siguiente en el otro plato y hace el fundido al mismo tempo.
+- **Controladoras MIDI:** Configuración → Controladora MIDI. Pulsa «Aprender» junto a una acción y
+  mueve el control de la controladora. Sirve para cualquier marca.
+- **Teclado:** las teclas de los platos se cambian en Preferencias → Teclado (F1 muestra las de serie).
+
 ## Grabar la sesión
 
 La barra de abajo graba lo que suena por el master en WAV (calidad CD), con pausa. Los archivos van a
-Música\DJTube (Configuración → Preferencias para cambiarlo). Se guarda en disco cada segundo: si
+Música\DJTube (Configuración → Preferencias para cambiarlo); al detenerla se crean también el MP3
+(o M4A) y la lista de temas con sus tiempos (.txt y .cue). Se guarda en disco cada segundo: si
 DJTube se cierra de golpe, al volver a abrirlo repara la grabación y avisa.
 
 Descargar contenido de YouTube va en contra de sus condiciones de uso. Usa esta función
@@ -96,6 +113,8 @@ bajo tu responsabilidad y solo con contenido que tengas derecho a utilizar.
   auriculares USB).
 - **ASIO** (Configuración → Preferencias → Modo de salida): una tarjeta de 4 canales;
   elige el par del master (p. ej. 1-2) y el de auriculares (p. ej. 3-4).
+- **Una sola salida:** en «Auriculares» elige «Split en esta salida»: por el oído izquierdo suena el
+  master y por el derecho la pre-escucha (con un cable divisor o unos cascos).
 
 En el mezclador, el botón 🎧 de cada plato lo manda a los auriculares, independientemente de
 faders y crossfader. El mando «MEZCLA» va de solo los platos con 🎧 (CUE) a lo mismo que el master
@@ -106,7 +125,11 @@ y «VOL» es el volumen de los auriculares.
 Cada canal tiene GAIN (±12 dB), HIGH / MID / LOW (de corte total a +6 dB), FILTER (a la izquierda
 paso bajo, a la derecha paso alto, en el centro apagado), fader y medidor VU. Los mandos se giran
 arrastrando arriba/abajo o con la rueda (Mayús: ajuste fino); doble clic los devuelve al centro y
-⟲ pone a cero todo el canal.
+⟲ pone a cero todo el canal. El MASTER tiene volumen, limitador y VU, y cada canción sale al mismo
+volumen gracias a la ganancia automática. La tonalidad aparece en notación Camelot: en la biblioteca,
+en verde las que encajan con lo que suena.
+
+Temas de color (violeta, blanco, gris Windows 98 y azul) en Configuración → Preferencias.
 
 ## Estructura
 
