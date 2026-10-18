@@ -7,6 +7,7 @@
              xmlns:controls="clr-namespace:DJTube.App.Controls"
              xmlns:loc="clr-namespace:DJTube.App.Localization"
              mc:Ignorable="d"
+             x:Name="Root"
              d:DataContext="{d:DesignInstance Type=vm:MixerViewModel}"
              d:DesignWidth="250" d:DesignHeight="420">
     <UserControl.Resources>
@@ -23,6 +24,12 @@
             <Setter Property="Height" Value="30" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="ToolTipService.InitialShowDelay" Value="400" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsShort, ElementName=Root}" Value="True">
+                    <Setter Property="Width" Value="26" />
+                    <Setter Property="Height" Value="26" />
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="KnobLabel" TargetType="TextBlock">
@@ -36,6 +43,11 @@
             <Setter Property="Orientation" Value="Horizontal" />
             <Setter Property="HorizontalAlignment" Value="Right" />
             <Setter Property="Margin" Value="0,0,0,3" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsShort, ElementName=Root}" Value="True">
+                    <Setter Property="Margin" Value="0,0,0,1" />
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
         <Style x:Key="KnobCellB" TargetType="StackPanel" BasedOn="{StaticResource KnobCellA}">
@@ -61,13 +73,44 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelRadius}" Padding="12,10">
+    <!-- Con la ventana baja (IsShort) mandos más pequeños y menos separación, para caber entero -->
+    <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelRadius}">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Padding" Value="12,10" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsShort, ElementName=Root}" Value="True">
+                        <Setter Property="Padding" Value="12,6" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <DockPanel>
-            <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Mixer}" Style="{StaticResource CaptionText}"
-                       HorizontalAlignment="Center" Margin="0,0,0,6" />
+            <DockPanel.Resources>
+                <Style x:Key="ShortGap" TargetType="FrameworkElement">
+                    <Setter Property="Margin" Value="0,8,0,0" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsShort, ElementName=Root}" Value="True">
+                            <Setter Property="Margin" Value="0,4,0,0" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DockPanel.Resources>
+            <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Mixer}" HorizontalAlignment="Center">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource CaptionText}">
+                        <Setter Property="Margin" Value="0,0,0,6" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsShort, ElementName=Root}" Value="True">
+                                <Setter Property="Margin" Value="0,0,0,2" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
 
             <!-- Auriculares, crossfader y curva -->
-            <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+            <StackPanel DockPanel.Dock="Bottom" Style="{StaticResource ShortGap}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -128,16 +171,36 @@
                     </StackPanel>
                 </Grid>
 
-                <Grid Margin="0,6,0,0">
+                <Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Margin" Value="0,6,0,0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsShort, ElementName=Root}" Value="True">
+                                    <Setter Property="Margin" Value="0,2,0,0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
                     <TextBlock Text="A" Foreground="{DynamicResource DeckABrush}" FontWeight="Bold"
                                HorizontalAlignment="Left" VerticalAlignment="Center" />
                     <TextBlock Text="B" Foreground="{DynamicResource DeckBBrush}" FontWeight="Bold"
                                HorizontalAlignment="Right" VerticalAlignment="Center" />
-                    <Slider Style="{StaticResource FaderSlider}" Margin="14,0" Height="36"
-                            Minimum="-1" Maximum="1" TickPlacement="Both"
+                    <Slider Margin="14,0" Minimum="-1" Maximum="1" TickPlacement="Both"
                             Value="{Binding Crossfader}"
                             MouseDoubleClick="OnCrossfaderDoubleClick"
-                            ToolTip="{loc:Tr CrossfaderTip}" />
+                            ToolTip="{loc:Tr CrossfaderTip}">
+                        <Slider.Style>
+                            <Style TargetType="Slider" BasedOn="{StaticResource FaderSlider}">
+                                <Setter Property="Height" Value="36" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsShort, ElementName=Root}" Value="True">
+                                        <Setter Property="Height" Value="28" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Slider.Style>
+                    </Slider>
                 </Grid>
             </StackPanel>
 

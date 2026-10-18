@@ -21,6 +21,10 @@ public partial class DeckView : UserControl
     public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(
         nameof(IsCompact), typeof(bool), typeof(DeckView), new PropertyMetadata(false));
 
+    /// <summary>Ventana baja: la plantilla reduce separaciones y alturas para que el plato quepa entero.</summary>
+    public static readonly DependencyProperty IsShortProperty = DependencyProperty.Register(
+        nameof(IsShort), typeof(bool), typeof(DeckView), new PropertyMetadata(false));
+
     private const double PitchWheelStep = 0.02;
 
     /// <summary>Ancho del plato por debajo del cual no caben en una fila la miniatura, el efecto y el BPM,
@@ -48,6 +52,12 @@ public partial class DeckView : UserControl
     {
         get => (bool)GetValue(IsCompactProperty);
         private set => SetValue(IsCompactProperty, value);
+    }
+
+    public bool IsShort
+    {
+        get => (bool)GetValue(IsShortProperty);
+        set => SetValue(IsShortProperty, value);
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e) => IsCompact = e.NewSize.Width < CompactWidth;

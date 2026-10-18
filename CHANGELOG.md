@@ -21,6 +21,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
   (116 en vez de 87), sobre todo con ritmos sincopados o a medio tiempo. El detector ahora prueba
   todo el rango de tempos y mide la claridad del pulso frente al resto de la canción. Las canciones
   ya analizadas se vuelven a analizar solas; se respeta el BPM corregido a mano con ½ / ×2.
+- Con la ventana baja (su alto mínimo, pantallas de 768 px o 1080p al 125 %) la biblioteca
+  desaparecía y los platos y el mezclador se cortaban por abajo (CUE, ▶, «0 %», crossfader). Ahora la
+  vista ampliada, los platos y el mezclador se compactan en vertical y la biblioteca conserva su
+  alto mínimo.
 
 ## [0.10.0] - 2026-10-18
 
