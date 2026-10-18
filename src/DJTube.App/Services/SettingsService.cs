@@ -98,8 +98,7 @@ public sealed class SettingsService
 
     public SettingsService(string? path = null)
     {
-        Path = path ?? System.IO.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DJTube", "settings.json");
+        Path = path ?? System.IO.Path.Combine(AppFolders.Roaming, "settings.json");
     }
 
     public string Path { get; }

@@ -69,8 +69,7 @@ public partial class RecordingViewModel : ObservableObject
         };
     }
 
-    public static string DefaultFolder =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), "DJTube");
+    public static string DefaultFolder => AppFolders.Recordings;
 
     /// <summary>Carpeta de grabaciones (Preferencias).</summary>
     public string Folder

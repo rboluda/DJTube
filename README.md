@@ -19,6 +19,8 @@ También carga archivos locales (MP3, FLAC, WAV, AAC, M4A).
 Interfaz en español e inglés (Configuración → Idioma). Cambios por versión en
 [CHANGELOG.md](CHANGELOG.md).
 
+📖 **[Manual de usuario (PDF)](docs/DJTube-Manual.pdf)**: todas las funciones explicadas paso a paso, con capturas.
+
 ## Instalación
 
 Descarga la última versión desde [Releases](https://github.com/rboluda/DJTube/releases):

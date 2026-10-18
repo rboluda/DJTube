@@ -4,6 +4,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 [versionado semántico](https://semver.org/lang/es/). La versión se define en
 `Directory.Build.props`.
 
+## [Sin publicar]
+
+### Añadido
+- Manual de usuario en PDF con capturas (`docs/DJTube-Manual.pdf`), enlazado desde el README.
+- Variable de entorno `DJTUBE_DATA`: si se define, DJTube guarda en esa carpeta preferencias, caché,
+  listas y grabaciones (para llevar la biblioteca en un USB o probar sin tocar los datos habituales).
+
+### Corregido
+- Al añadir la primera canción a una biblioteca vacía, las columnas Artista y Título se quedaban
+  encogidas.
+- «1 canción» en lugar de «1 canciones» (biblioteca y cola del Automix).
+
 ## [0.10.0] - 2026-10-18
 
 ### Añadido

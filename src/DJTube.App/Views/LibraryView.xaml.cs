@@ -11,6 +11,7 @@ public partial class LibraryView : UserControl
 {
     private Point? _dragStart;
     private bool _editRequested;
+    private bool _wasEmpty = true;
 
     public LibraryView()
     {
@@ -20,7 +21,10 @@ public partial class LibraryView : UserControl
             if (e.OldValue is LibraryViewModel old)
                 old.PropertyChanged -= OnViewModelChanged;
             if (e.NewValue is LibraryViewModel vm)
+            {
+                _wasEmpty = vm.IsEmpty;
                 vm.PropertyChanged += OnViewModelChanged;
+            }
         };
         // Si el DataGrid se mide antes de tener ancho (biblioteca oculta, ventana arrancando…), las columnas
         // proporcionales se quedan con el mínimo: se reparten de nuevo al cargar y al cambiar de ancho.
@@ -39,6 +43,12 @@ public partial class LibraryView : UserControl
     {
         if (e.PropertyName == nameof(LibraryViewModel.IsGrouped))
             ResetStarColumnsLater();
+        // También al llegar la primera canción: con la biblioteca vacía las columnas se miden sin filas.
+        if (e.PropertyName == nameof(LibraryViewModel.IsEmpty) && sender is LibraryViewModel vm && vm.IsEmpty != _wasEmpty)
+        {
+            _wasEmpty = vm.IsEmpty;
+            ResetStarColumnsLater();
+        }
     }
 
     /// <summary>

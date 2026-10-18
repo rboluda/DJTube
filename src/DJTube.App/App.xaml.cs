@@ -57,12 +57,11 @@ public partial class App : Application
         }
 
         // El análisis (onda y BPM) se guarda para que volver a cargar una canción sea instantáneo.
-        string analysisCache = System.IO.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJTube", "Cache", "Analysis");
+        string analysisCache = System.IO.Path.Combine(AppFolders.Local, "Cache", "Analysis");
         _viewModel = new MainViewModel(
             _engine,
             new LocalFileTrackSource(),
-            new YouTubeTrackSource(),
+            new YouTubeTrackSource(System.IO.Path.Combine(AppFolders.Local, "Cache", "YouTube")),
             new CachingTrackAnalyzer(new BassTrackAnalyzer(), analysisCache),
             new FileDialogService(),
             settingsService,

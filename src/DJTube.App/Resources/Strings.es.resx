@@ -21,6 +21,7 @@
   <data name="Menu_CheckUpdates" xml:space="preserve"><value>Buscar a_ctualizaciones…</value></data>
   <data name="Library" xml:space="preserve"><value>BIBLIOTECA</value></data>
   <data name="Library_Count" xml:space="preserve"><value>{0} canciones</value></data>
+  <data name="Library_CountOne" xml:space="preserve"><value>1 canción</value></data>
   <data name="Library_Search" xml:space="preserve"><value>Buscar artista o título</value></data>
   <data name="Col_Artist" xml:space="preserve"><value>Artista</value></data>
   <data name="Col_Title" xml:space="preserve"><value>Título</value></data>
@@ -283,6 +284,7 @@ No: añadir solo esta canción</value></data>
   <data name="Automix_Next" xml:space="preserve"><value>Siguiente: {0} · {1} en cola</value></data>
   <data name="Automix_LastSong" xml:space="preserve"><value>Última canción: no queda nada en la cola</value></data>
   <data name="Automix_Queued" xml:space="preserve"><value>{0} canciones en la cola: pulsa AUTOMIX para empezar</value></data>
+  <data name="Automix_QueuedOne" xml:space="preserve"><value>1 canción en la cola: pulsa AUTOMIX para empezar</value></data>
   <data name="Automix_SkipTip" xml:space="preserve"><value>Pasar ya a la siguiente</value></data>
   <data name="Automix_Clear" xml:space="preserve"><value>Vaciar</value></data>
   <data name="Menu_Midi" xml:space="preserve"><value>Controladora _MIDI…</value></data>

@@ -513,7 +513,7 @@ public partial class LibraryViewModel : ObservableObject
 
     public ICollectionView View { get; }
 
-    public string CountText => Loc.F("Library_Count", _tracks.Count);
+    public string CountText => _tracks.Count == 1 ? Loc.T("Library_CountOne") : Loc.F("Library_Count", _tracks.Count);
 
     public bool IsEmpty => _tracks.Count == 0;
 

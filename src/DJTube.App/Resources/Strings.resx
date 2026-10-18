@@ -21,6 +21,7 @@
   <data name="Menu_CheckUpdates" xml:space="preserve"><value>Check for _updates…</value></data>
   <data name="Library" xml:space="preserve"><value>LIBRARY</value></data>
   <data name="Library_Count" xml:space="preserve"><value>{0} tracks</value></data>
+  <data name="Library_CountOne" xml:space="preserve"><value>1 track</value></data>
   <data name="Library_Search" xml:space="preserve"><value>Search artist or title</value></data>
   <data name="Col_Artist" xml:space="preserve"><value>Artist</value></data>
   <data name="Col_Title" xml:space="preserve"><value>Title</value></data>
@@ -283,6 +284,7 @@ No: add only this song</value></data>
   <data name="Automix_Next" xml:space="preserve"><value>Next: {0} · {1} in queue</value></data>
   <data name="Automix_LastSong" xml:space="preserve"><value>Last song: nothing more in the queue</value></data>
   <data name="Automix_Queued" xml:space="preserve"><value>{0} songs in the queue: press AUTOMIX to start</value></data>
+  <data name="Automix_QueuedOne" xml:space="preserve"><value>1 song in the queue: press AUTOMIX to start</value></data>
   <data name="Automix_SkipTip" xml:space="preserve"><value>Go to the next song now</value></data>
   <data name="Automix_Clear" xml:space="preserve"><value>Clear</value></data>
   <data name="Menu_Midi" xml:space="preserve"><value>_MIDI controller…</value></data>

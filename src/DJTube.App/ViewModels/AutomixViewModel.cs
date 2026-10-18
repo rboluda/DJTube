@@ -67,7 +67,7 @@ public partial class AutomixViewModel : ObservableObject
     {
         (true, 0) => Loc.T("Automix_LastSong"),
         (true, _) => Loc.F("Automix_Next", Queue[0].Display, Queue.Count),
-        (false, _) => Loc.F("Automix_Queued", Queue.Count),
+        (false, _) => Queue.Count == 1 ? Loc.T("Automix_QueuedOne") : Loc.F("Automix_Queued", Queue.Count),
     };
 
     public void Enqueue(IEnumerable<AutomixItem> items)

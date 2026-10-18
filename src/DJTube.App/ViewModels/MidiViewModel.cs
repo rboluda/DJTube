@@ -36,8 +36,7 @@ public partial class MidiActionRow : ObservableObject
 public partial class MidiViewModel : ObservableObject, IDisposable
 {
     private readonly MainViewModel _main;
-    private readonly string _path = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DJTube", "midi.json");
+    private readonly string _path = Path.Combine(AppFolders.Roaming, "midi.json");
     private readonly Dictionary<string, MidiAction> _actions = [];
     private MidiInput? _input;
 

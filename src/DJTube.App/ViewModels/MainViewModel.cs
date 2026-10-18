@@ -87,7 +87,7 @@ public partial class MainViewModel : ObservableObject
         _outputMode = Enum.TryParse(settings.OutputMode, out OutputMode mode) ? mode : OutputMode.Wasapi;
 
         Func<double> delay = () => engine.OutputDelaySeconds;
-        string dataFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJTube");
+        string dataFolder = AppFolders.Local;
         var marks = new Core.Library.TrackMarksStore(System.IO.Path.Combine(dataFolder, "hotcues.json"));
         Func<bool> quantize = () => _settings.Quantize;
         Func<double?> autoGain = () => _settings.AutoGain ? _settings.TargetLufs : null;
@@ -113,8 +113,7 @@ public partial class MainViewModel : ObservableObject
         Update = new UpdateViewModel(() => DeckA.IsPlaying || DeckB.IsPlaying || Recording.IsActive);
         _checkForUpdates = settings.CheckForUpdates;
 
-        string playlistsFile = System.IO.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DJTube", "playlists.json");
+        string playlistsFile = System.IO.Path.Combine(AppFolders.Local, "playlists.json");
         Library = new LibraryViewModel(youTube, analyzer, new Core.Library.PlaylistStore(playlistsFile),
             DeckA, DeckB, engine, settings, SaveSettings) { Automix = Automix };
         _showLibrary = settings.ShowLibrary;
