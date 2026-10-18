@@ -33,10 +33,11 @@ public sealed class CachingTrackAnalyzer : ITrackAnalyzer
         }
 
         var analysis = await _inner.AnalyzeAsync(filePath, progress, ct).ConfigureAwait(false);
-        // Un análisis antiguo (sin sonoridad ni tonalidad) se completa, pero se respeta su BPM: puede
-        // haberse corregido a mano con ½ / ×2.
-        if (cached is not null)
-            analysis = analysis with { Grid = cached.Grid };
+        // Un análisis de una versión anterior se rehace, pero se respeta su BPM si es el mismo tempo salvo
+        // octavas: puede haberse corregido a mano con ½ / ×2. Si no tenía BPM, o era otro tempo (4/3 o 3/2
+        // del real, fallos del detector anterior), vale el nuevo.
+        if (cached?.Grid is { } previous && (analysis.Grid is null || SameTempoUpToOctaves(previous.Bpm, analysis.Grid.Bpm)))
+            analysis = analysis with { Grid = previous };
         if (cachePath is not null)
             TryWrite(cachePath, analysis);
         return analysis;
@@ -66,7 +67,10 @@ public sealed class CachingTrackAnalyzer : ITrackAnalyzer
             File.Delete(cachePath);
     }
 
-    /// <summary>Formato binario (v2): cabecera, rejilla, sonoridad, tonalidad y las cuatro bandas de la onda.</summary>
+    /// <summary>
+    /// Formato binario (v2 y v3): cabecera, rejilla, sonoridad, tonalidad y las cuatro bandas de la onda.
+    /// La v3 es igual que la v2; solo marca que el BPM viene del detector por barrido.
+    /// </summary>
     public static void Write(Stream stream, TrackAnalysis analysis)
     {
         using var w = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
@@ -91,7 +95,7 @@ public sealed class CachingTrackAnalyzer : ITrackAnalyzer
     /// <returns>null si no es un análisis válido.</returns>
     public static TrackAnalysis? Read(Stream stream, bool readWaveform = true) => ReadVersioned(stream, readWaveform).Analysis;
 
-    /// <summary>Lee también la versión: la 1 no tenía sonoridad ni tonalidad.</summary>
+    /// <summary>Lee también la versión: la 1 no tenía sonoridad ni tonalidad; la 2, el detector de BPM anterior.</summary>
     private static (TrackAnalysis? Analysis, int Version) ReadVersioned(Stream stream, bool readWaveform)
     {
         using var r = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
@@ -132,7 +136,14 @@ public sealed class CachingTrackAnalyzer : ITrackAnalyzer
     }
 
     private const int Magic = 0x41544A44; // "DJTA"
-    private const int FormatVersion = 2;
+    private const int FormatVersion = 3;
+
+    /// <summary>¿Son el mismo tempo salvo ½ / ×2 (con un margen del 1 %)?</summary>
+    private static bool SameTempoUpToOctaves(double a, double b)
+    {
+        double octaves = Math.Log2(a / b);
+        return Math.Abs(octaves - Math.Round(octaves)) < 0.015;
+    }
 
     private string? CachePath(string filePath)
     {

@@ -6,11 +6,13 @@ namespace DJTube.Core.Logic;
 /// Detección de tempo constante y fase del primer beat a partir de una curva de "ataques" (onset strength).
 /// </summary>
 /// <remarks>
-/// 1. Candidatos: máximos de la autocorrelación de los ataques en el rango de BPM (y sus dobles/mitades).
-/// 2. Afinado de cada candidato: se pliegan los ataques sobre un periodo de beat; el BPM correcto
+/// 1. Barrido: se pliegan los ataques sobre el periodo de cada BPM del rango (cada 0,05); el BPM correcto
 ///    concentra los golpes en una sola fase (el pico del histograma), uno erróneo los dispersa.
-///    Gana la mejor puntuación con una preferencia suave por tempos de baile (≈125).
-/// 3. Si un BPM entero está a menos de 0,05 y puntúa casi igual, se redondea (lo habitual en música de baile).
+/// 2. Hay pulso si el mejor BPM destaca sobre el resto del barrido (comparado con la mediana y la
+///    dispersión del propio barrido: el nivel de fondo depende de la duración y del estilo).
+/// 3. Afinado de los máximos más altos del barrido; gana la mejor puntuación. Solo para elegir entre
+///    ese BPM, su doble y su mitad se aplica una preferencia suave por tempos de baile (≈125).
+/// 4. Si un BPM entero está a menos de 0,05 y puntúa casi igual, se redondea (lo habitual en música de baile).
 /// </remarks>
 public static class BeatDetector
 {
@@ -20,10 +22,11 @@ public static class BeatDetector
     private const double PriorCenterBpm = 125;
     private const double PriorSigmaOctaves = 0.6;
     private const double RefineSpan = 0.015;   // ±1,5 % alrededor de cada candidato
-    private const double CoarseStep = 0.05;     // BPM, primera pasada
+    private const double CoarseStep = 0.05;     // BPM, barrido y primera pasada del afinado
     private const double RefineStep = 0.01;     // BPM, pasada fina
-    private const int MaxCandidates = 5;        // máximos de la autocorrelación a probar
-    private const double MinConfidence = 1.25;  // pico/media del histograma de fase (sin pulso ≈ 1,05)
+    private const int MaxCandidates = 5;        // máximos del barrido a afinar
+    // (máximo − mediana) / (percentil 90 − mediana) del barrido. Ruido: hasta ≈4,6; música: 6,5 o más.
+    private const double MinContrast = 5.5;
 
     /// <param name="onset">Fuerza de ataque por muestra de la curva.</param>
     /// <param name="rate">Muestras de la curva por segundo.</param>
@@ -37,19 +40,32 @@ public static class BeatDetector
         if (novelty.All(v => v == 0))
             return null;
 
-        // Varios candidatos de la autocorrelación: el primero no siempre es el bueno (síncopas,
-        // tempo que varía un poco). Se afina cada uno y gana el que mejor encaja, con la preferencia de tempo.
-        double bestWeighted = double.MinValue, bestBpm = 0, bestScore = 0;
-        foreach (double candidate in AutocorrelationCandidates(novelty, rate, MaxCandidates))
+        double[] sweep = Sweep(novelty, rate);
+        if (Contrast(sweep) < MinContrast)
+            return null;
+
+        // Se afinan varios máximos del barrido: el más alto no siempre es el bueno a 0,05 de precisión.
+        // Gana la mejor puntuación sin preferencia de tempo: con ella, en ritmos con síncopas o
+        // puntillos ganaban 4/3 o 3/2 del tempo real (116 en vez de 87).
+        double bestBpm = 0, bestScore = double.MinValue;
+        foreach (double candidate in SweepPeaks(sweep, MaxCandidates))
         {
             var (bpm, score) = Refine(novelty, rate, candidate);
-            double weighted = score * TempoPrior(bpm);
-            if (weighted > bestWeighted)
-                (bestWeighted, bestBpm, bestScore) = (weighted, bpm, score);
+            if (score > bestScore)
+                (bestBpm, bestScore) = (bpm, score);
         }
 
-        if (bestScore < MinConfidence)
-            return null;
+        // Doble o mitad: plegar a medio tempo suele puntuar más (64 frente a 128); ahí decide la preferencia.
+        double bestWeighted = bestScore * TempoPrior(bestBpm);
+        foreach (double octave in new[] { bestBpm * 2, bestBpm / 2 })
+        {
+            if (octave < MinBpm * (1 - RefineSpan) || octave > MaxBpm * (1 + RefineSpan))
+                continue;
+            var (bpm, score) = Refine(novelty, rate, octave);
+            double weighted = score * TempoPrior(bpm);
+            if (bpm >= MinBpm && bpm <= MaxBpm && weighted > bestWeighted)
+                (bestWeighted, bestBpm, bestScore) = (weighted, bpm, score);
+        }
 
         double rounded = Math.Round(bestBpm);
         if (Math.Abs(bestBpm - rounded) <= 0.05 && CombScore(novelty, rate, rounded, out _) >= bestScore * 0.95)
@@ -162,52 +178,41 @@ public static class BeatDetector
         return mean > 0 ? peakHeight / mean : 0;
     }
 
-    /// <summary>
-    /// BPM de los máximos locales más altos de la autocorrelación, más sus dobles y mitades dentro
-    /// del rango (el tempo correcto a veces aparece solo como múltiplo).
-    /// </summary>
-    private static List<double> AutocorrelationCandidates(float[] x, double rate, int count)
+    /// <summary>Puntuación de cada BPM del rango, de <see cref="CoarseStep"/> en <see cref="CoarseStep"/>.</summary>
+    private static double[] Sweep(float[] novelty, double rate)
     {
-        var result = new List<double>();
-        int minLag = Math.Max(2, (int)Math.Floor(60 * rate / MaxBpm));
-        int maxLag = (int)Math.Ceiling(60 * rate / MinBpm);
-        if (maxLag + 2 >= x.Length)
-            return result;
+        int count = (int)Math.Round((MaxBpm - MinBpm) / CoarseStep) + 1;
+        var scores = new double[count];
+        for (int k = 0; k < count; k++)
+            scores[k] = CombScore(novelty, rate, SweepBpm(k), out _);
+        return scores;
+    }
 
-        var ac = new double[maxLag + 2];
-        for (int lag = minLag - 1; lag <= maxLag + 1; lag++)
-        {
-            double s = 0;
-            int n = x.Length - lag;
-            for (int i = 0; i < n; i++)
-                s += x[i] * x[i + lag];
-            ac[lag] = s / n;
-        }
+    private static double SweepBpm(int index) => MinBpm + index * CoarseStep;
 
-        var peaks = new List<(double Bpm, double Value)>();
-        for (int lag = minLag; lag <= maxLag; lag++)
-        {
-            if (ac[lag] < ac[lag - 1] || ac[lag] < ac[lag + 1] || ac[lag] <= 0)
-                continue;
-            double l = ac[lag - 1], c = ac[lag], r = ac[lag + 1];
-            double d = l - 2 * c + r;
-            double refinedLag = lag + (d != 0 ? 0.5 * (l - r) / d : 0);
-            peaks.Add((60 * rate / refinedLag, c));
-        }
+    /// <summary>
+    /// Cuánto destaca el máximo del barrido sobre el resto: (máximo − mediana) / (percentil 90 − mediana).
+    /// Con ruido el máximo es solo el extremo de unas fluctuaciones; con pulso, un pico muy por encima.
+    /// </summary>
+    private static double Contrast(double[] sweep)
+    {
+        var sorted = (double[])sweep.Clone();
+        Array.Sort(sorted);
+        double median = sorted[sorted.Length / 2];
+        double spread = sorted[(int)(0.9 * (sorted.Length - 1))] - median;
+        return spread > 0 ? (sorted[^1] - median) / spread : 0;
+    }
 
-        void AddUnique(double bpm)
+    /// <summary>BPM de los máximos locales más altos del barrido.</summary>
+    private static IEnumerable<double> SweepPeaks(double[] sweep, int count)
+    {
+        var peaks = new List<int>();
+        for (int k = 0; k < sweep.Length; k++)
         {
-            if (bpm >= MinBpm && bpm <= MaxBpm && result.All(b => Math.Abs(b / bpm - 1) > 0.01))
-                result.Add(bpm);
+            if ((k == 0 || sweep[k] >= sweep[k - 1]) && (k == sweep.Length - 1 || sweep[k] > sweep[k + 1]))
+                peaks.Add(k);
         }
-
-        foreach (var (bpm, _) in peaks.OrderByDescending(p => p.Value).Take(count))
-        {
-            AddUnique(bpm);
-            AddUnique(bpm * 2);
-            AddUnique(bpm / 2);
-        }
-        return result;
+        return peaks.OrderByDescending(k => sweep[k]).Take(count).Select(SweepBpm);
     }
 
     /// <summary>Resta la media local y recorta a 0: deja solo los ataques que destacan sobre su entorno.</summary>

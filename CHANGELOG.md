@@ -17,6 +17,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - «1 canción» en lugar de «1 canciones» (biblioteca y cola del Automix).
 - Con la ventana estrecha (portátiles de 1280 px) los controles de las pletinas se solapaban; ahora
   se reorganizan: sin miniatura, carga con iconos, loops bajo los hot cues y ½ / ×2 apilados.
+- Algunas canciones se quedaban sin BPM (y sin SYNC ni loops) o con un BPM falso, 4/3 o 3/2 del real
+  (116 en vez de 87), sobre todo con ritmos sincopados o a medio tiempo. El detector ahora prueba
+  todo el rango de tempos y mide la claridad del pulso frente al resto de la canción. Las canciones
+  ya analizadas se vuelven a analizar solas; se respeta el BPM corregido a mano con ½ / ×2.
 
 ## [0.10.0] - 2026-10-18
 

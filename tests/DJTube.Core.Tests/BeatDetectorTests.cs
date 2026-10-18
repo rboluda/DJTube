@@ -63,13 +63,17 @@ public class BeatDetectorTests
         Assert.InRange(PhaseError(grid, 0.15), 0, 0.012);
     }
 
-    [Fact]
-    public void Detect_SilenceOrNoiseHasNoTempo()
+    [Theory]
+    [InlineData(10, 3)]
+    [InlineData(60, 3)]
+    [InlineData(60, 11)]
+    [InlineData(240, 5)]
+    public void Detect_SilenceOrNoiseHasNoTempo(int seconds, int seed)
     {
-        int n = (int)(60 * Rate);
+        int n = (int)(seconds * Rate);
         Assert.Null(BeatDetector.Detect(new float[n], Rate));
 
-        var rng = new Random(3);
+        var rng = new Random(seed);
         var low = new float[n];
         var full = new float[n];
         for (int i = 0; i < n; i++)
@@ -78,6 +82,30 @@ public class BeatDetectorTests
             full[i] = (float)rng.NextDouble();
         }
         Assert.Null(Detect((low, full)));
+    }
+
+    [Fact]
+    public void Detect_DottedRhythmIsNotTakenForFourThirdsOfTheTempo()
+    {
+        // Medio tiempo con golpes 3-3-2 (corchea con puntillo): cada ¾ de beat suena un golpe fuerte,
+        // así que 120 también encaja bastante. Antes ganaba 120 por estar más cerca de los tempos de baile.
+        var grid = Detect(SynthesizeHalfTimeTrack(90, seconds: 120));
+
+        Assert.NotNull(grid);
+        Assert.True(Math.Abs(grid.Bpm - 90) < 0.05 || Math.Abs(grid.Bpm - 180) < 0.05, $"BPM {grid.Bpm}");
+    }
+
+    [Theory]
+    [InlineData(90)]
+    [InlineData(130)]
+    public void Detect_FindsQuietBeatUnderLoudIrregularHits(double bpm)
+    {
+        // Bombo flojo bajo golpes fuertes al azar durante 4 minutos: el histograma de fase apenas sube
+        // sobre la media (≈1,2), pero el tempo destaca claramente sobre el resto. Antes no daba BPM.
+        var grid = Detect(SynthesizeQuietBeat(bpm, kickLevel: 0.07, seconds: 240));
+
+        Assert.NotNull(grid);
+        Assert.Equal(bpm, grid.Bpm, 0.05);
     }
 
     [Fact]
@@ -121,6 +149,66 @@ public class BeatDetectorTests
 
             low[i] = (float)(kick + noise);
             full[i] = (float)(kick + hat + noise);
+        }
+        return (low, full);
+    }
+
+    /// <summary>
+    /// Medio tiempo: bombo en el 1, caja en el 3, golpes de bajo 3-3-2 en semicorcheas (0, ¾ y 1½ beats
+    /// de cada dos) y charles en corcheas.
+    /// </summary>
+    private static (float[] Low, float[] Full) SynthesizeHalfTimeTrack(double bpm, double seconds)
+    {
+        int n = (int)(seconds * Rate);
+        var low = new float[n];
+        var full = new float[n];
+        var rng = new Random(1);
+        double beat = 60 / bpm;
+
+        for (int i = 0; i < n; i++)
+        {
+            double t = i / Rate;
+            double inTwoBeats = Mod(t, 2 * beat);
+            double sinceStab = inTwoBeats >= 1.5 * beat ? inTwoBeats - 1.5 * beat
+                : inTwoBeats >= 0.75 * beat ? inTwoBeats - 0.75 * beat : inTwoBeats;
+
+            double kick = Math.Exp(-Mod(t, 4 * beat) / 0.08);
+            double snare = Math.Exp(-Mod(t - 2 * beat, 4 * beat) / 0.05);
+            double stab = Math.Exp(-sinceStab / 0.06);
+            double hat = 0.2 * Math.Exp(-Mod(t, beat / 2) / 0.02);
+            double noise = 0.02 * rng.NextDouble();
+
+            low[i] = (float)(kick + stab + noise);
+            full[i] = (float)(kick + 0.8 * snare + stab + hat + noise);
+        }
+        return (low, full);
+    }
+
+    /// <summary>Bombo flojo en cada beat bajo golpes fuertes a intervalos aleatorios (50–450 ms) y ruido.</summary>
+    private static (float[] Low, float[] Full) SynthesizeQuietBeat(double bpm, double kickLevel, double seconds)
+    {
+        int n = (int)(seconds * Rate);
+        var low = new float[n];
+        var full = new float[n];
+        var rng = new Random(5);
+        double beat = 60 / bpm;
+        double nextHit = 0, hitStart = 0, hitLevel = 0;
+
+        for (int i = 0; i < n; i++)
+        {
+            double t = i / Rate;
+            if (t >= nextHit)
+            {
+                hitStart = t;
+                hitLevel = 0.5 + rng.NextDouble();
+                nextHit = t + 0.05 + 0.4 * rng.NextDouble();
+            }
+            double hit = hitLevel * Math.Exp(-(t - hitStart) / 0.05);
+            double kick = kickLevel * Math.Exp(-Mod(t, beat) / 0.07);
+            double noise = 0.05 * rng.NextDouble();
+
+            low[i] = (float)(kick + 0.5 * hit + noise);
+            full[i] = (float)(kick + hit + noise);
         }
         return (low, full);
     }

@@ -59,6 +59,48 @@ public sealed class CachingTrackAnalyzerTests : IDisposable
     }
 
     [Fact]
+    public async Task OldAnalysisWithoutBpmGetsTheNewOne()
+    {
+        _inner.Grid = null;
+        await _cache.AnalyzeAsync(_track);
+        MarkCacheAsVersion(2);
+        _inner.Grid = new BeatGrid(130, 0.1);
+
+        Assert.True(_cache.NeedsAnalysis(_track));
+        var again = await _cache.AnalyzeAsync(_track);
+
+        Assert.Equal(130, again.Grid!.Bpm);
+        Assert.Equal(130, _cache.TryGetCachedGrid(_track)!.Bpm);
+        Assert.False(_cache.NeedsAnalysis(_track));
+    }
+
+    [Fact]
+    public async Task OldAnalysisKeepsAnOctaveCorrection()
+    {
+        await _cache.AnalyzeAsync(_track);
+        _cache.SaveGrid(_track, new BeatGrid(64, 0.1));
+        MarkCacheAsVersion(2);
+
+        var again = await _cache.AnalyzeAsync(_track);
+
+        Assert.Equal(2, _inner.Calls);
+        Assert.Equal(64, again.Grid!.Bpm);
+    }
+
+    [Fact]
+    public async Task OldAnalysisWithAnotherTempoIsReplaced()
+    {
+        _inner.Grid = new BeatGrid(116, 0.1);
+        await _cache.AnalyzeAsync(_track);
+        MarkCacheAsVersion(2);
+        _inner.Grid = new BeatGrid(87, 0.2);
+
+        var again = await _cache.AnalyzeAsync(_track);
+
+        Assert.Equal(87, again.Grid!.Bpm);
+    }
+
+    [Fact]
     public async Task ForgetRemovesTheCache()
     {
         await _cache.AnalyzeAsync(_track);
@@ -92,15 +134,26 @@ public sealed class CachingTrackAnalyzerTests : IDisposable
         Assert.Equal(0.3f, read.Waveform.High[0]);
     }
 
+    /// <summary>Simula un análisis guardado por una versión anterior (el número va tras la marca "DJTA").</summary>
+    private void MarkCacheAsVersion(int version)
+    {
+        string file = Assert.Single(Directory.GetFiles(_cache.CacheFolder, "*.djta"));
+        using var stream = File.OpenWrite(file);
+        stream.Position = 4;
+        stream.Write(BitConverter.GetBytes(version));
+    }
+
     private sealed class FakeAnalyzer : ITrackAnalyzer
     {
         public int Calls { get; private set; }
+
+        public BeatGrid? Grid { get; set; } = new(128, 0.25);
 
         public Task<TrackAnalysis> AnalyzeAsync(string filePath, IProgress<double>? progress = null, CancellationToken ct = default)
         {
             Calls++;
             var wave = new WaveformData(200, [0.1f, 0.9f], [0.1f, 0.5f], [0.0f, 0.3f], [0.05f, 0.2f]);
-            return Task.FromResult(new TrackAnalysis(wave, new BeatGrid(128, 0.25)));
+            return Task.FromResult(new TrackAnalysis(wave, Grid));
         }
     }
 }
