@@ -15,6 +15,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Al añadir la primera canción a una biblioteca vacía, las columnas Artista y Título se quedaban
   encogidas.
 - «1 canción» en lugar de «1 canciones» (biblioteca y cola del Automix).
+- Con la ventana estrecha (portátiles de 1280 px) los controles de las pletinas se solapaban; ahora
+  se reorganizan: sin miniatura, carga con iconos, loops bajo los hot cues y ½ / ×2 apilados.
 
 ## [0.10.0] - 2026-10-18
 

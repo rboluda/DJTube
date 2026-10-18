@@ -17,7 +17,15 @@ public partial class DeckView : UserControl
     public static readonly DependencyProperty AccentProperty = DependencyProperty.Register(
         nameof(Accent), typeof(Brush), typeof(DeckView), new PropertyMetadata(Brushes.DodgerBlue));
 
+    /// <summary>Plato estrecho (ventana pequeña): la plantilla oculta o recoloca los controles secundarios.</summary>
+    public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(
+        nameof(IsCompact), typeof(bool), typeof(DeckView), new PropertyMetadata(false));
+
     private const double PitchWheelStep = 0.02;
+
+    /// <summary>Ancho del plato por debajo del cual no caben en una fila la miniatura, el efecto y el BPM,
+    /// ni los hot cues junto a los loops.</summary>
+    private const double CompactWidth = 540;
 
     public DeckView()
     {
@@ -35,6 +43,14 @@ public partial class DeckView : UserControl
         get => (Brush)GetValue(AccentProperty);
         private set => SetValue(AccentProperty, value);
     }
+
+    public bool IsCompact
+    {
+        get => (bool)GetValue(IsCompactProperty);
+        private set => SetValue(IsCompactProperty, value);
+    }
+
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => IsCompact = e.NewSize.Width < CompactWidth;
 
     private static Brush Frozen(Brush brush)
     {

@@ -10,8 +10,20 @@
              x:Name="Root"
              d:DataContext="{d:DesignInstance Type=vm:DeckViewModel}"
              d:DesignWidth="520" d:DesignHeight="320"
-             AllowDrop="True" Drop="OnDrop" DragOver="OnDragOver">
-    <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelRadius}" Padding="16">
+             AllowDrop="True" Drop="OnDrop" DragOver="OnDragOver" SizeChanged="OnSizeChanged">
+    <!-- Con el plato estrecho (IsCompact) se oculta la miniatura, los botones de carga pasan a iconos
+         y los loops bajan a su propia fila, para que nada se solape en portátiles pequeños -->
+    <Border Background="{DynamicResource PanelBrush}" BorderBrush="{DynamicResource PanelBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelRadius}">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Padding" Value="16" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                        <Setter Property="Padding" Value="12" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -20,6 +32,26 @@
 
             <!-- Zona principal -->
             <Grid Grid.Column="0">
+                <Grid.Resources>
+                    <!-- Separación entre filas; en modo estrecho, algo menor para ganar alto -->
+                    <Style x:Key="RowGap" TargetType="FrameworkElement">
+                        <Setter Property="Margin" Value="0,8,0,0" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                <Setter Property="Margin" Value="0,6,0,0" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                    <Style x:Key="TimeText" TargetType="TextBlock">
+                        <Setter Property="FontFamily" Value="Consolas" />
+                        <Setter Property="FontSize" Value="24" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                <Setter Property="FontSize" Value="20" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Resources>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -36,10 +68,20 @@
                 <Grid Grid.Row="0" Margin="0,0,0,6">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Grid Width="128" Height="72">
+                    <Grid Width="128" Height="72" Margin="0,0,12,0">
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
                         <Border Background="{DynamicResource ControlBrush}" CornerRadius="{DynamicResource ControlRadius}">
                             <TextBlock Text="♪" FontSize="34" Foreground="{DynamicResource TextDimBrush}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -52,8 +94,7 @@
                     </Grid>
 
                     <!-- Efecto del plato -->
-                    <StackPanel Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="12,0,0,0"
-                                IsEnabled="{Binding IsLoaded}">
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" IsEnabled="{Binding IsLoaded}">
                         <StackPanel Orientation="Horizontal">
                             <ComboBox Width="92" FontSize="11" Focusable="False" ItemsSource="{Binding FxKinds}"
                                       SelectedItem="{Binding SelectedFx}" ToolTip="{loc:Tr Fx_Tip}">
@@ -79,36 +120,40 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <TextBlock Text="{Binding BpmText}" FontFamily="Consolas" FontSize="30"
-                                       Foreground="{Binding Accent, ElementName=Root}" />
-                            <TextBlock Text="BPM" Style="{StaticResource CaptionText}" VerticalAlignment="Bottom"
-                                       Margin="6,0,0,6" />
+                    <!-- Si no cabe, el bloque del BPM se encoge en vez de pisar el efecto -->
+                    <Viewbox Grid.Column="2" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Right"
+                             VerticalAlignment="Center" Margin="10,0,0,0">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <TextBlock Text="{Binding BpmText}" FontFamily="Consolas" FontSize="30"
+                                           Foreground="{Binding Accent, ElementName=Root}" />
+                                <TextBlock Text="BPM" Style="{StaticResource CaptionText}" VerticalAlignment="Bottom"
+                                           Margin="6,0,0,6" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding OriginalBpmText}" Style="{StaticResource CaptionText}"
+                                       HorizontalAlignment="Right" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,2,0,0">
+                                <TextBlock Text="{Binding AutoGainText}" Style="{StaticResource CaptionText}" Margin="0,0,8,0"
+                                           ToolTip="{loc:Tr AutoGainTip}" />
+                                <Border CornerRadius="3" Padding="5,0" Background="{DynamicResource ControlBrush}"
+                                        ToolTip="{loc:Tr MusicalKeyTip}">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding MusicalKeyText}" Value="">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding MusicalKeyText}" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource CueBrush}" />
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="{Binding AnalysisStatus}" Style="{StaticResource CaptionText}"
+                                       HorizontalAlignment="Right" />
                         </StackPanel>
-                        <TextBlock Text="{Binding OriginalBpmText}" Style="{StaticResource CaptionText}"
-                                   HorizontalAlignment="Right" />
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,2,0,0">
-                            <TextBlock Text="{Binding AutoGainText}" Style="{StaticResource CaptionText}" Margin="0,0,8,0"
-                                       ToolTip="{loc:Tr AutoGainTip}" />
-                            <Border CornerRadius="3" Padding="5,0" Background="{DynamicResource ControlBrush}"
-                                    ToolTip="{loc:Tr MusicalKeyTip}">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding MusicalKeyText}" Value="">
-                                                <Setter Property="Visibility" Value="Collapsed" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <TextBlock Text="{Binding MusicalKeyText}" FontSize="11" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource CueBrush}" />
-                            </Border>
-                        </StackPanel>
-                        <TextBlock Text="{Binding AnalysisStatus}" Style="{StaticResource CaptionText}"
-                                   HorizontalAlignment="Right" />
-                    </StackPanel>
+                    </Viewbox>
                 </Grid>
 
                 <!-- Letra del plato y título -->
@@ -124,10 +169,45 @@
 
                 <!-- Carga: enlace de YouTube o archivo -->
                 <DockPanel Grid.Row="2" Margin="0,8,0,0">
-                    <Button DockPanel.Dock="Right" Content="{loc:Tr FileButton}" Margin="8,0,0,0"
-                            Command="{Binding LoadFileCommand}" ToolTip="{loc:Tr FileTip}" />
-                    <Button DockPanel.Dock="Right" Content="{loc:Tr Load}" Margin="8,0,0,0"
-                            Click="OnLoadLinkClick" ToolTip="{loc:Tr LoadTip}" />
+                    <DockPanel.Resources>
+                        <!-- En modo estrecho los botones muestran un icono en vez del texto -->
+                        <Style x:Key="LoadButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Margin" Value="8,0,0,0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                    <Setter Property="Margin" Value="6,0,0,0" />
+                                    <Setter Property="Padding" Value="10,6" />
+                                    <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DockPanel.Resources>
+                    <Button DockPanel.Dock="Right" AutomationProperties.Name="{loc:Tr FileButton}"
+                            Command="{Binding LoadFileCommand}" ToolTip="{loc:Tr FileTip}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource LoadButton}">
+                                <Setter Property="Content" Value="{loc:Tr FileButton}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                        <Setter Property="Content" Value="&#xE8E5;" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button DockPanel.Dock="Right" AutomationProperties.Name="{loc:Tr Load}"
+                            Click="OnLoadLinkClick" ToolTip="{loc:Tr LoadTip}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource LoadButton}">
+                                <Setter Property="Content" Value="{loc:Tr Load}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                        <Setter Property="Content" Value="&#xE896;" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                     <TextBox x:Name="LinkBox" Text="{Binding LinkText, UpdateSourceTrigger=PropertyChanged}"
                              Tag="{loc:Tr LinkHint}" KeyDown="OnLinkKeyDown" />
                 </DockPanel>
@@ -156,31 +236,60 @@
                 </DockPanel>
 
                 <!-- Tiempos -->
-                <Grid Grid.Row="4" Margin="0,6,0,4">
+                <Grid Grid.Row="4">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Margin" Value="0,6,0,4" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                    <Setter Property="Margin" Value="0,4,0,2" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
                     <StackPanel HorizontalAlignment="Left">
                         <TextBlock Text="{loc:Tr Elapsed}" Style="{StaticResource CaptionText}" />
-                        <TextBlock Text="{Binding Elapsed}" FontFamily="Consolas" FontSize="24" />
+                        <TextBlock Text="{Binding Elapsed}" Style="{StaticResource TimeText}" />
                     </StackPanel>
                     <StackPanel HorizontalAlignment="Right">
                         <TextBlock Text="{loc:Tr Remaining}" Style="{StaticResource CaptionText}" HorizontalAlignment="Right" />
-                        <TextBlock Text="{Binding Remaining}" FontFamily="Consolas" FontSize="24"
+                        <TextBlock Text="{Binding Remaining}" Style="{StaticResource TimeText}"
                                    Foreground="{DynamicResource TextDimBrush}" />
                     </StackPanel>
                 </Grid>
 
                 <!-- Forma de onda completa: clic o arrastre para saltar -->
-                <controls:WaveformOverview Grid.Row="5" Height="60"
+                <controls:WaveformOverview Grid.Row="5"
                                            Waveform="{Binding Waveform}"
                                            Progress="{Binding Progress}"
                                            CueFraction="{Binding CueFraction}"
                                            Accent="{Binding AccentColor, ElementName=Root}"
                                            SeekCommand="{Binding SeekCommand}"
                                            Markers="{Binding Markers}"
-                                           IsEnabled="{Binding IsLoaded}" />
+                                           IsEnabled="{Binding IsLoaded}">
+                    <controls:WaveformOverview.Style>
+                        <Style TargetType="controls:WaveformOverview">
+                            <Setter Property="Height" Value="60" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                    <Setter Property="Height" Value="44" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </controls:WaveformOverview.Style>
+                </controls:WaveformOverview>
 
                 <!-- Hot cues (clic: fijar o saltar · clic derecho: borrar) y loops -->
-                <DockPanel Grid.Row="6" Margin="0,8,0,0" IsEnabled="{Binding IsLoaded}">
-                    <ItemsControl DockPanel.Dock="Left" ItemsSource="{Binding HotCues}" Focusable="False">
+                <Grid Grid.Row="6" Style="{StaticResource RowGap}" IsEnabled="{Binding IsLoaded}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ItemsControl ItemsSource="{Binding HotCues}" Focusable="False">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" />
@@ -212,7 +321,21 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
+                    <!-- Los loops van a la derecha de los hot cues o, si no caben, debajo -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Grid.Column" Value="1" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                        <Setter Property="Grid.Column" Value="0" />
+                                        <Setter Property="Grid.ColumnSpan" Value="2" />
+                                        <Setter Property="Grid.Row" Value="1" />
+                                        <Setter Property="Margin" Value="0,4,0,0" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
                         <StackPanel.Resources>
                             <Style x:Key="LoopButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                                 <Setter Property="Height" Value="26" />
@@ -262,51 +385,104 @@
                                               PressCommand="{Binding RollDownCommand}" ReleaseCommand="{Binding RollUpCommand}"
                                               ToolTip="{loc:Tr RollTip}" />
                     </StackPanel>
+                </Grid>
+
+                <!-- Transporte; a la derecha, BPM ½ / ×2 y SYNC. CUE y ▶ se estrechan si falta sitio -->
+                <DockPanel Grid.Row="7" Style="{StaticResource RowGap}">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,2,0,0">
+                        <StackPanel>
+                            <StackPanel.Resources>
+                                <Style x:Key="BpmButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Setter Property="Padding" Value="8,3" />
+                                    <Setter Property="FontSize" Value="11" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                            <Setter Property="Padding" Value="6,0" />
+                                            <Setter Property="Height" Value="20" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Resources>
+                            <!-- En modo estrecho, ½ y ×2 uno encima del otro -->
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Orientation" Value="Horizontal" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                            <Setter Property="Orientation" Value="Vertical" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <Button Content="½" Style="{StaticResource BpmButton}" Command="{Binding HalveBpmCommand}"
+                                    ToolTip="{loc:Tr HalveTip}" />
+                            <Button Content="×2" Command="{Binding DoubleBpmCommand}" ToolTip="{loc:Tr DoubleTip}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource BpmButton}">
+                                        <Setter Property="Margin" Value="4,0,0,0" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                                <Setter Property="Margin" Value="0,2,0,0" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                        <Button Content="SYNC" Command="{Binding SyncCommand}" ToolTip="{loc:Tr SyncTip}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Setter Property="Padding" Value="14,8" />
+                                    <Setter Property="Margin" Value="8,0,0,0" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                            <Setter Property="Padding" Value="10,8" />
+                                            <Setter Property="Margin" Value="6,0,0,0" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MaxWidth="84" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" MaxWidth="84" />
+                        </Grid.ColumnDefinitions>
+                        <controls:PressButton Content="CUE" Height="42" FontSize="15"
+                                              PressCommand="{Binding CueDownCommand}"
+                                              ReleaseCommand="{Binding CueUpCommand}"
+                                              IsEnabled="{Binding IsLoaded}">
+                            <controls:PressButton.Style>
+                                <Style TargetType="controls:PressButton" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCueLit}" Value="True">
+                                            <Setter Property="BorderBrush" Value="{DynamicResource CueBrush}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource CueBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </controls:PressButton.Style>
+                        </controls:PressButton>
+
+                        <Button Grid.Column="2" Height="42" FontSize="15"
+                                Command="{Binding PlayPauseCommand}" IsEnabled="{Binding IsLoaded}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Setter Property="Content" Value="▶" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                            <Setter Property="Content" Value="❚❚" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource PlayBrush}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource PlayBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
                 </DockPanel>
-
-                <!-- Transporte; a la derecha, BPM ½ / ×2 y SYNC -->
-                <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
-                            Margin="0,10,0,0">
-                    <Button Content="½" Padding="8,3" FontSize="11" Command="{Binding HalveBpmCommand}"
-                            ToolTip="{loc:Tr HalveTip}" />
-                    <Button Content="×2" Padding="8,3" FontSize="11" Margin="4,0,0,0"
-                            Command="{Binding DoubleBpmCommand}" ToolTip="{loc:Tr DoubleTip}" />
-                    <Button Content="SYNC" Padding="14,8" Margin="8,0,0,0" Command="{Binding SyncCommand}"
-                            ToolTip="{loc:Tr SyncTip}" />
-                </StackPanel>
-                <StackPanel Grid.Row="7" Orientation="Horizontal" Margin="0,8,0,0">
-                    <controls:PressButton Content="CUE" Width="84" Height="42" FontSize="15"
-                                          PressCommand="{Binding CueDownCommand}"
-                                          ReleaseCommand="{Binding CueUpCommand}"
-                                          IsEnabled="{Binding IsLoaded}">
-                        <controls:PressButton.Style>
-                            <Style TargetType="controls:PressButton" BasedOn="{StaticResource {x:Type Button}}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsCueLit}" Value="True">
-                                        <Setter Property="BorderBrush" Value="{DynamicResource CueBrush}" />
-                                        <Setter Property="Foreground" Value="{DynamicResource CueBrush}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </controls:PressButton.Style>
-                    </controls:PressButton>
-
-                    <Button Width="84" Height="42" Margin="10,0,0,0" FontSize="15"
-                            Command="{Binding PlayPauseCommand}" IsEnabled="{Binding IsLoaded}">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                                <Setter Property="Content" Value="▶" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsPlaying}" Value="True">
-                                        <Setter Property="Content" Value="❚❚" />
-                                        <Setter Property="BorderBrush" Value="{DynamicResource PlayBrush}" />
-                                        <Setter Property="Foreground" Value="{DynamicResource PlayBrush}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                </StackPanel>
 
                 <!-- Errores -->
                 <TextBlock Grid.Row="8" Text="{Binding Error}" Foreground="{DynamicResource ErrorBrush}"
@@ -327,7 +503,19 @@
             </Grid>
 
             <!-- Pitch: arriba = más lento, abajo = más rápido (como en un plato Technics) -->
-            <DockPanel Grid.Column="1" Width="78" Margin="16,0,0,0">
+            <DockPanel Grid.Column="1">
+                <DockPanel.Style>
+                    <Style TargetType="DockPanel">
+                        <Setter Property="Width" Value="78" />
+                        <Setter Property="Margin" Value="16,0,0,0" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                                <Setter Property="Width" Value="72" />
+                                <Setter Property="Margin" Value="10,0,0,0" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
                 <TextBlock DockPanel.Dock="Top" Text="{loc:Tr Pitch}" Style="{StaticResource CaptionText}"
                            HorizontalAlignment="Center" />
                 <TextBlock DockPanel.Dock="Top" Text="{Binding PitchText}" FontFamily="Consolas" FontSize="13"
